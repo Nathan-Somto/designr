@@ -25,6 +25,7 @@ module.exports = {
     ".*.js",
     "node_modules/",
     "dist/",
+    "*.config.js",
   ],
   overrides: [
     {
