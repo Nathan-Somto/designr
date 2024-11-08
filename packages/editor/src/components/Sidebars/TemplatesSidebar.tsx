@@ -1,0 +1,1 @@
+// side bar that shows all the available templates
