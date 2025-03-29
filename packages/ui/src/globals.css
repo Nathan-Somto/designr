@@ -1,51 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-
-
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.color-convert {
+  color: #895af6
 }
-label{
-  display: block;
-}
-
-.editor-input {
-  padding: 8px 10px;
-  border-radius: 5px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  font-size: 14px;
-  background-color: transparent;
-  color: #333;
-  display:inline-block;
-  border: none;
-
-  &:focus {
-    border: 1px solid #007BFF;
-  }
-
-  &:hover {
-    border: 1px solid #888;
-  }
-}
-.editor-input-container {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  width: 100%;
- 
-}
-
-
-.g{
-  background-color: hsl(0, 0%, 20%);
-}
-
-
 @layer base {
   :root {
     --background: 0 0% 90%;
@@ -56,9 +14,9 @@ label{
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --primary: 258 90% 66%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
+    --secondary: 0 0% 100%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
@@ -81,7 +39,7 @@ label{
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
-    --panel: 0 0% 10%;         
+    --panel: 0 0% 10%;
     --panel-foreground: 0 0% 80%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
@@ -105,15 +63,12 @@ label{
     --chart-5: 340 75% 55%;
   }
 }
-
-
-
-
-@layer base {
+@layer {
   * {
-    @apply border-border;
+    @apply border-border border border-solid;
   }
   body {
     @apply bg-background text-foreground;
   }
 }
+
