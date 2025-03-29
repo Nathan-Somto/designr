@@ -1,9 +1,17 @@
 
 
 
-# 🎨 Designr
+<div align="center">
+  <img src="./readme_assets/logo.svg" alt="Designr Logo" width="80" height="80" />
+   <h1 style="
+    color: #895af6;
+   ">Designr</h1>
+</div>
 
-Designr is a fullstack AI-Powered SaaS Graphic design tool, developed to speed up prototyping of custom designs. Leverage our vast collection of community templates to speed your next design idea. 
+Designr is a fullstack AI-Powered SaaS Graphic design tool, developed to speed up prototyping of custom designs. Leverage our vast collection of community templates to speed your next design idea.
+ 
+## Status
+The core logic for the editor is being rewritten into a hook that encapulates all the editor functionality. The editor is currently in a broken state as a result of this.
 
 ## 📚 Reason for Project
 
@@ -14,20 +22,20 @@ I did a course in my final year called Graphics and Animation, the information t
 It's a monorepo powered by TurboRepo with the following project structure:
 
 - **apps/web:** 🌐 The main web application 
-- **packages/editor:** 🎨 The core canvas editor that powers the SaaS, built with Fabric.js and React
+- **packages/use-editor:** 🎨 A hook that encapsulates all the editors functionality
 - **packages/ui:** 💅 The shared Shadcn UI components and Tailwind CSS config used by both the web app and editor
 - **packages/eslint-config:** 📏 The ESLint config used throughout the app
 - **packages/typescript-config:** 📘 Shared TypeScript configuration throughout the app
-- **packages/types:** 📜 Shared type definition files used across the app and editor
+- **packages/validators:** 🛡️ Shared validation functions used throughout the app
 
 ## 🚀 Tech Stack
 
-Designr leverages a robust tech stack to support its features:
+Designr makes use of an up to date tech stack to support its features:
 
-- **Frontend**: React, Tailwind CSS, Zustand
-- **Backend**: Drizzle ORM, Neon (PostgreSQL)
+- **Frontend**: Next js, Tailwind CSS(v3), Fabric.js, Zustand
+- **Backend**: Convex
 - **Authentication**: Clerk
-- **Payments**: Paystack (for handling subscriptions)
+- **Payments**: Stripe (for handling subscriptions)
 - **Media**: Cloudinary (for image storage) and Unsplash API (for stock images)
 
 ---
@@ -62,12 +70,7 @@ Ensure you have the following installed:
    npm dev
    ```
 
-4. **Running the Editor**:
-   The editor runs inside the web app, so it’s ready as soon as the web app is live. To run the editor in isolation, navigate to `packages/editor`:
-   ```bash
-   cd packages/editor
-   npm dev
-   ```
+
 
 ### 🧪 Testing
 
@@ -125,8 +128,7 @@ If you’d like to discuss what you want to contribute, please feel free to file
 
 - [TurboRepo Documentation](https://turborepo.com/docs)
 - [Clerk Documentation](https://clerk.dev/docs)
-- [Drizzle ORM Documentation](https://drizzle-orm.dev/)
-- [Neon for PostgreSQL](https://neon.tech/)
+- [Convex Documentation](https://drizzle-orm.dev/)
 
 ---
 
