@@ -1,0 +1,16 @@
+{
+    "name": "@designr/use-editor",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "version": "0.1.0",
+    "type": "module",
+    "dependencies": {
+        "react": "^19.0.0",
+        "fabric": "^6.4.3"
+    },
+    "devDependencies": {
+    "@designr/eslint-config": "*",
+    "@designr/typescript-config": "*"
+    }
+}
