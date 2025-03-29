@@ -1,4 +1,5 @@
 'use client'
+import Navbar from "#/features/editor/components/nav-bar"
 import { useEditor } from "@designr/use-editor"
 
 export default function EditorPage() {
@@ -9,6 +10,7 @@ export default function EditorPage() {
     console.log("editor zoom:", editor?.zoomValue)
     return (
         <div id="editor" className='h-screen w-screen overflow-hidden'>
+            <Navbar />
             <div className='h-screen w-screen   flex flex-col items-center justify-center'>
                 <canvas ref={canvasRef}
                     style={{
