@@ -7,7 +7,7 @@ import { createLink } from './createLink';
 /**
  * @description this is a huge file that contains all the helper functions that interact with the canvas i.e adding shapes,text, images, changing properties of an object, getting the state of current selection
  */
-export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpersProps) {
+export default function canvasHelpers({ canvas, filename, setZoom, updateAction }: CanvasHelpersProps) {
     //====== INSERTERS ======
     const insertElement = (canvas: fabric.Canvas, element: fabric.Object) => {
         const { top, left } = randomPosition({
@@ -30,6 +30,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             ...circleProps
         })
         insertElement(canvas, circle)
+        updateAction('Circle');
     }
     const addRectangle = (rectProps?: fabric.RectProps) => {
         const rect = new fabric.Rect({
@@ -40,6 +41,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             ...rectProps
         })
         insertElement(canvas, rect)
+        updateAction('Rectangle')
     }
     const addTriangle = (triangleProps?: fabric.FabricObjectProps) => {
         const triangle = new fabric.Triangle({
@@ -50,6 +52,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             ...triangleProps
         })
         insertElement(canvas, triangle)
+        updateAction('Triangle')
     }
     const addDiamond = (diamondProps?: Omit<
         fabric.RectProps,
@@ -66,6 +69,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             }
         )
         insertElement(canvas, polygon)
+        updateAction('Diamond')
     }
     const addStar = (props: Omit<fabric.FabricObjectProps, 'points'>) => {
         function createStar({ cx, cy, outerRadius, innerRadius, numPoints = 5 }: {
@@ -112,6 +116,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             ...props
         })
         insertElement(canvas, star)
+        updateAction('Star')
     }
     const addSoftRect = (rectProps?: fabric.RectProps) => {
         const softRect = new fabric.Rect({
@@ -124,6 +129,7 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
             ...rectProps
         })
         insertElement(canvas, softRect)
+        updateAction('SoftRect')
     }
     const enableDrawingMode = (props: {
         strokeColor?: string;
@@ -135,12 +141,14 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
         canvas.freeDrawingBrush.color = props?.strokeColor ?? STROKE_COLOR
         canvas.freeDrawingBrush.width = props?.strokeWidth ?? 2
         canvas.renderAll()
+        updateAction('Drawing')
     }
     const addText = (textConfig: TextConfig) => {
         const text = new fabric.Textbox(textConfig.value, {
             ...textConfig,
         })
         insertElement(canvas, text)
+        updateAction('Text')
     }
     const addImage = async (url: string) => {
         const point = canvas.getCenterPoint();
@@ -188,6 +196,14 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
         if (!data) return;
         createLink(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(data)}`,
             `${filename}-${new Date().getTime()}.svg`);
+    }
+    const previewCanvas = () => {
+        const dataURL = canvas?.toDataURL({
+            format: 'png',
+            quality: 1,
+            multiplier: 2,
+        });
+        return dataURL
     }
     //===== SETTERS ======
     const setWorkspaceColor = (color: string) => {
@@ -565,7 +581,15 @@ export default function canvasHelpers({ canvas, filename, setZoom }: CanvasHelpe
          * canvasHelpers.setZoomLevel(undefined, 'fit'); // Fit workspace to screen
          * canvasHelpers.setZoomLevel('+'); // Zoom in by 50%
          */
-        setZoomLevel
+        setZoomLevel,
+        /**
+         * @description a function that can be used to preview the canvas
+         * @example
+         * const {editor} = useEditor();
+         * const preview = editor?.previewCanvas();
+         * return <img src={preview} alt="preview" />
+         */
+        previewCanvas
     };
 
 }
