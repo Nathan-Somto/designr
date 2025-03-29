@@ -9,7 +9,7 @@
     "jsx": "preserve",
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     },
     "lib": ["ES2022", "dom", "dom.iterable"],
   }
