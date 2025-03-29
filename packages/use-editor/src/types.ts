@@ -17,7 +17,7 @@ type UseEditorProps = {
     workspaceColor?: string
     updateContextMenuPosition?: (position: { x: number, y: number }) => void
 }
-type CanvasAction = 'Select' | 'Text' | 'Image' | 'Rectangle' | 'Circle' | 'Triangle' | 'Diamond' | 'Drawing' | 'Star' | 'Line' | 'Undo' | 'Redo' | 'Clear' | "Translating" | "Rotating" | "Selection"
+type CanvasAction = 'SoftRect' | 'Select' | 'Text' | 'Image' | 'Rectangle' | 'Circle' | 'Triangle' | 'Diamond' | 'Drawing' | 'Star' | 'Line' | 'Undo' | 'Redo' | 'Clear' | "Translating" | "Rotating" | "Selection"
 type UseLoadCanvasStateProps = {
     canvas: fabric.Canvas | null
     state: string | null
@@ -28,6 +28,7 @@ type CanvasHelpersProps = {
     canvas: fabric.Canvas
     filename?: Readonly<string>
     setZoom?: (value: number) => void
+    updateAction: (value: CanvasAction) => void
 }
 type TextConfig = {
     fontSize: number;

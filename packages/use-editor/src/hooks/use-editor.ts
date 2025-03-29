@@ -9,7 +9,6 @@ import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 import { useLayers } from "./use-layers";
 import { useHistory } from "./use-history";
 import { useClipboard } from "./use-clipboard";
-import { CANVAS_BACKGROUND_COLOR, WORKSPACE_COLOR, WORKSPACE_NAME } from "../defaults";
 import { useCanvasInit } from "./use-canvas-init";
 /**
  * 
@@ -115,7 +114,8 @@ export default function useEditor(props: UseEditorProps | void = {
         if (!canvas) return null
         return canvasHelpers({
             canvas,
-            setZoom
+            setZoom,
+            updateAction: setCurrentAction
         })
 
     }, [
