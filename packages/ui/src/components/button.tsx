@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none   disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -19,12 +19,14 @@ const buttonVariants = cva(
           "bg-secondary text-primary shadow-md hover:shadow-secondary/50",
         ghost: "hover:bg-accent/90 hover:text-primary hover:shadow-sm",
         link: "text-primary underline-offset-4 hover:underline",
+        selection: 'hover:!bg-primary/10 !rounded-none hover:!text-primary !text-secondary-foreground data-[active=true]:!bg-primary/10 data-[active=true]:!text-primary',
       },
       size: {
         default: "h-[2.75rem] px-5 py-3 rounded-[0.5rem]",
         sm: "h-[2.25rem] rounded-md px-3 text-xs rounded-[0.25rem]",
         lg: "h-[3.25rem] rounded-md px-8 py-4 text-lg rounded-[0.75rem]",
         icon: "h-[2.5rem] w-[2.5rem] rounded-[0.5rem]",
+        shrink: 'h-[2.75rem] w-[2.5rem] rounded-[0.5rem] px-2 py-3',
       },
     },
     defaultVariants: {
