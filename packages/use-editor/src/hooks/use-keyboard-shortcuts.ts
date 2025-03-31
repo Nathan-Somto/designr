@@ -24,50 +24,64 @@ export function useKeyboardShortcuts({
     React.useEffect(() => {
         if (!canvas) return
         const handleKeyDown = (event: KeyboardEvent) => {
-            // stop if its from an input field or text area
-            event.preventDefault()
-            if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
-            const isCtrl = event.ctrlKey || event.metaKey
-            if (isCtrl && event.key === '+') {
-                zoomChange?.('+')
+            if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+
+            const isCtrl = event.ctrlKey || event.metaKey;
+
+            if (isCtrl && (event.key === '+' || event.key === '=')) {
+                zoomChange?.('+');
+                event.preventDefault();
             }
             if (isCtrl && event.key === '-') {
-                zoomChange?.('-')
+                zoomChange?.('-');
+                event.preventDefault();
             }
             if (isCtrl && event.key === "c") {
-                copy?.()
+                copy?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "v") {
-                paste?.()
+                paste?.();
+                event.preventDefault();
             }
             if (event.key === "Delete" || event.key === "Backspace") {
-                clearActiveObjects?.()
+                clearActiveObjects?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "z") {
-                undo?.()
+                undo?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "y") {
-                redo?.()
+                redo?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "g") {
-                groupActiveObjects?.()
+                groupActiveObjects?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "u") {
-                ungroupActiveObject?.()
+                ungroupActiveObject?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "d") {
-                duplicateActiveObject?.()
+                duplicateActiveObject?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "b") {
-                sendToBack?.()
+                sendToBack?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "f") {
-                bringToFront?.()
+                bringToFront?.();
+                event.preventDefault();
             }
             if (isCtrl && event.key === "a") {
-                selectAllObjects?.()
+                selectAllObjects?.();
+                event.preventDefault();
             }
-        }
+        };
+
         window.addEventListener("keydown", handleKeyDown)
         return () => {
             window.removeEventListener("keydown", handleKeyDown)
