@@ -1,7 +1,7 @@
 import React from "react";
 import * as fabric from "fabric";
 import { CanvasHelpersProps, TextConfig, ZoomDirection, ZoomValue } from '../types'
-import { FILL_COLOR, STROKE_COLOR } from '../defaults'
+import { FILL_COLOR, STROKE_COLOR, STROKE_WIDTH } from '../defaults'
 import { randomPosition } from './randomPosition';
 import { createLink } from './createLink';
 /**
@@ -166,6 +166,55 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         image.scaleToHeight(canvas.height * 0.5)
         insertElement(canvas, image)
 
+    }
+    const addGridToCanvas = ({
+        gridHorizontal = 12,
+        gridVertical = 12,
+        showGrid = true,
+    }) => {
+        if (!canvas) return;
+
+        // Remove existing grid if toggling off
+        if (!showGrid) {
+            canvas.getObjects('line').forEach((obj) => {
+                //@ts-ignore
+                if (obj.id === 'grid-line') {
+                    canvas.remove(obj);
+                }
+            });
+            canvas.renderAll();
+            return;
+        }
+
+        const canvasWidth = canvas.width || 1000;
+        const canvasHeight = canvas.height || 800;
+
+        // Create both the horizontal and vertical lines
+        for (let i = 0; i < canvasWidth / gridHorizontal; i++) {
+            const x = i * gridHorizontal;
+            const verticalLine = new fabric.Line([x, 0, x, canvasHeight], {
+                stroke: STROKE_COLOR,
+                strokeWidth: STROKE_WIDTH,
+                selectable: false,
+                evented: false,
+                id: 'grid-line',
+            });
+            canvas.add(verticalLine);
+        }
+
+        for (let j = 0; j < canvasHeight / gridVertical; j++) {
+            const y = j * gridVertical;
+            const horizontalLine = new fabric.Line([0, y, canvasWidth, y], {
+                stroke: STROKE_COLOR,
+                strokeWidth: STROKE_WIDTH,
+                selectable: false,
+                evented: false,
+                id: 'grid-line',
+            });
+            canvas.add(horizontalLine);
+        }
+
+        canvas.renderAll();
     }
     //====== GETTERS ======
     const getWorkspace = (canvas: fabric.Canvas) => {
@@ -589,7 +638,14 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * const preview = editor?.previewCanvas();
          * return <img src={preview} alt="preview" />
          */
-        previewCanvas
+        previewCanvas,
+        /**
+         * @description a function that can be used to add a grid to the canvas
+         * @example
+         * const {editor} = useEditor();
+         * editor?.addGridToCanvas({gridHorizontal: 12, gridVertical: 12, showGrid: true})
+         */
+        addGridToCanvas
     };
 
 }
