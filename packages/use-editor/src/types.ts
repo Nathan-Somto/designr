@@ -60,6 +60,22 @@ type FabricFilterType =
     | "resize"
     | "gamma"
     | "saturation";
+type Alignment = 'left' | 'right' | 'top' | 'bottom' | 'centerH' | 'centerV' | 'center' | 'none'
+type EditorGradientDirection =
+    | 'to right'
+    | 'to left'
+    | 'to top'
+    | 'to bottom'
+    | 'to top-right'
+    | 'to top-left'
+    | 'to bottom-right'
+    | 'to bottom-left';
+
+interface EditorGradient<k = 'linear'> {
+    type: k;
+    direction: EditorGradientDirection;
+    colors: { offset: number; color: string }[];
+}
 
 type SelectedObject = {
     object: FabricObject<Partial<FabricObjectProps>, SerializedObjectProps, ObjectEvents>;
@@ -67,15 +83,15 @@ type SelectedObject = {
     height?: number;
     diameter?: number;
     fontFamily?: string;
-    fontWeight?: string;
+    fontWeight?: string | number;
     fontSize?: number;
     fontStyle?: 'normal' | 'italic' | 'oblique';
-    textDecoration?: 'underline' | 'line-through' | 'none';
+    textDecoration?: 'underline' | 'line-through' | 'none' | 'strike-through';
     textAlign?: 'left' | 'center' | 'right' | 'justify';
     textTransform?: 'uppercase' | 'lowercase' | 'capitalize' | 'none';
     letterSpacing?: number;
     lineHeight?: number;
-    fill: string;
+    fill: string | EditorGradient;
     filter?: FabricFilterType;
     cornerSize: number;
     'shadow.color'?: string;
@@ -86,6 +102,13 @@ type SelectedObject = {
     x?: number;
     angle?: number;
     y?: number;
+    strokeColor?: string;
+    strokeWidth?: number;
+    align: Alignment;
+    skewX?: number;
+    skewY?: number;
+    scaleX?: number;
+    scaleY?: number;
 }
 type SelectedObjectProps = keyof SelectedObject
 type UseCanvasEventsProps = {
@@ -144,5 +167,8 @@ export type {
     Layers,
     UseHistoryProps,
     ZoomDirection,
-    ZoomValue
+    ZoomValue,
+    Alignment,
+    EditorGradient,
+    EditorGradientDirection
 }
