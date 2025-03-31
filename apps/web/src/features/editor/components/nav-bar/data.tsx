@@ -1,22 +1,26 @@
-import { BringToFrontIcon, ClipboardPaste, Copy, CopyPlusIcon, DownloadIcon, GlobeIcon, Group, ImageIcon, ImagePlusIcon, LockIcon, MousePointer2Icon, Redo2, SendToBackIcon, Trash, Undo2, Ungroup, ZoomIn, ZoomOut } from "lucide-react"
+import { AlertTriangleIcon, BringToFrontIcon, ClipboardPaste, Copy, CopyPlusIcon, DownloadIcon, FilePlus2Icon, GlobeIcon, Group, HomeIcon, ImageIcon, ImagePlusIcon, ImportIcon, LockIcon, MousePointer2Icon, Redo2, SendToBackIcon, Trash, Undo2, Ungroup, ZoomIn, ZoomOut } from "lucide-react"
 import { Access } from "../../types"
 
 export const actionMenuItems = [
     {
         label: 'Back to dashboard',
-        action: 'dashboard'
+        action: 'dashboard',
+        Icon: () => <HomeIcon />
     },
     {
         label: 'New file',
-        action: 'new'
+        action: 'new',
+        Icon: () => <FilePlus2Icon />
     },
     {
         label: 'Load template',
-        action: 'template'
+        action: 'template',
+        Icon: () => <ImportIcon />
     },
     {
         label: 'Report an issue',
-        action: 'issue'
+        action: 'issue',
+        Icon: () => <AlertTriangleIcon />
     }
 ] as const
 export const shapes = [
