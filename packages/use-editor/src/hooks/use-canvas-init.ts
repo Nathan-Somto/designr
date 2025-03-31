@@ -47,6 +47,7 @@ export function useCanvasInit({
                 blur: 2,
             }),
         });
+        canvasInstance.clipPath = workspaceRect;
         canvasInstance.centerObject(workspaceRect);
         canvasInstance.add(workspaceRect);
         canvasInstance.add(workspaceRect);
