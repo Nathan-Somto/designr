@@ -1,5 +1,6 @@
 'use client'
 import Navbar from "#/features/editor/components/nav-bar"
+import SettingsPanel from "#/features/editor/components/settings-panel"
 import { useEditor } from "@designr/use-editor"
 
 export default function EditorPage() {
@@ -18,6 +19,7 @@ export default function EditorPage() {
                         width: '100vw',
                     }} />
             </div>
+            <SettingsPanel />
         </div>
     )
 }
