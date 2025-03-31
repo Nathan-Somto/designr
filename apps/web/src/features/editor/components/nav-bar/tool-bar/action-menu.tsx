@@ -48,17 +48,20 @@ export default function ActionMenu() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                sideOffset={8}
+                sideOffset={10}
                 align='end'
+                alignOffset={10}
+                className='ml-8'
             >
-                {actionMenuItems.map((item, index) => (
-                    <React.Fragment key={item.action}>
+                {actionMenuItems.map(({ Icon, action, label }, index) => (
+                    <React.Fragment key={action}>
                         <Button
                             variant={'selection'}
                             className='w-full justify-start text-xs font-medium'
-                            onClick={() => handleAction(item.action)}
+                            onClick={() => handleAction(action)}
                         >
-                            {item.label}
+                            <Icon />
+                            {label}
                         </Button>
                         {index < actionMenuItems.length - 1 && <DropdownMenuSeparator />}
                     </React.Fragment>
