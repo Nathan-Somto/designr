@@ -1,7 +1,6 @@
 import React from "react";
 import * as fabric from "fabric";
-import { Alignment, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, SelectedObjectProps } from "../types";
-import { createFilter } from "../helpers/createFilter";
+import { Alignment, BorderStyle, EditorGradient, FabricFilterType, SelectedObject, SelectedObjectProps, UseSelectionProps } from "../types";
 //!Todo: handle multiple selections from select all
 /**
  * 
@@ -10,71 +9,16 @@ import { createFilter } from "../helpers/createFilter";
  * @example const {selectedObjects, onObjectsSelection, updateObjectProperty, onObjectsDeselection} = useSelection(canvas)
  * @returns 
  */
-export function useSelection(canvas: fabric.Canvas | null) {
+export function useSelection({ canvas,
+    getAlignment,
+    formatLinearGradient,
+    applyLinearGradient,
+    updateImageFilter,
+    alignObject,
+    getBorderStyleFromDashArray,
+    setBorderStyle
+}: UseSelectionProps) {
     const [selectedObjects, setSelectedObjects] = React.useState<SelectedObject[] | null>(null);
-    const getAlignment = React.useCallback((object: fabric.Object, canvas: fabric.Canvas) => {
-        if (!object || !canvas) return 'none';
-
-        const { left, top, width, height, scaleX, scaleY } = object;
-        const objWidth = width * scaleX;
-        const objHeight = height * scaleY;
-
-        if (left === 0) return 'left';
-        if (left === canvas.width - objWidth) return 'right';
-        if (top === 0) return 'top';
-        if (top === canvas.height - objHeight) return 'bottom';
-        if (left === (canvas.width - objWidth) / 2 && top === (canvas.height - objHeight) / 2) return 'center';
-        if (left === (canvas.width - objWidth) / 2) return 'centerH';
-        if (top === (canvas.height - objHeight) / 2) return 'centerV';
-
-        return 'none';
-    }, [])
-    const formatLinearGradient = React.useCallback((fill: fabric.Gradient<'linear'>): EditorGradient => {
-        const gradient = fill;
-        const { x1, y1, x2, y2 } = gradient.coords;
-
-        // Determine direction based on gradient coordinates
-        let direction: EditorGradientDirection = 'to right';
-        if (x1 === 0 && x2 === 0 && y1 === 0 && y2 === 1) direction = 'to bottom';
-        else if (x1 === 0 && x2 === 1 && y1 === 0 && y2 === 0) direction = 'to right';
-        else if (x1 === 1 && x2 === 0 && y1 === 0 && y2 === 0) direction = 'to left';
-        else if (x1 === 0 && x2 === 0 && y1 === 1 && y2 === 0) direction = 'to top';
-        else if (x1 === 0 && x2 === 1 && y1 === 0 && y2 === 1) direction = 'to bottom-right';
-        else if (x1 === 1 && x2 === 0 && y1 === 0 && y2 === 1) direction = 'to bottom-left';
-        else if (x1 === 0 && x2 === 1 && y1 === 1 && y2 === 0) direction = 'to top-right';
-        else if (x1 === 1 && x2 === 0 && y1 === 1 && y2 === 0) direction = 'to top-left';
-
-        // Extract color stops
-        const colors = gradient.colorStops.map(stop => ({
-            offset: stop.offset,
-            color: stop.color
-        }));
-
-        return {
-            type: 'linear',
-            direction,
-            colors
-        };
-    }, [])
-    const applyLinearGradient = React.useCallback((fill: EditorGradient): fabric.Gradient<'linear'> => {
-        const { direction, colors } = fill;
-        const coordsMap: Record<EditorGradientDirection, fabric.GradientCoords<'linear'>> = {
-            'to right': { x1: 0, y1: 0, x2: 1, y2: 0 },
-            'to left': { x1: 1, y1: 0, x2: 0, y2: 0 },
-            'to top': { x1: 0, y1: 1, x2: 0, y2: 0 },
-            'to bottom': { x1: 0, y1: 0, x2: 0, y2: 1 },
-            'to top-right': { x1: 0, y1: 1, x2: 1, y2: 0 },
-            'to top-left': { x1: 1, y1: 1, x2: 0, y2: 0 },
-            'to bottom-right': { x1: 0, y1: 0, x2: 1, y2: 1 },
-            'to bottom-left': { x1: 1, y1: 0, x2: 0, y2: 1 }
-        };
-        return new fabric.Gradient({
-            type: 'linear',
-            gradientUnits: 'percentage',
-            coords: coordsMap[direction],
-            colorStops: colors.map(({ offset, color }) => ({ offset, color }))
-        });
-    }, [])
     const onObjectsSelection = React.useCallback((targets: fabric.Object[]) => {
         if (!targets || targets.length === 0) return;
 
@@ -97,13 +41,15 @@ export function useSelection(canvas: fabric.Canvas | null) {
                 skewY: target.skewY,
                 scaleX: target.scaleX,
                 scaleY: target.scaleY,
-                align: getAlignment(target, canvas as fabric.Canvas),
+                align: getAlignment?.(target, canvas as fabric.Canvas) ?? 'none',
+                borderStyle: getBorderStyleFromDashArray?.(target.strokeDashArray) ?? 'solid',
             };
+
             if (typeof target.fill === 'string') {
                 selection.fill = target.fill;
             }
             else if (target.fill instanceof fabric.Gradient && target.fill.type === 'linear') {
-                selection.fill = formatLinearGradient(target.fill);
+                selection.fill = formatLinearGradient?.(target.fill) ?? selection.fill;
             }
             if (!(target instanceof fabric.Circle)) {
                 selection.width = target.width * target.scaleX;
@@ -111,7 +57,6 @@ export function useSelection(canvas: fabric.Canvas | null) {
             } else if (target instanceof fabric.Circle) {
                 selection.diameter = Math.round(target.radius * 2 * target.scaleX);
             }
-
             if (target instanceof fabric.FabricImage) {
                 //@ts-expect-error: the filter prop exists but the types are not included
                 selection.filter = target.filters[0]?.type;
@@ -143,63 +88,8 @@ export function useSelection(canvas: fabric.Canvas | null) {
 
         setSelectedObjects(newSelections);
     }, []);
-    /**
-     * @description helps to update an image object filter
-     * @description 
-     * @param value the filter to apply to the image
-     * @example updateImageFilter('grayscale')
-     * @private
-    */
-    const updateImageFilter = React.useCallback((value: FabricFilterType) => {
-        if (!selectedObjects) return;
-        const filterEffect = createFilter(value);
-        const imageObject = selectedObjects.find(
-            (selectedObject) => selectedObject.object.type === 'image'
-        )?.object as fabric.Image;
-        if (!imageObject) return;
-        imageObject.filters = filterEffect ? [filterEffect] : [];
-        imageObject.applyFilters();
-    }, [
-        selectedObjects,
-        canvas
-    ]);
-    const alignObject = (
-        object: fabric.Object,
-        alignment: Alignment,
-        canvas: fabric.Canvas) => {
-        if (!object || !canvas) return;
 
-        switch (alignment) {
-            case 'left':
-                object.set({ left: 0 });
-                break;
-            case 'right':
-                object.set({ left: canvas.width - object.width * object.scaleX });
-                break;
-            case 'top':
-                object.set({ top: 0 });
-                break;
-            case 'bottom':
-                object.set({ top: canvas.height - object.height * object.scaleY });
-                break;
-            case 'centerH':
-                object.set({ left: (canvas.width - object.width * object.scaleX) / 2 });
-                break;
-            case 'centerV':
-                object.set({ top: (canvas.height - object.height * object.scaleY) / 2 });
-                break;
-            case 'center':
-                object.set({
-                    left: (canvas.width - object.width * object.scaleX) / 2,
-                    top: (canvas.height - object.height * object.scaleY) / 2,
-                });
-                break;
-        }
-
-        object.setCoords();
-    }
-
-    const updateObjectProperty = React.useCallback(<K extends SelectedObjectProps>(property: K, value: SelectedObject[K]) => {
+    const updateSelectedObjectProperty = React.useCallback(<K extends SelectedObjectProps>(property: K, value: SelectedObject[K]) => {
         if (!selectedObjects || !canvas) return;
 
         selectedObjects.forEach((selectedObject) => {
@@ -209,9 +99,12 @@ export function useSelection(canvas: fabric.Canvas | null) {
             } else if (property === 'y') {
                 object.setY(value as number);
             } else if (property === 'filter') {
-                updateImageFilter(value as FabricFilterType);
+                updateImageFilter?.(selectedObject, value as FabricFilterType);
             } else if (property === 'align') {
-                alignObject(object, value as Alignment, canvas);
+                alignObject?.(object, value as Alignment);
+            }
+            else if (property === 'borderStyle') {
+                setBorderStyle?.(object, selectedObject, value as Exclude<BorderStyle, "custom">);
             }
             else if (
                 property === 'fill'
@@ -219,7 +112,7 @@ export function useSelection(canvas: fabric.Canvas | null) {
                 object.fill instanceof fabric.Gradient
                 && object.fill.type === 'linear'
             ) {
-                object.set('fill', applyLinearGradient(value as EditorGradient));
+                object.set('fill', applyLinearGradient?.(value as EditorGradient));
             }
             else if (property.startsWith('shadow.')) {
                 const shadow = new fabric.Shadow({
@@ -272,9 +165,9 @@ export function useSelection(canvas: fabric.Canvas | null) {
      * @description helps to update the selected object properties
      * @param property the property to update
      * @param value the value to update the property with
-     * @example updateObjectProperty('x', 100)
+     * @example updateSelectedObjectProperty('x', 100)
         */
-        updateObjectProperty,
+        updateSelectedObjectProperty,
         onObjectsDeselection
     };
 }

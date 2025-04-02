@@ -78,12 +78,6 @@ export default function useEditor(props: UseEditorProps | void = {
         onSaveCallback
     })
     const {
-        selectedObjects,
-        onObjectsSelection,
-        onObjectsDeselection,
-        updateObjectProperty
-    } = useSelection(canvas);
-    const {
         layers,
         selectedLayer,
         onSelectLayer,
@@ -95,6 +89,34 @@ export default function useEditor(props: UseEditorProps | void = {
     } = useLayers({
         canvas
     })
+
+
+    const editor = React.useMemo(() => {
+        if (!canvas) return null
+        return canvasHelpers({
+            canvas,
+            setZoom,
+            updateAction: setCurrentAction
+        })
+
+    }, [
+        canvas
+    ])
+    const {
+        selectedObjects,
+        onObjectsSelection,
+        onObjectsDeselection,
+        updateSelectedObjectProperty
+    } = useSelection({
+        canvas,
+        alignObject: editor?.alignObject,
+        applyLinearGradient: editor?.applyLinearGradient,
+        formatLinearGradient: editor?.formatLinearGradient,
+        getAlignment: editor?.getAlignment,
+        updateImageFilter: editor?.updateImageFilter,
+        setBorderStyle: editor?.setBorderStyle,
+        getBorderStyleFromDashArray: editor?.getBorderStyleFromDashArray
+    });
     useCanvasEvents({
         canvas,
         onObjectModified: onLayersUpdate,
@@ -109,18 +131,6 @@ export default function useEditor(props: UseEditorProps | void = {
         updateAction: setCurrentAction,
         onSave: save
     })
-
-    const editor = React.useMemo(() => {
-        if (!canvas) return null
-        return canvasHelpers({
-            canvas,
-            setZoom,
-            updateAction: setCurrentAction
-        })
-
-    }, [
-        canvas
-    ])
     useLoadCanvasState({
         canvas,
         state: state.current,
@@ -153,7 +163,7 @@ export default function useEditor(props: UseEditorProps | void = {
             selectedObjects,
             selectedLayer,
             layers,
-            updateObjectProperty,
+            updateSelectedObjectProperty,
             selectLayerInCanvas,
             moveLayer,
             toggleLayerLock,
