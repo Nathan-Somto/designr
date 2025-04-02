@@ -11,14 +11,20 @@ interface ButtonSelect<K extends keyof SelectedObject> {
     options: {
         Icon: () => JSX.Element;
         action: string;
-        config: Record<K, SelectedObject[K]>;
+        config: {
+            property: K;
+            value: SelectedObject[K];
+        };
     }[];
 }
 interface InputSelect<K extends keyof SelectedObject> {
     action: string;
     type: EditorInputValue;
     Icon: () => JSX.Element;
-    config: Partial<Record<K, SelectedObject[K]>>;
+    config: Partial<{
+        property: K;
+        value: SelectedObject[K];
+    }>;
 }
 
 interface SettingsSection<K extends keyof SelectedObject> {
@@ -29,7 +35,10 @@ interface OptionsSelect<K extends keyof SelectedObject> {
     action: string;
     type: string;
     Icon: () => JSX.Element;
-    config: Record<K, SelectedObject[K]>;
+    config: {
+        property: K;
+        value: SelectedObject[K];
+    };
     options: ((SelectedObject[K])[]) | ({ label: string, value: SelectedObject[K] })[];
 }
 //===End====//
