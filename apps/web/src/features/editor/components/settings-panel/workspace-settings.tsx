@@ -22,9 +22,9 @@ export default function WorkspaceSettings() {
                                 key={index}
                                 {...input}
                                 type={type}
-                                config={input.config}
                                 //@ts-ignore
-                                value={input.config[Object.keys(input.config)[0]]}
+                                config={input.config}
+                                value={input.config.value}
                             />
                         )
                     })
@@ -46,11 +46,9 @@ export default function WorkspaceSettings() {
             <EditorColorInput
                 action='Background Color'
                 value={color}
-                config={{
-                    fill: '#000000'
-                }}
+                property='background'
                 supportsGradient
-                onChange={(newColor) => {
+                onChange={(_, newColor) => {
                     setColor(newColor)
                 }}
             />
@@ -67,7 +65,7 @@ export default function WorkspaceSettings() {
                     Icon={() => <GridIcon size={18} />}
                     options={['On', 'Off']}
                     value={'Off'}
-                    config={{ grid: false }}
+                    config={{ property: 'grid', value: 'Off' }}
                     className='col-span-2 mb-2'
                 />
                 {
@@ -78,9 +76,9 @@ export default function WorkspaceSettings() {
                                 key={index}
                                 {...input}
                                 type={type}
-                                config={input.config}
                                 //@ts-ignore
-                                value={input.config[Object.keys(input.config)[0]]}
+                                config={input.config}
+                                value={input.config.value}
                             />
                         )
                     })
