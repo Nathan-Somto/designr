@@ -1,24 +1,26 @@
-import React from "react";
 import * as fabric from "fabric";
-import { CanvasHelpersProps, TextConfig, ZoomDirection, ZoomValue } from '../types'
-import { FILL_COLOR, STROKE_COLOR, STROKE_WIDTH } from '../defaults'
+import { Alignment, BorderStyle, CanvasHelpersProps, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue } from '../types'
+import { FILL_COLOR, STROKE_COLOR, STROKE_WIDTH, WORKSPACE_NAME } from '../defaults'
 import { randomPosition } from './randomPosition';
 import { createLink } from './createLink';
+import { createFilter } from "./createFilter";
 /**
  * @description this is a huge file that contains all the helper functions that interact with the canvas i.e adding shapes,text, images, changing properties of an object, getting the state of current selection
  */
 export default function canvasHelpers({ canvas, filename, setZoom, updateAction }: CanvasHelpersProps) {
     //====== INSERTERS ======
     const insertElement = (canvas: fabric.Canvas, element: fabric.Object) => {
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return
         const { top, left } = randomPosition({
-            height: canvas.height,
-            width: canvas.width
+            height: workspace.height,
+            width: workspace.width
         });
-        element.set({
-            top,
-            left,
-        })
         //!might need to ensure that the element is placed within the workspace and not container
+        element.set({
+            top: top + workspace.top,
+            left: left + workspace.left,
+        })
         canvas.add(element)
         canvas.setActiveObject(element)
     }
@@ -217,13 +219,84 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         canvas.renderAll();
     }
     //====== GETTERS ======
-    const getWorkspace = (canvas: fabric.Canvas) => {
+    function getWorkspace(canvas: fabric.Canvas) {
         //@ts-ignore
-        return canvas.getObjects().find(obj => obj.name === 'workspace')
+        return canvas.getObjects().find(obj => obj.name === WORKSPACE_NAME)
     };
     const getObjectsApartFromWorkspace = (canvas: fabric.Canvas) => {
         //@ts-ignore
         return canvas.getObjects().filter(obj => obj.name !== 'workspace')
+    }
+    const getAlignment = (object: fabric.Object) => {
+        if (!object || !canvas) return 'none';
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return 'none';
+        const { left, top, width, height, scaleX, scaleY } = object;
+        const objWidth = width * scaleX;
+        const objHeight = height * scaleY;
+
+        if (left === 0) return 'left';
+        if (left === workspace.width - objWidth) return 'right';
+        if (top === 0) return 'top';
+        if (top === workspace.height - objHeight) return 'bottom';
+        if (left === (workspace.width - objWidth) / 2 && top === (workspace.height - objHeight) / 2) return 'center';
+        if (left === (workspace.width - objWidth) / 2) return 'centerH';
+        if (top === (workspace.height - objHeight) / 2) return 'centerV';
+
+        return 'none';
+    }
+    const formatLinearGradient = (fill: fabric.Gradient<'linear'>): EditorGradient => {
+        const gradient = fill;
+        const { x1, y1, x2, y2 } = gradient.coords;
+
+        // Determine direction based on gradient coordinates
+        let direction: EditorGradientDirection = 'to right';
+        if (x1 === 0 && x2 === 0 && y1 === 0 && y2 === 1) direction = 'to bottom';
+        else if (x1 === 0 && x2 === 1 && y1 === 0 && y2 === 0) direction = 'to right';
+        else if (x1 === 1 && x2 === 0 && y1 === 0 && y2 === 0) direction = 'to left';
+        else if (x1 === 0 && x2 === 0 && y1 === 1 && y2 === 0) direction = 'to top';
+        else if (x1 === 0 && x2 === 1 && y1 === 0 && y2 === 1) direction = 'to bottom-right';
+        else if (x1 === 1 && x2 === 0 && y1 === 0 && y2 === 1) direction = 'to bottom-left';
+        else if (x1 === 0 && x2 === 1 && y1 === 1 && y2 === 0) direction = 'to top-right';
+        else if (x1 === 1 && x2 === 0 && y1 === 1 && y2 === 0) direction = 'to top-left';
+
+        // Extract color stops
+        const colors = gradient.colorStops.map(stop => ({
+            offset: stop.offset,
+            color: stop.color
+        }));
+
+        return {
+            type: 'linear',
+            direction,
+            colors
+        };
+    }
+    const getBorderStyleFromDashArray = (strokeDashArray: number[] | null | undefined): BorderStyle => {
+        const dashArrayMap: Record<string, Exclude<BorderStyle, 'custom'>> = {
+            "[]": "solid",
+            "[10,5]": "dashed",
+            "[2,5]": "dotted",
+            "[10,5,2,5]": "double",
+            "[10,2,2,10]": "groove",
+        };
+        return dashArrayMap[JSON.stringify(strokeDashArray) as keyof typeof dashArrayMap] ?? "custom";
+    }
+    const isType = (object: fabric.Object, type: 'circle' | 'rectangle' | 'triangle' | 'image' | 'text') => {
+        switch (type) {
+            case 'circle':
+                return object instanceof fabric.Circle;
+            case 'rectangle':
+                return object instanceof fabric.Rect;
+            case 'triangle':
+                return object instanceof fabric.Triangle;
+            case 'image':
+                return object instanceof fabric.FabricImage;
+            case 'text':
+                return object instanceof fabric.Textbox;
+            default:
+                return false;
+        }
     }
     //====== EXPORTERS ======
     const exportAsPNG = () => {
@@ -293,13 +366,16 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
                 case 'fit':
                     const canvasWidth = canvas.getWidth();
                     const canvasHeight = canvas.getHeight();
-                    const scaleX = canvasWidth / workspace.width!;
-                    const scaleY = canvasHeight / workspace.height!;
-                    zoom = Math.min(scaleX, scaleY); // Fit workspace into view
+                    zoom = fabric.util.findScaleToFit({
+                        width: workspace.width,
+                        height: workspace.height
+                    }, {
+                        width: canvasWidth,
+                        height: canvasHeight
+                    }) * 0.7
                     break;
             }
         }
-
         // Ensure zoom stays within limits
         zoom = Math.max(0.1, Math.min(5, zoom));
 
@@ -414,6 +490,92 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             canvas,
         }))
         canvas.requestRenderAll()
+    }
+    const applyLinearGradient = (fill: EditorGradient): fabric.Gradient<'linear'> => {
+        const { direction, colors } = fill;
+        const coordsMap: Record<EditorGradientDirection, fabric.GradientCoords<'linear'>> = {
+            'to right': { x1: 0, y1: 0, x2: 1, y2: 0 },
+            'to left': { x1: 1, y1: 0, x2: 0, y2: 0 },
+            'to top': { x1: 0, y1: 1, x2: 0, y2: 0 },
+            'to bottom': { x1: 0, y1: 0, x2: 0, y2: 1 },
+            'to top-right': { x1: 0, y1: 1, x2: 1, y2: 0 },
+            'to top-left': { x1: 1, y1: 1, x2: 0, y2: 0 },
+            'to bottom-right': { x1: 0, y1: 0, x2: 1, y2: 1 },
+            'to bottom-left': { x1: 1, y1: 0, x2: 0, y2: 1 }
+        };
+        return new fabric.Gradient({
+            type: 'linear',
+            gradientUnits: 'percentage',
+            coords: coordsMap[direction],
+            colorStops: colors.map(({ offset, color }) => ({ offset, color }))
+        });
+    }
+    const updateImageFilter = (selectedObject: SelectedObject, value: FabricFilterType) => {
+        // Todo: add support for multiple filters
+        if (!selectedObject) return;
+        const filterEffect = createFilter(value);
+        const imageObject = selectedObject.object instanceof fabric.FabricImage
+            ? selectedObject.object : null;
+        if (!imageObject) return;
+        imageObject.filters = filterEffect ? [filterEffect] : [];
+        imageObject.applyFilters();
+    }
+    const alignObject = (
+        object: fabric.Object,
+        alignment: Alignment,
+    ) => {
+        if (!object || !canvas) return;
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return;
+        switch (alignment) {
+            case 'left':
+                object.set({ left: 0 });
+                break;
+            case 'right':
+                object.set({ left: workspace.width - object.width * object.scaleX });
+                break;
+            case 'top':
+                object.set({ top: 0 });
+                break;
+            case 'bottom':
+                object.set({ top: workspace.height - object.height * object.scaleY });
+                break;
+            case 'centerH':
+                object.set({ left: (workspace.width - object.width * object.scaleX) / 2 });
+                break;
+            case 'centerV':
+                object.set({ top: (workspace.height - object.height * object.scaleY) / 2 });
+                break;
+            case 'center':
+                object.set({
+                    left: (workspace.width - object.width * object.scaleX) / 2,
+                    top: (workspace.height - object.height * object.scaleY) / 2,
+                });
+                break;
+            case 'none':
+                const { top, left } = randomPosition({
+                    height: workspace.height,
+                    width: workspace.width,
+                })
+                object.set({ top, left });
+                break;
+            default:
+                break;
+        }
+
+        object.setCoords();
+    }
+    const setBorderStyle = (object: fabric.Object, selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, 'custom'>) => {
+        const borderStyleMap: Record<Exclude<BorderStyle, 'custom'>, number[]> = {
+            solid: [],
+            dashed: [10, 5],
+            dotted: [2, 5],
+            double: [10, 5, 2, 5],
+            groove: [10, 2, 2, 10],
+        };
+
+        selectedObject.borderStyle = newStyle;
+        object.strokeDashArray = borderStyleMap[newStyle] ?? [];
     }
     return {
         /**
@@ -627,8 +789,8 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * @param {'+' | '-' | undefined} direction - Zoom direction (increase, decrease, or undefined).
          * @param {'50%' | '100%' | '200%' | 'fit'} value - Zoom level.
          * @example
-         * canvasHelpers.setZoomLevel(undefined, 'fit'); // Fit workspace to screen
-         * canvasHelpers.setZoomLevel('+'); // Zoom in by 50%
+         * editor?.setZoomLevel(undefined, 'fit'); // Fit workspace to screen
+         * editor?.setZoomLevel('+'); // Zoom in by 50%
          */
         setZoomLevel,
         /**
@@ -645,7 +807,82 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * const {editor} = useEditor();
          * editor?.addGridToCanvas({gridHorizontal: 12, gridVertical: 12, showGrid: true})
          */
-        addGridToCanvas
+        addGridToCanvas,
+        /**
+         * @description a function that can be used to get the alignment of an object
+         * @example
+         * const {editor} = useEditor();
+         * const alignment = editor?.getAlignment(object) // returns 'left' | 'right' | 'top' | 'bottom' | 'center' | 'centerH' | 'centerV' | 'none'
+         */
+        getAlignment,
+        /**
+         * @description a function that can be used to format a fabric js linear gradient to a simplified format for easy css conversion
+         * @example 
+         * const {editor} = useEditor();
+         * const fill = editor?.formatLinearGradient(new fabric.Gradient({
+         *      type: 'linear',
+         *      coords: { x1: 0, y1: 0, x2: 1, y2: 0 },
+         *      colorStops: 
+         *             [
+         *               { offset: 0, color: 'red' },
+         *                { offset: 1, color: 'blue' },
+         *             ],
+         * }));
+         */
+        formatLinearGradient,
+        /**
+         * @description a function that can be used to apply a linear gradient to an object
+         * @example
+         * const {editor} = useEditor();
+         * const fill = editor?.applyLinearGradient({
+         *     type: 'linear',
+         *     direction: 'to right',
+         *     colors:  
+         *          [
+         *          { offset: 0, color: 'red' },
+         *          { offset: 1, color: 'blue' },
+         *        ],
+         * });
+         */
+        applyLinearGradient,
+        /**
+         * @description a function that can be used to update the image filter of a selected object
+         * @example
+         * const {editor} = useEditor();
+         * editor?.updateImageFilter(selectedObjects, 'grayscale');
+         * @private used internally in the useSelection hook
+         */
+        updateImageFilter,
+        /**
+         * @description a function that can be used to align an object to a specified alignment
+         * @example
+         * const {editor} = useEditor();
+         * editor?.alignObject(object, 'left');
+         * @private used internally in the useSelection hook
+         */
+        alignObject,
+        /**  
+         * @description a function that can be used to set the border style of an object
+         * @example
+         * const {editor} = useEditor();
+         * editor?.setBorderStyle(object, selectedObject, 'dashed');
+         * @private used internally in the useSelection hook
+        */
+        setBorderStyle,
+        /**
+         * @description a function that can be used to get the border style of an object
+         * @example
+         * const {editor} = useEditor();
+         * const borderStyle = editor?.getBorderStyleFromDashArray([10, 5]); // returns 'dashed'
+         * @private used internally in the useSelection hook
+         */
+        getBorderStyleFromDashArray,
+        /**
+         * @description a function that can be used to check if an object is of a certain type
+         * @example
+         * const {editor} = useEditor();
+         * const isCircle = editor?.isType(object, 'circle'); // returns true or false
+         */
+        isType,
     };
-
 }
