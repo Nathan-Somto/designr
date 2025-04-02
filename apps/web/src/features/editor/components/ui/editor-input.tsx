@@ -1,31 +1,31 @@
 import React from 'react';
-import { EditorInputValue, ObjectLike } from '../../types';
+import { EditorInputValue } from '../../types';
 import Hint from '@designr/ui/components/hint';
+import { cn } from '@designr/ui/lib/utils';
 
-interface EditorInputProps<O extends ObjectLike> {
+interface EditorInputProps {
     action: string;
     type: Omit<EditorInputValue, 'color'>;
     Icon: () => JSX.Element;
-    config: O;
+    property: string;
     value?: string | number // Current value
     // eslint-disable-next-line no-unused-vars
     onChange?: (key: string, value: string | number) => void;
+    className?: string
 }
 
-export function EditorInput<O extends ObjectLike>({
+export function EditorInput({
     Icon,
     action,
-    config,
+    property,
     onChange,
     value,
-    type
-}: EditorInputProps<O>) {
-    const configKey = React.useRef<string | null>(null);
-    React.useEffect(() => {
-        configKey.current = Object.keys(config)[0];
-    }, [config]);
+    type,
+    className
+}: EditorInputProps) {
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!configKey.current) return;
+        if (!property) return;
         let newValue: any = e.target.value;
 
         // Convert value based on type
@@ -37,7 +37,7 @@ export function EditorInput<O extends ObjectLike>({
             if (isNaN(newValue)) newValue = 0.0;
         }
 
-        onChange?.(configKey.current, newValue);
+        onChange?.(property, newValue);
     };
 
     return (
@@ -45,8 +45,8 @@ export function EditorInput<O extends ObjectLike>({
             label={action}
             className='z-[200000]'
         >
-            <div className="flex bg-transparent text-muted-foreground focus-within:text-primary/70 focus-visible:text-primary/70  items-center border-transparent border hover:border-muted-foreground rounded-md px-2 py-1 focus-within:bg-primary/30 focus-within:border-primary focus-visible:border-primary transition">
-                <span className="mr-2">
+            <div className={cn("flex bg-transparent text-muted-foreground focus-within:text-primary/70 focus-visible:text-primary/70  items-center border-transparent border hover:border-muted-foreground rounded-md px-2 py-1 focus-within:bg-primary/30 focus-within:border-primary focus-visible:border-primary transition", className)}>
+                <span className="mr-2 [&>~]:!size-[18px]">
                     <Icon />
                 </span>
                 <input

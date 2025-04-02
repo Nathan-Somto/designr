@@ -1,19 +1,21 @@
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@designr/ui/components/select'
 import React from 'react'
-import { ObjectLike } from '../../types'
 import Hint from '@designr/ui/components/hint'
 import { cn } from '@designr/ui/lib/utils'
-interface EditorSelectProps<O extends ObjectLike> {
+interface EditorSelectProps {
     value?: string | number
     // eslint-disable-next-line no-unused-vars
     onChange?: (key: string, value: string | number) => void;
     options: (string[]) | ({ label: string, value: number | string, Icon?: () => JSX.Element })[];
-    Icon: () => JSX.Element;
+    Icon?: () => JSX.Element;
     action: string;
-    config: O;
+    config: {
+        property: string;
+        value?: string | number;
+    };
     className?: string;
 }
-export default function EditorSelect<O extends ObjectLike>({
+export default function EditorSelect({
     Icon,
     action,
     config,
@@ -21,24 +23,16 @@ export default function EditorSelect<O extends ObjectLike>({
     value,
     onChange,
     className
-}: EditorSelectProps<O>) {
-    const configKey = React.useRef<string | null>(null);
-    const configValueType = React.useRef<string | null>(null);
+}: EditorSelectProps) {
     const [selectedValue, setSelectedValue] = React.useState<string | number | undefined>(action);
-    React.useEffect(() => {
-        configKey.current = Object.keys(config)[0];
-        if (configKey.current && typeof configKey.current === 'string') {
-            //@ts-ignore
-            configValueType.current = typeof config[configKey.current as string];
-        }
-    }, [config]);
+
     const handleSelectChange = (value: string) => {
-        if (!configKey.current) return;
+        const configValueType = typeof config.value;
         let newValue: string | number = value;
-        if (configValueType.current === 'number') {
+        if (configValueType === 'number') {
             newValue = +value;
         }
-        onChange?.(configKey.current, newValue);
+        onChange?.(config.property, newValue);
         setSelectedValue(value);
     };
     return (
@@ -47,14 +41,14 @@ export default function EditorSelect<O extends ObjectLike>({
             value={value as string}
         >
             <SelectTrigger
-                className={cn("focus-visible:ring-transparent", className)}
+                className={cn("focus-visible:ring-transparent  !shadow-none flex bg-transparent text-muted-foreground focus-within:text-primary/70 focus-visible:text-primary/70   focus-within:bg-primary/30 focus-within:border-primary focus-visible:border-primary  items-center border-transparent border hover:border-muted-foreground rounded-md px-2 py-1 transition", className)}
             >
                 <Hint
                     label={action}
                     className='z-[200000]'
                 >
-                    <div className="flex text-muted-foreground text-xs items-center gap-2">
-                        {<Icon />}
+                    <div className="flex text-muted-foreground font-normal text-[11px] items-center gap-2">
+                        {Icon && <Icon />}
                         {selectedValue}
                     </div>
                 </Hint>
