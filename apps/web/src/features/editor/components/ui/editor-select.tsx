@@ -49,7 +49,7 @@ export default function EditorSelect({
                 >
                     <div className="flex text-muted-foreground font-normal text-[11px] items-center gap-2">
                         {Icon && <Icon />}
-                        {selectedValue}
+                        {value ?? selectedValue}
                     </div>
                 </Hint>
             </SelectTrigger>

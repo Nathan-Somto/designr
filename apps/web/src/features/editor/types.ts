@@ -43,6 +43,9 @@ interface OptionsSelect<K extends keyof SelectedObject> {
 }
 //===End====//
 export type ObjectLike = Omit<object, 'symbol'>;
+interface BaseEditorCompProps {
+    editor: Editor
+}
 export {
     type BaseEditorProps,
     type Access,
@@ -50,5 +53,6 @@ export {
     type InputSelect,
     type SettingsSection,
     type OptionsSelect,
-    type EditorInputValue
+    type EditorInputValue,
+    type BaseEditorCompProps
 }

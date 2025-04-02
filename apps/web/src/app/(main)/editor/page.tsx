@@ -1,4 +1,5 @@
 'use client'
+import BottomToolbar from "#/features/editor/components/bottom-toolbar"
 import Navbar from "#/features/editor/components/nav-bar"
 import SettingsPanel from "#/features/editor/components/settings-panel"
 import { useEditor } from "@designr/use-editor"
@@ -20,6 +21,9 @@ export default function EditorPage() {
                     }} />
             </div>
             <SettingsPanel />
+            <BottomToolbar
+                editor={editor}
+            />
         </div>
     )
 }
