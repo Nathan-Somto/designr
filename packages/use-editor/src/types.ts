@@ -76,7 +76,7 @@ interface EditorGradient<k = 'linear'> {
     direction: EditorGradientDirection;
     colors: { offset: number; color: string }[];
 }
-
+type BorderStyle = 'solid' | 'dashed' | 'groove' | 'double' | 'custom' | 'dotted'
 type SelectedObject = {
     object: FabricObject<Partial<FabricObjectProps>, SerializedObjectProps, ObjectEvents>;
     width?: number;
@@ -109,8 +109,19 @@ type SelectedObject = {
     skewY?: number;
     scaleX?: number;
     scaleY?: number;
+    borderStyle?: BorderStyle
 }
 type SelectedObjectProps = keyof SelectedObject
+type UseSelectionProps = {
+    canvas: fabric.Canvas | null;
+    getAlignment?: (object: fabric.Object, canvas: fabric.Canvas) => Alignment;
+    formatLinearGradient?: (fill: fabric.Gradient<'linear'>) => EditorGradient;
+    applyLinearGradient?: (fill: EditorGradient) => fabric.Gradient<'linear'>;
+    alignObject?: (object: fabric.Object, alignment: Alignment) => void;
+    updateImageFilter?: ((selectedObjects: SelectedObject, value: FabricFilterType) => void)
+    setBorderStyle?: (object: fabric.Object, selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, "custom">) => void
+    getBorderStyleFromDashArray?: (strokeDashArray: number[] | null | undefined) => BorderStyle
+}
 type UseCanvasEventsProps = {
     canvas: fabric.Canvas | null
     onObjectsSelection?: (target: (SelectedObject['object'])[], renderCanvas: boolean) => void
@@ -170,5 +181,7 @@ export type {
     ZoomValue,
     Alignment,
     EditorGradient,
-    EditorGradientDirection
+    EditorGradientDirection,
+    UseSelectionProps,
+    BorderStyle
 }
