@@ -11,15 +11,13 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
     //====== INSERTERS ======
     const insertElement = (canvas: fabric.Canvas, element: fabric.Object) => {
         const workspace = getWorkspace(canvas);
+        canvas.isDrawingMode = false;
         if (!workspace) return
-        const { top, left } = randomPosition({
-            height: workspace.height,
-            width: workspace.width
-        });
-        //!might need to ensure that the element is placed within the workspace and not container
+        //! switching to center point allows for easy identification
+        const points = workspace.getCenterPoint();
         element.set({
-            top: top + workspace.top,
-            left: left + workspace.left,
+            top: points.y,
+            left: points.x,
         })
         canvas.add(element)
         canvas.setActiveObject(element)
@@ -73,7 +71,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         insertElement(canvas, polygon)
         updateAction('Diamond')
     }
-    const addStar = (props: Omit<fabric.FabricObjectProps, 'points'>) => {
+    const addStar = (props: Omit<fabric.FabricObjectProps, 'points'> | void) => {
         function createStar({ cx, cy, outerRadius, innerRadius, numPoints = 5 }: {
             cx: number;
             cy: number;
@@ -136,7 +134,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
     const enableDrawingMode = (props: {
         strokeColor?: string;
         strokeWidth?: number
-    }) => {
+    } | void) => {
         canvas.discardActiveObject()
         canvas.isDrawingMode = true
         canvas.freeDrawingBrush = new fabric.PencilBrush(canvas)
@@ -647,14 +645,16 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         /**
          * Enables drawing mode on the canvas.
          * @example
-         * canvasHelpers.enableDrawingMode();
+         * const {editor} = useEditor();
+         * editor?.enableDrawingMode();
          */
         enableDrawingMode,
 
         /**
          * Clears all selected objects from the canvas.
          * @example
-         * canvasHelpers.clearActiveObjects();
+         * const {editor} = useEditor();
+         * editor?.clearActiveObjects();
          */
         clearActiveObjects,
 
@@ -706,7 +706,8 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * Retrieves the workspace object.
          * @returns {fabric.Object} The workspace object.
          * @example
-         * const workspace = canvasHelpers.getWorkspace();
+         * const {editor} = useEditor();
+         * const workspace = editor?.getWorkspace();
          */
         getWorkspace,
 
@@ -714,7 +715,8 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * Sets the workspace background color.
          * @param {string} color - The background color in hex or rgba format.
          * @example
-         * canvasHelpers.setWorkspaceColor("#ff0000");
+         * const {editor} = useEditor();
+         * editor?.setWorkspaceColor("#ff0000");
          */
         setWorkspaceColor,
 
@@ -723,64 +725,73 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * @param {number} width - The width of the workspace.
          * @param {number} height - The height of the workspace.
          * @example
-         * canvasHelpers.setWorkSpaceSize(800, 600);
+         * const {editor} = useEditor();
+         * editor?.setWorkSpaceSize(800, 600);
          */
         setWorkSpaceSize,
 
         /**
          * Sends the selected object to the back layer.
          * @example
-         * canvasHelpers.sendToBack();
+         * const {editor} = useEditor();
+         * editor?.sendToBack();
          */
         sendToBack,
 
         /**
          * Brings the selected object to the front layer.
          * @example
-         * canvasHelpers.bringToFront();
+         * const {editor} = useEditor();
+         * editor?.bringToFront();
          */
         bringToFront,
 
         /**
          * Disables drawing mode on the canvas.
          * @example
-         * canvasHelpers.disableDrawingMode();
+         * const {editor} = useEditor();
+         * editor?.disableDrawingMode();
          */
         disableDrawingMode,
 
         /**
          * Groups selected objects into a single group.
          * @example
-         * canvasHelpers.groupActiveObjects();
+         * const {editor} = useEditor();
+         * editor?.groupActiveObjects();
          */
         groupActiveObjects,
 
         /**
          * Ungroups a selected group back into separate objects.
          * @example
-         * canvasHelpers.ungroupActiveObjects();
+         * const {editor} = useEditor();
+         * editor?.ungroupActiveObjects();
          */
         ungroupActiveObjects,
 
         /**
          * Duplicates the currently selected objects.
          * @example
-         * canvasHelpers.duplicateActiveObjects();
+         * const {editor} = useEditor();
+         * editor?.duplicateActiveObjects();
          */
         duplicateActiveObjects,
 
         /**
          * Selects all objects on the canvas.
          * @example
-         * canvasHelpers.selectAllObjects();
+         * const {editor} = useEditor();
+         * editor?.selectAllObjects();
          */
         selectAllObjects,
 
         /**
          * Zooms the canvas in or out.
-         * @param {number} factor - The zoom factor (e.g., 1.2 for zoom in, 0.8 for zoom out).
+         * @param {ZoomDirection} direction - The zoom direction(either + or -).
          * @example
-         * canvasHelpers.zoomChange(1.2);
+         * const {editor} = useEditor();
+         * editor?.zoomChange('+');
          */
         zoomChange,
 
@@ -789,8 +800,13 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * @param {'+' | '-' | undefined} direction - Zoom direction (increase, decrease, or undefined).
          * @param {'50%' | '100%' | '200%' | 'fit'} value - Zoom level.
          * @example
-         * editor?.setZoomLevel(undefined, 'fit'); // Fit workspace to screen
-         * editor?.setZoomLevel('+'); // Zoom in by 50%
+         * const {editor} = useEditor();
+         * editor?.setZoomLevel({
+         *          value: 'fit'
+         *     }); // Fit workspace to screen
+         * editor?.setZoomLevel({
+         *          direction: '+'
+         *    }); // Zoom in by 50%
          */
         setZoomLevel,
         /**
@@ -884,5 +900,6 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * const isCircle = editor?.isType(object, 'circle'); // returns true or false
          */
         isType,
+        //enableLineDrawingMode,
     };
 }
