@@ -9,10 +9,11 @@ export default function EditorPage() {
         canvasRef,
         editor
     } = useEditor()
-    console.log("editor zoom:", editor?.zoomValue)
     return (
         <div id="editor" className='h-screen w-screen overflow-hidden'>
-            <Navbar />
+            <Navbar
+                editor={editor}
+            />
             <div className='h-screen w-screen   flex flex-col items-center justify-center'>
                 <canvas ref={canvasRef}
                     style={{
