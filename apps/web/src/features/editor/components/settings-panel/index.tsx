@@ -15,18 +15,31 @@ import { BaseEditorCompProps } from '../../types'
 export default function SettingsPanel({ editor }: BaseEditorCompProps) {
     const thereIsASelection = (editor?.selectedObjects?.length ?? 0) > 0
     console.log("selected object", editor?.selectedObjects);
+    const uiStates = React.useMemo(() => {
+        return {
+            thereIsAnImage: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'image')) ?? false,
+            thereIsAtext: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'text')) ?? false,
+            thereIsACircle: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'circle')) ?? false,
+            shouldShowAlignment: editor?.selectedObjects?.length === 1
+        }
+    }, [editor?.selectedObjects])
     return (
         <ScrollArea
             id="editor__settings-panel"
             className='!fixed top-[120px] z-[60] right-[20px] !px-3 !py-5 w-[265px] !h-[350px] bg-white border border-gray-100 rounded-[8px] shadow-md'
         >
             {
-                !thereIsASelection ? <WorkspaceSettings editor={editor} /> :
+                !thereIsASelection ?
+                    <WorkspaceSettings editor={editor} /> :
                     <>
-                        {/* Alignment Settings */}
-                        <AlignmentSettings />
-                        {/* Divider */}
-                        <Divider className='my-3' />
+                        {uiStates.shouldShowAlignment && (
+                            <>
+                                {/* Alignment Settings */}
+                                <AlignmentSettings editor={editor} />
+                                {/* Divider */}
+                                <Divider className='my-3' />
+                            </>
+                        )}
                         {/* Object Name(show as dropdown if it is a group) */}
                         {/* Element Settings */}
                         <ElementSettings
@@ -40,11 +53,19 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
                         {/* Text Settings (shows only when it is type text) */}
-                        <TextSettings />
-                        <Divider className='mt-2.5 mb-5' />
+                        {uiStates?.thereIsAtext && (
+                            <>
+                                <TextSettings />
+                                <Divider className='mt-2.5 mb-5' />
+                            </>
+                        )}
                         {/* Image Settings */}
-                        <ImageSettings />
-                        <Divider className='mt-2.5 mb-5' />
+                        {uiStates?.thereIsAnImage && (
+                            <>
+                                <ImageSettings />
+                                <Divider className='mt-2.5 mb-5' />
+                            </>
+                        )}
                         {/* Fill  Settings (with show panel) */}
                         <EditorShowPanel
                             label='Fill'

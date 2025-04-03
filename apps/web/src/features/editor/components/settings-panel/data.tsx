@@ -51,6 +51,14 @@ export const alignment: ButtonSelect<'align'> = {
             property: 'align',
             value: 'bottom'
         }
+    },
+    {
+        Icon: () => <AlignCenterIcon />,
+        action: 'Align Center',
+        config: {
+            property: 'align',
+            value: 'center'
+        }
     }
     ]
 
