@@ -1,11 +1,13 @@
 import React from "react";
 import { UseHistoryProps } from "../types"
 import * as fabric from "fabric";
+import { JSON_KEYS, WORKSPACE_NAME } from "../defaults";
 const STACK_LIMIT = 10;
 
 export function useHistory({ canvas, onSaveCallback }: UseHistoryProps) {
     const canvasHistory = React.useRef<string[]>([]);
     const [pointer, setPointer] = React.useState(-1);
+    //console.log("the pointer", pointer);
     const skipSave = React.useRef(false);
     const canRedo = React.useCallback(() => {
         return pointer < canvasHistory.current.length - 1;
@@ -18,12 +20,14 @@ export function useHistory({ canvas, onSaveCallback }: UseHistoryProps) {
         // avoid the stack from passing our limit
         if (skipSave.current) return;
         const lastState = canvasHistory.current[pointer];
-        //@ts-ignore
-        const currentState = canvas?.toJSON(JSON_KEYS);
+        //! we have to manually convert to object then stringify because of this issue:
+        //https://github.com/fabricjs/fabric.js/issues/10425
+        const currentState: object = canvas?.toObject(JSON_KEYS);
         // based on the limit cut out the previous states
         // if the length is STACK_LIMIT, we remove the first element
         // and add the new state to the end
-        if (pointer > 0 && lastState === currentState) {
+        const stringifiedState = JSON.stringify(currentState)
+        if (lastState === stringifiedState) {
             return;
         }
         //! create new history and esnure it does not pass the limit
@@ -31,13 +35,13 @@ export function useHistory({ canvas, onSaveCallback }: UseHistoryProps) {
         if (newHistory.length >= STACK_LIMIT) {
             newHistory.shift();
         }
-        newHistory.push(JSON.stringify(currentState));
+        newHistory.push(stringifiedState);
         //@ts-ignore
-        const object = (canvas?.getObjects() as fabric.FabricObject[]).find(object => object.name === 'workspace');
+        const object = (canvas?.getObjects() as fabric.FabricObject[]).find(object => object.name === WORKSPACE_NAME);
         canvasHistory.current = newHistory;
-        setPointer(STACK_LIMIT - 1);
+        setPointer(newHistory.length - 1);
         onSaveCallback?.({
-            state: currentState,
+            state: stringifiedState,
             width: object?.width || 0,
             height: object?.height || 0
         })
@@ -45,19 +49,16 @@ export function useHistory({ canvas, onSaveCallback }: UseHistoryProps) {
         pointer,
         canvas,
     ])
-    const undo = React.useCallback(() => {
+    const undo = React.useCallback(async () => {
         if (!canUndo()) return;
         skipSave.current = true;
         canvas?.clear();
-        canvas?.renderAll();
         const newPointer = Math.max(pointer - 1, 0);
         const previousState = canvasHistory.current[newPointer];
         if (previousState) {
-            canvas?.loadFromJSON(previousState, () => {
-            }).then(() => {
-                skipSave.current = false;
-                canvas?.renderAll();
-            });
+            await canvas?.loadFromJSON(previousState)
+            canvas?.renderAll();
+            skipSave.current = false;
             setPointer(newPointer);
         }
     }, [
@@ -65,20 +66,16 @@ export function useHistory({ canvas, onSaveCallback }: UseHistoryProps) {
         canUndo,
         pointer
     ])
-    const redo = React.useCallback(() => {
+    const redo = React.useCallback(async () => {
         if (!canRedo()) return;
         skipSave.current = true;
         canvas?.clear();
-        canvas?.renderAll();
         const newPointer = Math.min(pointer + 1, canvasHistory.current.length - 1);
         const nextState = canvasHistory.current[newPointer];
         if (nextState) {
-            canvas?.loadFromJSON(nextState, () => {
-            }).then(() => {
-                skipSave.current = false;
-                //canvas.backgroundColor = json.backgroundColor;
-                canvas.renderAll();
-            });
+            await canvas?.loadFromJSON(nextState)
+            skipSave.current = false;
+            canvas?.renderAll();
             setPointer(newPointer);
         }
     }, [

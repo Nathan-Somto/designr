@@ -10,6 +10,7 @@ import { useLayers } from "./use-layers";
 import { useHistory } from "./use-history";
 import { useClipboard } from "./use-clipboard";
 import { useCanvasInit } from "./use-canvas-init";
+import { lineDrawingHelpers } from "../helpers/lineDrawingHelpers";
 /**
  * 
  * @description a hook that helps to manage the editor instance
@@ -17,7 +18,6 @@ import { useCanvasInit } from "./use-canvas-init";
  * @description for access of the canvas instance pass it down to the children
  * @example 
  * const {
- *      initialize, 
  *      canvasRef, 
  *      editor
  *    } = useEditor({
@@ -49,23 +49,11 @@ export default function useEditor(props: UseEditorProps | void = {
     // the editor instance
     const dimensions = React.useRef(initialDimensions)
     const state = React.useRef(intialState ?? null)
+    const line = React.useRef<fabric.Line | null>(null)
     const canvasRef = React.useRef<HTMLCanvasElement>(null)
     const [canvas, setCanvas] = React.useState<fabric.Canvas | null>(null)
-    const [currentAction, setCurrentAction] = React.useState<CanvasAction>("Selection")
+    const [currentAction, setCurrentAction] = React.useState<CanvasAction>("Select")
     const [zoom, setZoom] = React.useState<Readonly<number | null>>(null)
-    useCanvasInit({
-        initialDimensions: dimensions.current,
-        backgroundColor,
-        canvas,
-        canvasRef,
-        setCanvas,
-        workspaceColor,
-        setZoom
-    })
-    const {
-        copy,
-        paste
-    } = useClipboard(canvas)
     const {
         canRedo,
         canUndo,
@@ -77,6 +65,20 @@ export default function useEditor(props: UseEditorProps | void = {
         canvas,
         onSaveCallback
     })
+    useCanvasInit({
+        initialDimensions: dimensions.current,
+        backgroundColor,
+        canvas,
+        canvasRef,
+        setCanvas,
+        workspaceColor,
+        setZoom,
+        initHistory
+    })
+    const {
+        copy,
+        paste
+    } = useClipboard(canvas)
     const {
         layers,
         selectedLayer,
@@ -90,7 +92,15 @@ export default function useEditor(props: UseEditorProps | void = {
         canvas
     })
 
-
+    const editorLineHelpers = React.useMemo(() => {
+        if (!canvas) return null
+        return lineDrawingHelpers({
+            canvas,
+            currentAction,
+            updateAction: setCurrentAction,
+            line
+        })
+    }, [canvas, currentAction])
     const editor = React.useMemo(() => {
         if (!canvas) return null
         return canvasHelpers({
@@ -173,7 +183,9 @@ export default function useEditor(props: UseEditorProps | void = {
             canRedo,
             canUndo,
             zoomValue: `${((zoom ?? 0) * 100).toFixed(0)}%`,
-            currentAction
+            currentAction,
+            setCurrentAction,
+            ...editorLineHelpers
         } : null
     }
 }
