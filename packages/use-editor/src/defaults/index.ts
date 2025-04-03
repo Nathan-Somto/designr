@@ -6,7 +6,7 @@ export const FONT_FAMILY = "Arial";
 export const FONT_SIZE = 32;
 export const FONT_WEIGHT = 400;
 export const JSON_KEYS = [
-    "name",
+    'name',
     "gradientAngle",
     "selectable",
     "hasControls",
@@ -18,6 +18,7 @@ export const JSON_KEYS = [
     "zIndex",
     "id",
     "type",
+    'clipPath'
 ];
 ''
 export const WORKSPACE_COLOR = "#fafafa";

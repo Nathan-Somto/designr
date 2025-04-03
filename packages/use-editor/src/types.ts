@@ -126,7 +126,7 @@ type UseCanvasEventsProps = {
     canvas: fabric.Canvas | null
     onObjectsSelection?: (target: (SelectedObject['object'])[], renderCanvas: boolean) => void
     onObjectsDeselection?: () => void
-    onSave?: (value: string) => void
+    onSave?: () => void
     onObjectModified?: (target: fabric.FabricObject[]) => void
     onClear?: () => void
     updateAction: (value: CanvasAction) => void

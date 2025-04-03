@@ -20,23 +20,25 @@ export function useCanvasEvents({
         canvas?.on('object:added', (e) => {
             console.log('object:added');
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
-            onSave?.(e.target?.canvas?.toDatalessJSON());
+            onSave?.();
         });
         canvas?.on('object:modified', (e) => {
             console.log('object:modified');
-            onSave?.(e.target?.canvas?.toDatalessJSON());
+            onSave?.();
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
         });
         canvas?.on('object:removed', (e) => {
             console.log('object:removed');
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
-            onSave?.(e.target?.canvas?.toDatalessJSON());
+            onSave?.();
+            //onSave?.(e.target?.canvas?.toDatalessJSON());
         });
         canvas?.on('object:moving', () => {
             updateAction('Translating')
         });
         canvas?.on('selection:created', (e) => {
             onObjectsSelection?.(e.selected, false)
+            updateAction('Selection');
         })
         canvas?.on('selection:cleared', () => {
             onObjectsDeselection?.()
