@@ -1,10 +1,10 @@
-import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/ui/dropdown-menu'
+import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/dropdown-menu'
 import { useCanvas } from '../../hooks/useCanvas';
 import { Config, text } from './data';
 import * as fabric from 'fabric'
 import { MenuProps } from './types';
 import { insertElement, randomPosition } from './utils';
-import ActionLabel from '@repo/ui/components/ui/hint';
+import ActionLabel from '@repo/ui/components/hint';
 
 export default function TextMenu({ isActiveAction }: Pick<MenuProps, 'isActiveAction'>) {
     const { canvas, updateAction } = useCanvas()
@@ -22,9 +22,9 @@ export default function TextMenu({ isActiveAction }: Pick<MenuProps, 'isActiveAc
     return (
         <DropdownMenu>
             <ActionLabel label='Text'>
-            <DropdownMenuTrigger className={`flex h-10 w-10 items-center justify-center gap-1 rounded-md transition-transform duration-200 hover:bg-blue-200 ${isActiveAction('Text') ? 'bg-blue-200 scale-110 text-white' : 'text-black'}`}>
-                {text['Icon']()}
-            </DropdownMenuTrigger>
+                <DropdownMenuTrigger className={`flex h-10 w-10 items-center justify-center gap-1 rounded-md transition-transform duration-200 hover:bg-blue-200 ${isActiveAction('Text') ? 'bg-blue-200 scale-110 text-white' : 'text-black'}`}>
+                    {text['Icon']()}
+                </DropdownMenuTrigger>
             </ActionLabel>
             <DropdownMenuContent>
                 {text['options'].map(({ label, config: { value, ...rest } }) => (

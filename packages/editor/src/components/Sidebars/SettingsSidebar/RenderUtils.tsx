@@ -1,6 +1,6 @@
 import { convertToType } from './utils';
 import { ObjectLike, RenderButtonsProps, RenderInputProps, RenderSelectProps, } from './types';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@repo/ui/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@repo/ui/components/select';
 import { cn } from '@repo/ui/lib/utils';
 import React from 'react';
 const RenderButtons = <T extends ObjectLike>({ handleChange, label, options, selectedObject, selectedObjectProp }: RenderButtonsProps<T>) => {
@@ -21,7 +21,7 @@ const RenderButtons = <T extends ObjectLike>({ handleChange, label, options, sel
 
     )
 };
-const RenderSelect = <T extends ObjectLike>({ handleChange, options, selectedObject, selectedObjectProp, useCustomValues=false, values=[] }: RenderSelectProps<T>) => {
+const RenderSelect = <T extends ObjectLike>({ handleChange, options, selectedObject, selectedObjectProp, useCustomValues = false, values = [] }: RenderSelectProps<T>) => {
     return (
         <>
             <Select onValueChange={(value) => handleChange(String(selectedObjectProp), value)}>
@@ -32,7 +32,7 @@ const RenderSelect = <T extends ObjectLike>({ handleChange, options, selectedObj
                     {options.map((option, index) => (
                         <SelectItem
                             key={index}
-                            value={useCustomValues ? values[index] :  option}
+                            value={useCustomValues ? values[index] : option}
                         >
                             {option}
                         </SelectItem>
@@ -53,7 +53,7 @@ const RenderInput = <T extends ObjectLike>({ handleChange, value, label, type, s
                 </div>
                 <input
                     type={type !== 'string' ? 'number' : 'text'}
-                    className={cn('input', width === 'full' && 'max-w-full', width === 'half' && 'max-w-20', width === 'sm' && 'max-w-16')}
+                    className={cn('editor-input', width === 'full' && 'max-w-full', width === 'half' && 'max-w-20', width === 'sm' && 'max-w-16')}
                     value={(selectedObject[selectedObjectProp] ?? value) as string | number}
                     onChange={(e) => handleChange(String(selectedObjectProp), convertToType(e.target.value, type))}
                 />

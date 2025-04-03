@@ -1,5 +1,5 @@
 import React from 'react'
-import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/ui/dropdown-menu'
+import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/dropdown-menu'
 import { image } from './data'
 import { useCanvas } from '@/hooks/useCanvas'
 import { MenuProps } from './types'
@@ -22,16 +22,16 @@ export default function ImageMenu({ isActiveAction }: Pick<MenuProps, 'isActiveA
             alert('Please upload a valid image file');
             return;
         }
-       // read image as data url
-      /*  const fileReader = new FileReader();
-         fileReader.readAsDataURL(files[0]);
-        fileReader.onload = () => {
-            handleImageAction('Upload', fileReader.result as string, files[0]);
-        } */
-       const url = URL.createObjectURL(files[0]);
-       await handleImageAction('Upload', url, files[0]);
-        
-       
+        // read image as data url
+        /*  const fileReader = new FileReader();
+           fileReader.readAsDataURL(files[0]);
+          fileReader.onload = () => {
+              handleImageAction('Upload', fileReader.result as string, files[0]);
+          } */
+        const url = URL.createObjectURL(files[0]);
+        await handleImageAction('Upload', url, files[0]);
+
+
     }
     const handleImageAction = async (action: string, imgURL?: string, imageFile?: File) => {
         if (!canvas) return;
@@ -47,7 +47,7 @@ export default function ImageMenu({ isActiveAction }: Pick<MenuProps, 'isActiveA
                     id: uuidv4(),
                     url: imgURL ?? 'https://via.placeholder.com/150'
                 };
-                console.log('uploaded image url: ',uploadedImage?.url)
+                console.log('uploaded image url: ', uploadedImage?.url)
                 // call the upload image callback
                 //Todo: uncomment line when done with development
                 /* if (onUploadImage && imageFile) {
@@ -62,15 +62,15 @@ export default function ImageMenu({ isActiveAction }: Pick<MenuProps, 'isActiveA
                     console.log("created img", createdImage)
                     // preserve aspect ratio
                     const fabricImage = await fabric.FabricImage.fromURL(uploadedImage.url, {
-                       
-                    }, 
-                    {
-                        left: point.x,
-                        top: point.y,
-                        originX: 'center',
-                        originY: 'center'                     
-                    }
-                )
+
+                    },
+                        {
+                            left: point.x,
+                            top: point.y,
+                            originX: 'center',
+                            originY: 'center'
+                        }
+                    )
                     // put the image in the canvas
                     insertElement(canvas, fabricImage);
 
@@ -109,7 +109,7 @@ export default function ImageMenu({ isActiveAction }: Pick<MenuProps, 'isActiveA
                     {image['options'].map(({ label, Icon, action }) => (
                         <DropdownMenuItem
                             key={label}
-                            onClick={() => action === 'Upload' ? inputRef.current?.click(): handleImageAction(action)}
+                            onClick={() => action === 'Upload' ? inputRef.current?.click() : handleImageAction(action)}
                             className='gap-x-2'
                         >
                             <Icon />

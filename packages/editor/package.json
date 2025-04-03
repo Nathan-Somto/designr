@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-  "dev": "vite",
+    "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -16,18 +16,19 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@repo/ui": "*",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-     "uuid": "^11.0.2",
-    "zustand": "^5.0.0-rc.2",
+    "@designr/ui": "*",
+    "app": "^0.1.0",
     "fabric": "^6.4.3",
     "lucide": "^0.454.0",
-    "lucide-react": "^0.454.0"
+    "lucide-react": "^0.454.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "uuid": "^11.0.2",
+    "zustand": "^5.0.0-rc.2"
   },
   "devDependencies": {
-    "@repo/typescript-config": "*",
     "@eslint/js": "^9.13.0",
+    "@repo/typescript-config": "*",
     "@types/node": "^22.8.7",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

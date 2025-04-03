@@ -5,7 +5,7 @@ import ShapeMenu from './ShapeMenu'
 import TextMenu from './TextMenu'
 import ImageMenu from './ImageMenu'
 import { useHistory } from '@/hooks/useHistory'
-import ActionLabel from '@repo/ui/components/ui/hint'
+import ActionLabel from '@repo/ui/components/hint'
 import ExportMenu from './ExportMenu'
 import { insertElement } from './utils'
 import SettingsMenu from './SettingsMenu'
@@ -28,7 +28,7 @@ export default function Toolbar() {
                 const rect = new fabric.Rect({
                     width: 100,
                     height: 100,
-                    stroke: 'black',
+                    /* stroke: 'black', */
                     fill: 'black',
                 })
                 insertElement(canvas, rect)
@@ -91,20 +91,48 @@ export default function Toolbar() {
             }
             case 'Star': {
                 // create a star using a polygon
-                const star = new fabric.Polygon(
+                /* const star = new fabric.Polygon(
                     [
-                        { x: 50, y: 2 },
-                        { x: 55, y: 6 },
-                        { x: 55, y: 20 },
-                        { x: 35, y: 20 },
-                        { x: 35, y: 6 },
-                        { x: 50, y: 2 },
+                        { x: 349.9, y: 75, },
+                        { x: 379, y: 160.9, },
+                        { x: 469, y: 160.9, },
+                        { x: 397, y: 214.9, },
+                        { x: 423, y: 300.9, },
+                        { x: 350, y: 249.9, },
+                        { x: 276.9, y: 301, },
+                        { x: 303, y: 215, },
+                        { x: 231, y: 161, },
+                        { x: 321, y: 161, },
                     ],
                     {
                         stroke: 'black',
                         fill: 'black',
                     }
-                )
+                ) */
+                function createStar(cx, cy, outerRadius, innerRadius, numPoints = 5) {
+                    const points = [];
+                    const angleStep = (Math.PI * 2) / (numPoints * 2);
+
+                    for (let i = 0; i < numPoints * 2; i++) {
+                        const angle = i * angleStep - Math.PI / 2; // Start at the top (90°)
+                        const radius = i % 2 === 0 ? outerRadius : innerRadius; // Alternate radii
+
+                        const x = cx + radius * Math.cos(angle);
+                        const y = cy + radius * Math.sin(angle);
+
+                        points.push({ x, y });
+                    }
+
+                    return new fabric.Polygon(points, {
+                        fill: 'yellow',
+                        stroke: 'black',
+                        strokeWidth: 2
+                    });
+                }
+
+                // Usage
+                const star = createStar(350, 200, 100, 40); // Center at (350, 200), outer radius 100, inner 40
+
                 insertElement(canvas, star)
                 break
             }

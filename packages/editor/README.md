@@ -1,5 +1,6 @@
 # Designr Editor Package
-the core package behind the graphic design editor used by designr
+**Deprecated**
+this repo contains the old implementation of the canvas editor, it was used to serve as a learning purpose on how fabric js works
 ## Oustanding Features
 - [X] Appearance Settings
 - [ ] Shadow Settings

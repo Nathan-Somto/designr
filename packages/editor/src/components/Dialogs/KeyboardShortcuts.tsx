@@ -1,5 +1,5 @@
-import { Dialog,  DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@repo/ui/components/ui/dialog';
-import {  Trash, Undo2, Redo2, Copy, ClipboardPaste, Group, Ungroup, } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@repo/ui/components/dialog';
+import { Trash, Undo2, Redo2, Copy, ClipboardPaste, Group, Ungroup, } from 'lucide-react';
 import { SelectIcon } from '@radix-ui/react-select';
 
 const keyboardShortcuts = [
@@ -45,12 +45,12 @@ const keyboardShortcuts = [
   }
 ];
 type props = {
-    open: boolean,
-    setOpen: (open: boolean) => void
+  open: boolean,
+  setOpen: (open: boolean) => void
 }
-function KeyboardShortcutsDialog({open, setOpen}: props) {
+function KeyboardShortcutsDialog({ open, setOpen }: props) {
   return (
-    <Dialog open={open} onOpenChange={open => setOpen(open)}>     
+    <Dialog open={open} onOpenChange={open => setOpen(open)}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Keyboard Shortcuts</DialogTitle>

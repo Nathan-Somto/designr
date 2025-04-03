@@ -1,9 +1,9 @@
 import React from 'react'
-import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/ui/dropdown-menu'
-import ActionLabel from '@repo/ui/components/ui/hint'
+import { DropdownMenuTrigger, DropdownMenu, DropdownMenuItem, DropdownMenuContent } from '@repo/ui/components/dropdown-menu'
+import ActionLabel from '@repo/ui/components/hint'
 import { settingsMenu } from './data'
 import KeyboardShortcutsDialog from '../Dialogs/KeyboardShortcuts'
-import { Switch } from '@repo/ui/components/ui/switch'
+import { Switch } from '@repo/ui/components/switch'
 import { useWorkspace } from '@/hooks/useWorkspace'
 function SettingsMenu() {
     const setShowSettings = useWorkspace(state => state.setShowSettings);
