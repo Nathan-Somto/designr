@@ -49,7 +49,7 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
                         {/* Transform Settings */}
-                        <TransformSettings />
+                        <TransformSettings editor={editor} />
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
                         {/* Text Settings (shows only when it is type text) */}

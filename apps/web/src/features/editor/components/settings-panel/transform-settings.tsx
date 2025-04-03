@@ -7,7 +7,17 @@ import {
 } from './data'
 import Hint from '@designr/ui/components/hint'
 import { HelpCircleIcon } from 'lucide-react'
-export default function TransformSettings() {
+import { BaseEditorCompProps } from '../../types'
+import { SelectedObject } from '@designr/use-editor'
+export default function TransformSettings({ editor }: BaseEditorCompProps) {
+    const [transformState, setTransformState] = React.useState<
+        Record<"scaleX" | "scaleY" | "skewX" | "skewY", SelectedObject["scaleX" | "scaleY" | "skewX" | "skewY"]>
+    >({
+        scaleX: editor?.selectedObjects?.[0]?.scaleX ?? 0,
+        scaleY: editor?.selectedObjects?.[0]?.scaleY ?? 0,
+        skewX: editor?.selectedObjects?.[0]?.skewX ?? 0,
+        skewY: editor?.selectedObjects?.[0]?.skewY ?? 0
+    })
     return (
         <div>
             <div
@@ -29,11 +39,18 @@ export default function TransformSettings() {
                         return (
                             <EditorInput
                                 key={index}
-                                value={item.config.value}
+                                value={item.config.property ? transformState[item.config.property] : 0}
                                 Icon={item.Icon}
                                 action={item.action}
                                 type={item.type}
                                 property={item.config.property ?? ''}
+                                onChange={(key, value) => {
+                                    setTransformState(prev => ({
+                                        ...prev,
+                                        [key]: value
+                                    }))
+                                    editor?.updateSelectedObjectProperty(key as "scaleX" | "scaleY" | "skewX" | "skewY", value as number)
+                                }}
                             />
                         )
                     })
