@@ -1,5 +1,5 @@
 import { AngleIcon, DashIcon, DimensionsIcon, FontSizeIcon, HeightIcon, LetterSpacingIcon, LineHeightIcon, OpacityIcon, ShadowOuterIcon, WidthIcon } from "@designr/ui/react-icons";
-import { AlignCenterHorizontal, AlignCenterIcon, AlignCenterVerticalIcon, AlignHorizontalJustifyEndIcon, AlignHorizontalJustifyStartIcon, AlignLeftIcon, AlignRightIcon, AlignVerticalJustifyEndIcon, AlignVerticalJustifyStartIcon, BoxSelectIcon, CaseLowerIcon, CaseSensitiveIcon, CaseUpperIcon, CircleIcon, FilterIcon, ItalicIcon, MenuIcon, MoveHorizontalIcon, MoveVerticalIcon, SlashIcon, SquareIcon, StretchHorizontal, StretchVertical, Strikethrough, TypeIcon, Underline, X } from "lucide-react";
+import { AlignCenterHorizontal, AlignCenterIcon, AlignCenterVerticalIcon, AlignHorizontalJustifyEndIcon, AlignHorizontalJustifyStartIcon, AlignLeftIcon, AlignRightIcon, AlignVerticalJustifyEndIcon, AlignVerticalJustifyStartIcon, BoxSelectIcon, CaseLowerIcon, CaseSensitiveIcon, CaseUpperIcon, CircleIcon, FilterIcon, Grid2X2Icon, Grid3x3Icon, GridIcon, ItalicIcon, MenuIcon, MoveHorizontalIcon, MoveVerticalIcon, SlashIcon, SquareIcon, StretchHorizontal, StretchVertical, Strikethrough, TypeIcon, Underline, X } from "lucide-react";
 import { ButtonSelect, InputSelect, OptionsSelect, SettingsSection } from "../../types";
 //===== Alignment Settings ===========//
 export const alignment: ButtonSelect<'align'> = {
@@ -486,7 +486,7 @@ export const stroke = {
 }
 //====== Workspace Settings ============//
 export const workspace = {
-    selects: {
+    selects: [{
         action: "File Sizes",
         type: 'select',
         config: {
@@ -523,6 +523,34 @@ export const workspace = {
         }],
         Icon: () => <DimensionsIcon height={18} width={18} />
     },
+    {
+        action: 'Grid Sizes',
+        type: 'select',
+        config: {
+            property: 'gridDimensions',
+            value: '12x12'
+        },
+        options: [{
+            label: '12x12',
+            value: '12x12',
+            Icon: () => <GridIcon size={18} />
+        },
+        {
+            label: '8x8',
+            value: '8x8',
+            Icon: () => <Grid3x3Icon />
+        },
+        {
+            label: '4x4',
+            value: '4x4',
+            Icon: () => <Grid2X2Icon />
+        }
+        ],
+        Icon: () => <svg width="18" height="18" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.14998 14V1H0.849976V14H2.14998ZM6.14998 14V1H4.84998V14H6.14998ZM10.15 1V14H8.84998V1H10.15ZM14.15 14V1H12.85V14H14.15Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>,
+    },
+
+
+    ],
     /* width, height and color */
     inputs: [
         {
