@@ -78,7 +78,7 @@ export function GradientPicker({
                     onClick={() => {
                         const newColor = {
                             color: '#fff',
-                            offset: gradient.colors.length
+                            offset: gradient.colors.length % 2 === 0 ? 0 : 1
                         }
                         updateGradient({
                             ...gradient,

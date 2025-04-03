@@ -37,7 +37,7 @@ function EditorColorInput({
                             style={{ background: typeof value === "string" ? value : formatEditorGradientToCSS(value) }}
                         />
                     </PopoverTrigger>
-                    <input contentEditable={false} defaultValue={
+                    <input contentEditable={false} value={
                         typeof value === 'string' ? value : 'Linear'
                     } className="ml-[26px] text-xs outline-none bg-transparent" />
                 </div>
