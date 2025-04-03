@@ -173,7 +173,10 @@ export function useCanvasInit({
                 color: "rgba(0,0,0,0.2)",
                 blur: 2,
             }),
-            name: WORKSPACE_NAME
+            name: WORKSPACE_NAME,
+            gridIsActive: false,
+            gridHorizontal: 12,
+            gridVertical: 12
         });
         canvasInstance.clipPath = workspaceRect;
         canvasInstance.centerObject(workspaceRect);

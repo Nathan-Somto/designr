@@ -24,6 +24,23 @@ type UseLoadCanvasStateProps = {
     initCanvasHistory: (state: string) => void
     autoZoomToFit: () => void
 }
+interface Workspace extends fabric.Rect<{
+    width: number;
+    height: number;
+    fill: string;
+    selectable: false;
+    rx: number;
+    ry: number;
+    strokeWidth: number;
+    stroke: string;
+    shadow: fabric.Shadow;
+}, fabric.SerializedRectProps, fabric.ObjectEvents> {
+    name: string;
+    gridIsActive: boolean;
+    gridHorizontal: number;
+    gridVertical: number;
+
+}
 type CanvasHelpersProps = {
     canvas: fabric.Canvas
     filename?: Readonly<string>
@@ -183,5 +200,6 @@ export type {
     EditorGradient,
     EditorGradientDirection,
     UseSelectionProps,
-    BorderStyle
+    BorderStyle,
+    Workspace
 }

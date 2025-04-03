@@ -18,10 +18,15 @@ export const JSON_KEYS = [
     "zIndex",
     "id",
     "type",
-    'clipPath'
+    'clipPath',
+    "gridIsActive",
+    "gridHorizontal",
+    "gridVertical"
 ];
 ''
 export const WORKSPACE_COLOR = "#fafafa";
+export const GRID_COLOR = 'hsl(0, 0%, 90%)';
+export const GRID_WIDTH = 1;
 export const WORKSPACE_NAME = 'workspace';
 export const CANVAS_BACKGROUND_COLOR = 'rgb(242,243,246)';
 export const INITIAL_DIMENSIONS = {

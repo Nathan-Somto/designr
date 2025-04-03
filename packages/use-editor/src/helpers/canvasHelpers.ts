@@ -1,6 +1,6 @@
 import * as fabric from "fabric";
-import { Alignment, BorderStyle, CanvasHelpersProps, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue } from '../types'
-import { FILL_COLOR, STROKE_COLOR, STROKE_WIDTH, WORKSPACE_NAME } from '../defaults'
+import { Alignment, BorderStyle, CanvasHelpersProps, Workspace, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue } from '../types'
+import { FILL_COLOR, GRID_COLOR, GRID_WIDTH, STROKE_COLOR, WORKSPACE_NAME } from '../defaults'
 import { randomPosition } from './randomPosition';
 import { createLink } from './createLink';
 import { createFilter } from "./createFilter";
@@ -167,60 +167,96 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         insertElement(canvas, image)
 
     }
+    const removeGridsFromWorkspace = () => {
+        canvas.getObjects().forEach((obj) => {
+            //@ts-ignore
+            if (obj.id === 'grid-horizontal-line' || obj.id === 'grid-vertical-line') {
+                canvas.remove(obj);
+            }
+        });
+    }
     const addGridToCanvas = ({
         gridHorizontal = 12,
         gridVertical = 12,
         showGrid = true,
     }) => {
         if (!canvas) return;
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return;
 
-        // Remove existing grid if toggling off
+        // Remove existing grid lines before drawing new ones
+
+        removeGridsFromWorkspace();
+        workspace.gridHorizontal = gridHorizontal;
+        workspace.gridVertical = gridVertical;
+
         if (!showGrid) {
-            canvas.getObjects('line').forEach((obj) => {
-                //@ts-ignore
-                if (obj.id === 'grid-line') {
-                    canvas.remove(obj);
-                }
-            });
+            workspace.gridIsActive = false;
             canvas.renderAll();
             return;
         }
 
-        const canvasWidth = canvas.width || 1000;
-        const canvasHeight = canvas.height || 800;
+        const { left, top, width, height } = workspace;
 
-        // Create both the horizontal and vertical lines
-        for (let i = 0; i < canvasWidth / gridHorizontal; i++) {
-            const x = i * gridHorizontal;
-            const verticalLine = new fabric.Line([x, 0, x, canvasHeight], {
-                stroke: STROKE_COLOR,
-                strokeWidth: STROKE_WIDTH,
+        const verticalSpacing = width / (gridHorizontal - 1);
+        const horizontalSpacing = height / (gridVertical - 1);
+
+        // Draw vertical grid lines inside the workspace
+        for (let i = 0; i < gridHorizontal; i++) {
+            const x = left + i * verticalSpacing;
+            const verticalLine = new fabric.Line([x, top, x, top + height], {
+                stroke: GRID_COLOR,
+                strokeWidth: GRID_WIDTH,
                 selectable: false,
                 evented: false,
-                id: 'grid-line',
+                id: 'grid-vertical-line',
             });
             canvas.add(verticalLine);
         }
 
-        for (let j = 0; j < canvasHeight / gridVertical; j++) {
-            const y = j * gridVertical;
-            const horizontalLine = new fabric.Line([0, y, canvasWidth, y], {
-                stroke: STROKE_COLOR,
-                strokeWidth: STROKE_WIDTH,
+        // Draw horizontal grid lines inside the workspace
+        for (let j = 0; j < gridVertical; j++) {
+            const y = top + j * horizontalSpacing;
+            const horizontalLine = new fabric.Line([left, y, left + width, y], {
+                stroke: GRID_COLOR,
+                strokeWidth: GRID_WIDTH,
                 selectable: false,
                 evented: false,
-                id: 'grid-line',
+                id: 'grid-horizontal-line',
             });
             canvas.add(horizontalLine);
         }
 
+        workspace.gridIsActive = true;
         canvas.renderAll();
+    };
+
+    const setGridDimensions = ({ gridHorizontal = 12, gridVertical = 12 }) => {
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return;
+        workspace.gridHorizontal = gridHorizontal;
+        workspace.gridVertical = gridVertical;
     }
+
+
     //====== GETTERS ======
-    function getWorkspace(canvas: fabric.Canvas) {
+    function getWorkspace(canvas: fabric.Canvas): Workspace | undefined {
         //@ts-ignore
         return canvas.getObjects().find(obj => obj.name === WORKSPACE_NAME)
     };
+    function getWorkSpaceProperties() {
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return null;
+        return {
+            fill: workspace.fill instanceof fabric.Gradient ? formatLinearGradient(workspace.fill as fabric.Gradient<'linear'>) : workspace.fill,
+            dimesions: `${workspace.width}x${workspace.height}`,
+            gridIsActive: workspace?.gridIsActive,
+            gridHorizontal: workspace?.gridHorizontal,
+            gridVertical: workspace?.gridVertical,
+            width: workspace?.width,
+            height: workspace?.height
+        }
+    }
     const getObjectsApartFromWorkspace = (canvas: fabric.Canvas) => {
         //@ts-ignore
         return canvas.getObjects().filter(obj => obj.name !== 'workspace')
@@ -326,10 +362,11 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         return dataURL
     }
     //===== SETTERS ======
-    const setWorkspaceColor = (color: string) => {
+    const setWorkspaceColor = (color: string | EditorGradient) => {
         const workspace = getWorkspace(canvas);
         if (!workspace) return;
-        workspace.set('fill', color);
+        const colorValue = typeof color === 'object' ? applyLinearGradient(color) : color
+        workspace.set('fill', colorValue);
         canvas.requestRenderAll();
     }
     const setZoomLevel = (
@@ -381,10 +418,10 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         const center = workspace.getCenterPoint();
         setZoom?.(zoom);
         canvas.zoomToPoint(center, zoom);
-
+        canvas.centerObject(workspace);
         canvas.requestRenderAll();
     }
-    const setWorkSpaceSize = (width: number, height: number) => {
+    const setWorkSpaceSize = (width: number | undefined, height: number | undefined) => {
         const workspace = getWorkspace(canvas);
         if (!workspace) return;
         workspace.set('width', width || workspace.width);
@@ -900,6 +937,13 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * const isCircle = editor?.isType(object, 'circle'); // returns true or false
          */
         isType,
-        //enableLineDrawingMode,
+        /**
+        * @description a function that is used to retrieve the properties of the workspace that can be editted
+        * @example
+        * const {editor} = useEditor();
+        * const {gridHorizontal, gridVertical, fill, width, height} = editor?.getWorkSpaceProperties();
+        */
+        getWorkSpaceProperties,
+        setGridDimensions
     };
 }
