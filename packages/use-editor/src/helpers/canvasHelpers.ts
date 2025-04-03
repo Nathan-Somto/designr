@@ -14,10 +14,9 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         canvas.isDrawingMode = false;
         if (!workspace) return
         //! switching to center point allows for easy identification
-        const points = workspace.getCenterPoint();
         element.set({
-            top: points.y,
-            left: points.x,
+            top: workspace.top + (workspace.height - element.height * element.scaleY) / 2,
+            left: workspace.left + (workspace.width - element.width * element.scaleX) / 2
         })
         canvas.add(element)
         canvas.setActiveObject(element)
@@ -269,13 +268,13 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         const objWidth = width * scaleX;
         const objHeight = height * scaleY;
 
-        if (left === 0) return 'left';
-        if (left === workspace.width - objWidth) return 'right';
-        if (top === 0) return 'top';
-        if (top === workspace.height - objHeight) return 'bottom';
-        if (left === (workspace.width - objWidth) / 2 && top === (workspace.height - objHeight) / 2) return 'center';
-        if (left === (workspace.width - objWidth) / 2) return 'centerH';
-        if (top === (workspace.height - objHeight) / 2) return 'centerV';
+        if (left === workspace.left) return 'left';
+        if (left === (workspace.left + workspace.width) - objWidth) return 'right';
+        if (top === workspace.top) return 'top';
+        if (top === (workspace.height + workspace.top) - objHeight) return 'bottom';
+        if (left === (workspace.left + (workspace.width - objWidth) / 2) && top === (workspace.top + (workspace.height - objHeight) / 2)) return 'center';
+        if (left === (workspace.left + (workspace.width - objWidth) / 2)) return 'centerH';
+        if (top === (workspace.top + (workspace.height - objHeight) / 2)) return 'centerV';
 
         return 'none';
     }
@@ -564,27 +563,27 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         if (!workspace) return;
         switch (alignment) {
             case 'left':
-                object.set({ left: 0 });
+                object.set({ left: (workspace.left) });
                 break;
             case 'right':
-                object.set({ left: workspace.width - object.width * object.scaleX });
+                object.set({ left: (workspace.left + workspace.width) - object.width * object.scaleX });
                 break;
             case 'top':
-                object.set({ top: 0 });
+                object.set({ top: workspace.top });
                 break;
             case 'bottom':
-                object.set({ top: workspace.height - object.height * object.scaleY });
+                object.set({ top: (workspace.height + workspace.top) - object.height * object.scaleY });
                 break;
             case 'centerH':
-                object.set({ left: (workspace.width - object.width * object.scaleX) / 2 });
+                object.set({ left: (workspace.left + (workspace.width - object.width * object.scaleX) / 2) });
                 break;
             case 'centerV':
-                object.set({ top: (workspace.height - object.height * object.scaleY) / 2 });
+                object.set({ top: (workspace.top + (workspace.height - object.height * object.scaleY) / 2) });
                 break;
             case 'center':
                 object.set({
-                    left: (workspace.width - object.width * object.scaleX) / 2,
-                    top: (workspace.height - object.height * object.scaleY) / 2,
+                    left: (workspace.left + (workspace.width - object.width * object.scaleX) / 2),
+                    top: (workspace.top + (workspace.height - object.height * object.scaleY) / 2),
                 });
                 break;
             case 'none':
@@ -944,6 +943,15 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         * const {gridHorizontal, gridVertical, fill, width, height} = editor?.getWorkSpaceProperties();
         */
         getWorkSpaceProperties,
+        /**
+         * @description a function that is used to set the grid dimensions on the canvas, you can specify how many lines you want per column or row
+         * @example
+         * const {editor} = useEditor();
+         * editor?.setGridDimensions({
+         *      gridHorizontal: 12,
+         *      gridVertical:  12 
+         * })
+         */
         setGridDimensions
     };
 }

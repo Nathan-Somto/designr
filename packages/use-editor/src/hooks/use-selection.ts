@@ -87,7 +87,7 @@ export function useSelection({ canvas,
         });
 
         setSelectedObjects(newSelections);
-    }, []);
+    }, [getAlignment]);
 
     const updateSelectedObjectProperty = React.useCallback(<K extends SelectedObjectProps>(property: K, value: SelectedObject[K]) => {
         if (!selectedObjects || !canvas) return;
