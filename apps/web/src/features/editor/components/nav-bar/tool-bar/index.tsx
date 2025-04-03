@@ -7,7 +7,8 @@ import ShapeMenu from './shape-menu'
 import TextMenu from './text-menu'
 import Hint from '@designr/ui/components/hint'
 import ImageMenu from './image-menu'
-export default function Toolbar() {
+import { BaseEditorCompProps } from '#/features/editor/types'
+export default function Toolbar({ editor }: BaseEditorCompProps) {
     const isPending = false;
     const isError = false;
     return (
@@ -22,14 +23,30 @@ export default function Toolbar() {
                 <Hint label='select'>
                     <Button
                         variant={'selection'}
-                        size={'shrink'}>
+                        size={'shrink'}
+                        onClick={() => {
+                            if (editor?.currentAction === 'Drawing') {
+                                editor?.disableDrawingMode();
+                            }
+                            if (editor?.currentAction === 'Line') {
+                                editor?.disableLineDrawingMode?.();
+                                document.body.style.cursor = 'default';
+                            }
+                            editor?.setCurrentAction('Select');
+                        }}
+                        data-active={editor?.currentAction === 'Select' || editor?.currentAction === 'Selection' || editor?.currentAction === 'Translating'}
+                    >
                         <MousePointer2 />
                     </Button>
                 </Hint>
                 {/* Shape Menu */}
-                <ShapeMenu />
+                <ShapeMenu
+                    editor={editor}
+                />
                 {/* Text Menu */}
-                <TextMenu />
+                <TextMenu
+                    editor={editor}
+                />
                 {/* Image Menu */}
                 <ImageMenu />
                 {/* Undo */}
@@ -37,7 +54,8 @@ export default function Toolbar() {
                     <Button
                         variant={'selection'}
                         size={'shrink'}
-                        disabled
+                        disabled={!editor?.canUndo()}
+                        onClick={() => editor?.undo()}
                     >
                         <UndoIcon />
                     </Button>
@@ -46,7 +64,10 @@ export default function Toolbar() {
                 <Hint label='redo'>
                     <Button
                         variant={'selection'}
-                        size={'shrink'}>
+                        size={'shrink'}
+                        disabled={!editor?.canRedo()}
+                        onClick={() => editor?.redo()}
+                    >
                         <RedoIcon />
                     </Button>
                 </Hint>

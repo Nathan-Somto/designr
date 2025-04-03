@@ -3,8 +3,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { shapes } from '../data'
 import React from 'react'
 import Hint from '@designr/ui/components/hint'
+import { BaseEditorCompProps } from '#/features/editor/types'
 type Action = typeof shapes[number]['action']
-export default function ShapeMenu() {
+export default function ShapeMenu({
+    editor
+}: BaseEditorCompProps) {
     const [currentIndex, setCurrentIndex] = React.useState(0)
     const {
         Icon,
@@ -17,24 +20,35 @@ export default function ShapeMenu() {
             index: number
         }
     ) => {
+        document.body.style.cursor = 'default';
+        editor?.disableDrawingMode();
         switch (props.action) {
             case 'Circle':
+                editor?.addCircle()
                 break;
             case 'Rectangle':
+                editor?.addRectangle()
                 break;
             case 'Triangle':
+                editor?.addTriangle()
                 break;
             case 'Line':
+                document.body.style.cursor = 'crosshair';
+                editor?.enableLineDrawingMode?.();
                 break;
             case 'Diamond':
+                editor?.addDiamond()
                 break;
             case 'Drawing':
+                editor?.enableDrawingMode()
                 break;
             case 'Star':
+                editor?.addStar()
                 break;
             default:
                 break;
         }
+        editor?.setCurrentAction(props.action)
         setCurrentIndex(props.index)
     }
     return (
@@ -46,6 +60,7 @@ export default function ShapeMenu() {
                         variant={'selection'}
                         className='font-medium'
                         size={'shrink'}
+                        data-active={editor?.currentAction === action}
                     >
                         <Icon />
                     </Button>
@@ -63,7 +78,7 @@ export default function ShapeMenu() {
                     <DropdownMenuItem asChild key={action}>
                         <Button
                             variant={'selection'}
-                            data-active={currentIndex === index}
+                            data-active={editor?.currentAction === action}
                             className='w-full justify-start text-xs font-medium'
                             onClick={() => handleAction({
                                 action,

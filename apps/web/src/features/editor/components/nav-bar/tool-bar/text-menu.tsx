@@ -1,13 +1,12 @@
 import { Button } from '@designr/ui/components/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuItem } from '@designr/ui/components/dropdown-menu'
-import { ChevronDownIcon } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from '@designr/ui/components/dropdown-menu'
 import { text } from '../data'
 import React from 'react'
-import { useRouter } from 'next/navigation'
 import { TextConfig } from '@designr/use-editor'
 import Hint from '@designr/ui/components/hint'
+import { BaseEditorCompProps } from '#/features/editor/types'
 
-export default function TextMenu() {
+export default function TextMenu({ editor }: BaseEditorCompProps) {
     const {
         Icon,
         action
@@ -18,8 +17,10 @@ export default function TextMenu() {
             value: string
         }
     ) => {
-        // handle text action
-        console.log(props)
+        editor?.addText({
+            ...props.config,
+            value: props.value
+        })
     }
     return (
         <DropdownMenu>
