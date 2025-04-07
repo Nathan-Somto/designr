@@ -54,6 +54,7 @@ export default function useEditor(props: UseEditorProps | void = {
     const [canvas, setCanvas] = React.useState<fabric.Canvas | null>(null)
     const [currentAction, setCurrentAction] = React.useState<CanvasAction>("Select")
     const [zoom, setZoom] = React.useState<Readonly<number | null>>(null)
+    const menuRef = React.useRef<HTMLDivElement | null>(null)
     const {
         canRedo,
         canUndo,
@@ -77,7 +78,8 @@ export default function useEditor(props: UseEditorProps | void = {
     })
     const {
         copy,
-        paste
+        paste,
+        getRefState
     } = useClipboard(canvas)
     const {
         layers,
@@ -139,7 +141,9 @@ export default function useEditor(props: UseEditorProps | void = {
             onSelectLayer(null)
         },
         updateAction: setCurrentAction,
-        onSave: save
+        onSave: save,
+        menuRef,
+        updateContextMenuPosition: (props.updateContextMenuPosition ?? (() => { })),
     })
     useLoadCanvasState({
         canvas,
@@ -185,7 +189,11 @@ export default function useEditor(props: UseEditorProps | void = {
             zoomValue: `${((zoom ?? 0) * 100).toFixed(0)}%`,
             currentAction,
             setCurrentAction,
+            getRefState,
+            paste,
+            copy,
             ...editorLineHelpers
-        } : null
+        } : null,
+        menuRef
     }
 }

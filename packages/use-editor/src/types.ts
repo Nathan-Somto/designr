@@ -15,7 +15,7 @@ type UseEditorProps = {
     ) => void
     backgroundColor?: string
     workspaceColor?: string
-    updateContextMenuPosition?: (position: { x: number, y: number }) => void
+    updateContextMenuPosition?: (position: { x: number, y: number } | null) => void
 }
 type CanvasAction = 'SoftRect' | 'Select' | 'Text' | 'Image' | 'Rectangle' | 'Circle' | 'Triangle' | 'Diamond' | 'Drawing' | 'Star' | 'Line' | 'Undo' | 'Redo' | 'Clear' | "Translating" | "Rotating" | "Selection"
 type UseLoadCanvasStateProps = {
@@ -148,6 +148,8 @@ type UseCanvasEventsProps = {
     onObjectModified?: (target: fabric.FabricObject[]) => void
     onClear?: () => void
     updateAction: (value: CanvasAction) => void
+    menuRef: React.RefObject<HTMLDivElement>
+    updateContextMenuPosition: (position: { x: number, y: number } | null) => void
 }
 type UseKeyboardShortcutsProps = {
     canvas: fabric.Canvas | null

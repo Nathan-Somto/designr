@@ -13,10 +13,17 @@ export function useCanvasEvents({
     onObjectsDeselection,
     onObjectModified,
     onSave,
-    updateAction
+    updateAction,
+    menuRef,
+    updateContextMenuPosition
 }: UseCanvasEventsProps) {
     React.useEffect(() => {
         if (!canvas) return;
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                updateContextMenuPosition(null);
+            }
+        }
         canvas?.on('object:added', (e) => {
             console.log('object:added');
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
@@ -67,8 +74,17 @@ export function useCanvasEvents({
             canvas.requestRenderAll();
             //canvas.renderAll();
         });
-
-
+        canvas?.on('contextmenu', (evt) => {
+            evt.e.preventDefault();
+            // only activate if there is a selected object
+            if (canvas.getActiveObject()) {
+                updateContextMenuPosition({ x: (evt.e as PointerEvent).clientX, y: (evt.e as PointerEvent).clientY })
+            }
+            else {
+                updateContextMenuPosition(null)
+            }
+        })
+        document.addEventListener('click', handleClickOutside);
         return () => {
             canvas.off('mouse:down');
             canvas.off('object:added');
@@ -77,6 +93,8 @@ export function useCanvasEvents({
             canvas.off('object:moving');
             canvas.off('selection:created');
             canvas.off('mouse:wheel');
+            canvas.off('contextmenu');
+            document.removeEventListener('click', handleClickOutside);
         }
     }, [canvas])
 }
