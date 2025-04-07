@@ -14,7 +14,7 @@ import EffectsSettings from './effects-settings'
 import { BaseEditorCompProps } from '../../types'
 export default function SettingsPanel({ editor }: BaseEditorCompProps) {
     const thereIsASelection = (editor?.selectedObjects?.length ?? 0) > 0
-    console.log("selected object", editor?.selectedObjects);
+    //console.log("selected object", editor?.selectedObjects);
     const uiStates = React.useMemo(() => {
         return {
             thereIsAnImage: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'image')) ?? false,
@@ -23,6 +23,25 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
             shouldShowAlignment: editor?.selectedObjects?.length === 1
         }
     }, [editor?.selectedObjects])
+    //console.log("layers: ", editor?.layers);
+    const getGroupElementCounts = React.useCallback(() => {
+        if (!editor?.selectedObjects?.length) return '';
+
+        const groupObject = editor.selectedObjects[0].object;
+        if (!editor.isType(groupObject, 'group')) return editor?.getType(groupObject) ?? '';
+
+        const countMap: Record<string, number> = {};
+        //@ts-ignore
+        groupObject.getObjects().forEach((item) => {
+            const type = editor?.getType(item);
+            if (type) {
+                countMap[type] = (countMap[type] || 0) + 1;
+            }
+        });
+
+        return Object.entries(countMap).map(([type, count]) => `${type}(${count})`);
+    }, [editor?.selectedObjects]);
+
     return (
         <ScrollArea
             id="editor__settings-panel"
@@ -43,8 +62,10 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Object Name(show as dropdown if it is a group) */}
                         {/* Element Settings */}
                         <ElementSettings
-                            elements={['Rectangle', 'Circle', 'Triangle']}
-                            isGroup={true}
+                            editor={editor}
+                            thereIsACircle={uiStates?.thereIsACircle}
+                            elements={getGroupElementCounts()}
+                            isGroup={editor?.selectedObjects?.length === 1 && editor?.isType(editor?.selectedObjects?.[0]?.object, 'group')}
                         />
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
@@ -55,14 +76,16 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Text Settings (shows only when it is type text) */}
                         {uiStates?.thereIsAtext && (
                             <>
-                                <TextSettings />
+                                <TextSettings editor={editor} />
                                 <Divider className='mt-2.5 mb-5' />
                             </>
                         )}
                         {/* Image Settings */}
                         {uiStates?.thereIsAnImage && (
                             <>
-                                <ImageSettings />
+                                <ImageSettings
+                                    editor={editor}
+                                />
                                 <Divider className='mt-2.5 mb-5' />
                             </>
                         )}
@@ -70,23 +93,35 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         <EditorShowPanel
                             label='Fill'
                             id='fill-settings'
-                            ComponentToRender={() => <FillSettings />}
-                        /* on show set the fill to black */
-                        /* on remove set it to transparent */
+                            open={editor?.selectedObjects?.[0]?.fill !== undefined}
+                            ComponentToRender={FillSettings}
+                            props={
+                                {
+                                    editor
+                                }
+                            }
                         />
                         <Divider className='mt-2.5 mb-5' />
                         {/* Stroke Settings (with show panel) */}
                         <EditorShowPanel
                             label='Stroke'
                             id='stroke-settings'
-                            ComponentToRender={() => <StrokeSettings />}
+                            open={editor?.selectedObjects?.[0]?.strokeColor !== undefined}
+                            ComponentToRender={StrokeSettings}
+                            props={{
+                                editor
+                            }}
                         />
                         <Divider className='mt-2.5 mb-5' />
                         {/* Effect Settings (with show panel) */}
                         <EditorShowPanel
                             label='Effect'
                             id='effect-settings'
-                            ComponentToRender={() => <EffectsSettings />}
+                            open={editor?.selectedObjects?.[0]?.['shadow.color'] !== undefined}
+                            ComponentToRender={EffectsSettings}
+                            props={{
+                                editor
+                            }}
                         />
                     </>
             }

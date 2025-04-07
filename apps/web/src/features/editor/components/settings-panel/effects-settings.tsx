@@ -3,7 +3,26 @@ import { EditorInput } from '../ui/editor-input'
 import EditorColorInput from '../ui/editor-color-input'
 import { effects } from './data'
 import { v4 } from 'uuid'
-export default function EffectsSettings() {
+import { BaseEditorCompProps } from '../../types'
+import { SelectedObject } from '@designr/use-editor'
+type EffectsType = "shadow.color" | "shadow.blur" | "shadow.offsetX" | "shadow.offsetY";
+export default function EffectsSettings({ editor }: BaseEditorCompProps) {
+    const [effectsState, setEffectsState] = React.useState<Record<
+        EffectsType,
+        SelectedObject[EffectsType]
+    >>({
+        "shadow.blur": editor?.selectedObjects?.[0]?.['shadow.blur'] ?? 0,
+        "shadow.color": editor?.selectedObjects?.[0]?.['shadow.color'] ?? '#000',
+        "shadow.offsetX": editor?.selectedObjects?.[0]?.['shadow.offsetX'] ?? 0,
+        "shadow.offsetY": editor?.selectedObjects?.[0]?.['shadow.offsetY'] ?? 0
+    })
+    const updateEffectState = (key: EffectsType, value: SelectedObject[EffectsType]) => {
+        setEffectsState(prev => ({
+            ...prev,
+            [key]: value
+        }))
+        editor?.updateSelectedObjectProperty(key, value)
+    }
     return (
         <div className='grid grid-cols-2 gap-2'>
             {
@@ -12,19 +31,23 @@ export default function EffectsSettings() {
                         key={v4()}
                         action={input.action}
                         onChange={(_, newColor) => {
-                            console.log(newColor)
+                            updateEffectState('shadow.color', newColor as string)
                         }}
                         property={input.config.property as string}
-                        value={input.config.value as string}
+                        value={effectsState['shadow.color'] as string}
+                    //supportsGradient
                     />;
                     return (
                         <EditorInput
                             key={v4()}
-                            {...input}
                             type={type}
-                            //@ts-ignore
-                            config={input.config}
-                            value={input.config.value}
+                            value={effectsState[input.config.property as EffectsType]}
+                            Icon={input.Icon}
+                            action={input.action}
+                            property={input.config.property as EffectsType}
+                            onChange={(property, value) => {
+                                updateEffectState(property as EffectsType, value)
+                            }}
                         />
                     )
                 })

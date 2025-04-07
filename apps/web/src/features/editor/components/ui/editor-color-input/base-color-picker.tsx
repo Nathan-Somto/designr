@@ -70,13 +70,18 @@ export function BaseColorPicker({ value, onChange, format, onChangeFormat }: Bas
     return (
         <div>
             {format === "hex" && (
-                <HexColorPicker color={value} onChange={onChange} className="!w-full" />
+                <HexColorPicker color={value} onChange={(c) => {
+                    onChange(c)
+                    setInputValue(c)
+                }} className="!w-full" />
             )}
             {format === "rgba" && (
                 <RgbaColorPicker
                     color={value as unknown as RgbaColor}
-                    onChange={(c) =>
+                    onChange={(c) => {
                         onChange(`rgba(${isNaN(c.r) ? 0 : c.r}, ${isNaN(c.g) ? 0 : c.g}, ${isNaN(c.b) ? 0 : c.b}, ${isNaN(c.a) ? 1 : c.a})`)
+                        setInputValue(`rgba(${isNaN(c.r) ? 0 : c.r}, ${isNaN(c.g) ? 0 : c.g}, ${isNaN(c.b) ? 0 : c.b}, ${isNaN(c.a) ? 1 : c.a})`)
+                    }
                     }
                     className="!w-full"
                 />
@@ -84,9 +89,10 @@ export function BaseColorPicker({ value, onChange, format, onChangeFormat }: Bas
             {format === "hsl" && (
                 <HslColorPicker
                     color={value as unknown as HslColor}
-                    onChange={(c) =>
+                    onChange={(c) => {
                         onChange(`hsl(${isNaN(c.h) ? 0 : c.h}, ${isNaN(c.s) ? 0 : c.s}%, ${isNaN(c.l) ? 0 : c.l}%)`)
-                    }
+                        setInputValue(`hsl(${isNaN(c.h) ? 0 : c.h}, ${isNaN(c.s) ? 0 : c.s}%, ${isNaN(c.l) ? 0 : c.l}%)`)
+                    }}
                     className="!w-full"
                 />
             )}

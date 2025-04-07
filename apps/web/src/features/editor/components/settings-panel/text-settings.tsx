@@ -15,7 +15,46 @@ import EditorButtonSelect from '../ui/editor-button-select'
 import EditorSelect from '../ui/editor-select'
 import Hint from '@designr/ui/components/hint'
 import { HelpCircleIcon } from 'lucide-react'
-export default function TextSettings() {
+import { BaseEditorCompProps } from '../../types'
+import { Alignment, SelectedObject } from '@designr/use-editor'
+export default function TextSettings({ editor }: BaseEditorCompProps) {
+    const [textState, setTextState] = React.useState<Record<
+        'fontFamily' |
+        'fontWeight' |
+        'fontSize' |
+        'letterSpacing' |
+        'lineHeight' |
+        'textAlign' |
+        'textTransform' |
+        'textDecoration' |
+        'fontStyle'
+        , SelectedObject[
+        'fontFamily' |
+        'fontWeight' |
+        'fontSize' |
+        'letterSpacing' |
+        'lineHeight' |
+        'textAlign' |
+        'textTransform' |
+        'textDecoration' |
+        'fontStyle']>>({
+            fontFamily: editor?.selectedObjects?.[0]?.fontFamily,
+            fontSize: editor?.selectedObjects?.[0]?.fontSize,
+            fontWeight: editor?.selectedObjects?.[0]?.fontWeight,
+            textAlign: editor?.selectedObjects?.[0]?.textAlign,
+            textDecoration: editor?.selectedObjects?.[0]?.textDecoration,
+            letterSpacing: editor?.selectedObjects?.[0]?.letterSpacing,
+            lineHeight: editor?.selectedObjects?.[0]?.lineHeight,
+            fontStyle: editor?.selectedObjects?.[0]?.fontStyle,
+            textTransform: editor?.selectedObjects?.[0]?.textTransform
+        })
+    const updateTextState = (key: keyof typeof textState, value: typeof textState[keyof typeof textState]) => {
+        setTextState(prev => ({
+            ...prev,
+            [key]: value
+        }))
+        editor?.updateSelectedObjectProperty(key, value);
+    }
     return (
         <section id="text-settings" className=''>
             <div
@@ -32,40 +71,45 @@ export default function TextSettings() {
             <div className='grid w-full grid-cols-2  gap-y-3 gap-x-3.5 rounded-none'>
                 {/* Editor Select - font family */}
                 <EditorSelect
-                    value={fontFamily.config.value}
+                    value={textState?.fontFamily ?? fontFamily.config.value}
                     action={fontFamily.action}
                     config={fontFamily.config}
                     options={fontFamily.options as string[]}
                     className='col-span-2 -mb-1.5'
+                    onChange={(_, value) => updateTextState('fontFamily', value)}
                 />
                 {/* Font weight and Font size Editor input */}
                 <EditorSelect
-                    value={fontWeight.config.value}
+                    value={textState?.fontWeight ?? fontWeight.config.value}
                     action={fontWeight.action}
                     config={fontWeight.config}
                     options={fontWeight.options as { label: string, value: string }[]}
+                    onChange={(_, value) => updateTextState('fontWeight', value)}
                 />
                 <EditorInput
-                    value={fontSize.config.value}
+                    value={textState?.fontSize ?? fontSize.config.value}
                     Icon={fontSize.Icon}
                     action={fontSize.action}
                     type={fontSize.type}
                     property={fontSize.config.property ?? ''}
+                    onChange={(_, value) => updateTextState('fontSize', value)}
                 />
                 {/* Letter Spacing and Line Height */}
                 <EditorInput
-                    value={letterSpacing.config.value}
+                    value={textState?.letterSpacing ?? letterSpacing.config.value}
                     Icon={letterSpacing.Icon}
                     action={letterSpacing.action}
-                    type={letterSpacing.type}
+                    type={'float'}
                     property={letterSpacing.config.property ?? ''}
+                    onChange={(_, value) => updateTextState('letterSpacing', value)}
                 />
                 <EditorInput
-                    value={lineHeight.config.value}
+                    value={textState?.lineHeight ?? lineHeight.config.value}
                     Icon={lineHeight.Icon}
                     action={lineHeight.action}
-                    type={lineHeight.type}
+                    type={'float'}
                     property={lineHeight.config.property ?? ''}
+                    onChange={(_, value) => updateTextState('lineHeight', value)}
                 />
                 {/* Text Alignment and Casing */}
                 <div className='flex items-center gap-x-px pl-2'>
@@ -77,7 +121,8 @@ export default function TextSettings() {
                                 Icon={item.Icon}
                                 action={item.action}
                                 property={item.config.property ?? ''}
-                                selectedValue='left'
+                                selectedValue={(textState?.textAlign ?? item.config.value) as Alignment}
+                                onChange={(_, value) => updateTextState('textAlign', value)}
                             />
                         )
                     })}
@@ -91,7 +136,8 @@ export default function TextSettings() {
                                 Icon={item.Icon}
                                 action={item.action}
                                 property={item.config.property ?? ''}
-                                selectedValue='uppercase'
+                                selectedValue={(textState?.textTransform ?? 'uppercase') as string}
+                                onChange={(_, value) => updateTextState('textTransform', value)}
                             />
                         )
                     })}
@@ -106,7 +152,8 @@ export default function TextSettings() {
                                 Icon={item.Icon}
                                 action={item.action}
                                 property={item.config.property ?? ''}
-                                selectedValue='underline'
+                                selectedValue={(textState?.textDecoration ?? 'none') as string}
+                                onChange={(_, value) => updateTextState('textDecoration', value)}
                             />
                         )
                     })}
@@ -119,7 +166,9 @@ export default function TextSettings() {
                                 value={item.config.value}
                                 Icon={item.Icon}
                                 action={item.action}
+                                selectedValue={(textState?.fontStyle ?? 'normal') as string}
                                 property={item.config.property ?? ''}
+                                onChange={(_, value) => updateTextState('fontStyle', value)}
                             />
                         )
                     })}

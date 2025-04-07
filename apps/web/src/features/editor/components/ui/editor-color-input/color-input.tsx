@@ -23,7 +23,9 @@ function EditorColorInput({
     className
 }: EditorColorInputProps) {
     return (
-        <Popover>
+        <Popover
+            key="color-input"
+        >
             <Hint
                 label={action}
                 className="z-[50000]"
@@ -37,9 +39,9 @@ function EditorColorInput({
                             style={{ background: typeof value === "string" ? value : formatEditorGradientToCSS(value) }}
                         />
                     </PopoverTrigger>
-                    <input contentEditable={false} value={
-                        typeof value === 'string' ? value : 'Linear'
-                    } className="ml-[26px] text-xs outline-none bg-transparent" />
+                    <span className="ml-[26px] text-xs outline-none inline-block max-w-[calc(100%-26px)] bg-transparent" >
+                        {typeof value === 'string' ? value : 'Linear'}
+                    </span>
                 </div>
             </Hint>
 

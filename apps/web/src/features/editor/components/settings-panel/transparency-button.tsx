@@ -13,9 +13,13 @@ type Props = {
 export default function TransparencyButton({ currentColor, updateColor, className }: Props) {
     const isTransparent = typeof currentColor === 'string' ? colord(currentColor).alpha() === 0 : false
     const toggleTransparency = () => {
-        if (isTransparent) return;
-        // set the color to a transparent color
-        updateColor('rgba(0,0,0,0)')
+        if (typeof currentColor !== 'string') return;
+        if (!isTransparent) {
+            // set the color to a transparent color
+            updateColor(colord(currentColor).alpha(0).toHex())
+            return;
+        }
+        updateColor(colord(currentColor).alpha(1).toHex())
     }
     return (
         <button
@@ -23,7 +27,7 @@ export default function TransparencyButton({ currentColor, updateColor, classNam
             aria-label='Toggle Transparency'
             aria-pressed={isTransparent}
             onClick={toggleTransparency}
-            className={cn('flex items-center max-w-fit col-span-2 min-w-fit justify-center transition-opacity duration-200 text-muted-foreground hover:bg-muted px-2 py-1 text-xs', className)}
+            className={cn('flex items-center max-w-fit  min-w-fit justify-center transition-opacity duration-200 text-muted-foreground hover:bg-muted px-4 ml-auto py-1 text-xs', className)}
         >
             {isTransparent ? <EyeClosedIcon height={16} width={16} /> : <EyeOpenIcon height={16} width={16} />}
         </button>

@@ -1,4 +1,4 @@
-import { EditorGradient, EditorGradientDirection } from '@designr/use-editor';
+import { EditorGradient } from '@designr/use-editor';
 import { PlusIcon, XIcon } from 'lucide-react';
 import React from 'react'
 import { BaseColorPicker } from './base-color-picker';
@@ -11,6 +11,7 @@ interface GradientPickerProps {
     gradient: EditorGradient;
     // eslint-disable-next-line no-unused-vars
     updateGradient: (gradient: EditorGradient) => void;
+    //value: string | EditorGradient
 }
 export function GradientPicker({
     gradient,
@@ -20,10 +21,12 @@ export function GradientPicker({
     const [currentColorId, setCurrentColorId] = React.useState<string | null>('');
     const [format, setFormat] = React.useState<'hex' | 'rgba' | 'hsl'>('hex');
     const [gradientColorsWithId, setGradientColorsWithId] = React.useState<(EditorGradient['colors'][number] & { id: string })[]>([]);
-    console.log("gradient", gradient);
+    //console.log("gradient", gradient);
     React.useEffect(() => {
         setGradientColorsWithId(gradient.colors.map((color) => ({ ...color, id: uuidV4() })));
+        updateGradient(gradient);
     }, [])
+
     return (
         <div
             className='flex mt-5 flex-col gap-2'
@@ -78,7 +81,7 @@ export function GradientPicker({
                     onClick={() => {
                         const newColor = {
                             color: '#fff',
-                            offset: gradient.colors.length % 2 === 0 ? 0 : 1
+                            offset: gradient.colors.length
                         }
                         updateGradient({
                             ...gradient,

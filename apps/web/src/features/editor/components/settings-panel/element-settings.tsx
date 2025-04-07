@@ -7,14 +7,54 @@ import {
 import {
     element as elementData
 } from './data'
-type Props = {
+import { BaseEditorCompProps } from '../../types'
+import { SelectedObject } from '@designr/use-editor'
+interface Props extends BaseEditorCompProps {
     isGroup?: boolean
     elements: string | string[]
+    thereIsACircle?: boolean
+    thereIsAText?: boolean
 }
+type ElementType = "width" | "height" | "x" | "y" | "angle" | "diameter" | "cornerSize";
 export default function ElementSettings({
+    editor,
     isGroup,
-    elements
+    elements,
+    thereIsACircle,
 }: Props) {
+    const [elementState, setElementState] = React.useState<Record<
+        ElementType,
+        SelectedObject[ElementType]>>({
+            width: editor?.selectedObjects?.[0]?.width ?? 0,
+            height: editor?.selectedObjects?.[0]?.height ?? 0,
+            x: editor?.selectedObjects?.[0]?.x ?? 0,
+            y: editor?.selectedObjects?.[0]?.y ?? 0,
+            angle: editor?.selectedObjects?.[0]?.angle ?? 0,
+            diameter: editor?.selectedObjects?.[0]?.diameter ?? 0,
+            cornerSize: editor?.selectedObjects?.[0]?.cornerSize ?? 0
+        })
+    const updateElementState = (key: ElementType, value: SelectedObject[ElementType]) => {
+        setElementState(prev => ({
+            ...prev,
+            [key]: value
+        }))
+        editor?.updateSelectedObjectProperty(key, value);
+    }
+    // sync the state with the editor
+    React.useEffect(() => {
+        const selectedObject = editor?.selectedObjects?.[0]?.object;
+        console.log('selectedObject', selectedObject)
+        if (selectedObject) {
+            setElementState(prev => ({
+                ...prev,
+                width: selectedObject.width,
+                height: selectedObject.height,
+                x: selectedObject.getX(),
+                y: selectedObject.getY(),
+                angle: selectedObject.angle,
+            }))
+        }
+    }, [editor?.selectedObjects])
     return (
         <div className='mt-2' >
             {
@@ -48,14 +88,21 @@ export default function ElementSettings({
                 {
                     elementData.inputs.map((item, index) => {
                         return (
-                            <EditorInput
-                                key={index}
-                                value={item.config.value}
-                                Icon={item.Icon}
-                                action={item.action}
-                                type={item.type}
-                                property={item.config.property ?? ''}
-                            />
+                            // don't show diameter unless there is a circle
+                            (thereIsACircle || item.config.property !== 'diameter') && (
+                                <EditorInput
+                                    key={index}
+                                    type={item.type}
+                                    value={elementState[item.config.property as ElementType]}
+                                    Icon={item.Icon}
+                                    action={item.action}
+                                    property={item.config.property as ElementType}
+                                    onChange={(property, value) => {
+                                        updateElementState(property as ElementType, value as number)
+                                    }}
+                                />
+                            )
+
                         )
                     })
                 }

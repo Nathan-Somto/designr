@@ -1,5 +1,5 @@
 import { AngleIcon, DashIcon, DimensionsIcon, FontSizeIcon, HeightIcon, LetterSpacingIcon, LineHeightIcon, OpacityIcon, ShadowOuterIcon, WidthIcon } from "@designr/ui/react-icons";
-import { AlignCenterHorizontal, AlignCenterIcon, AlignCenterVerticalIcon, AlignHorizontalJustifyEndIcon, AlignHorizontalJustifyStartIcon, AlignLeftIcon, AlignRightIcon, AlignVerticalJustifyEndIcon, AlignVerticalJustifyStartIcon, BoxSelectIcon, CaseLowerIcon, CaseSensitiveIcon, CaseUpperIcon, CircleIcon, FilterIcon, Grid2X2Icon, Grid3x3Icon, GridIcon, ItalicIcon, MenuIcon, MoveHorizontalIcon, MoveVerticalIcon, SlashIcon, SquareIcon, StretchHorizontal, StretchVertical, Strikethrough, TypeIcon, Underline, X } from "lucide-react";
+import { AlignCenterHorizontal, AlignCenterIcon, AlignCenterVerticalIcon, AlignHorizontalJustifyEndIcon, AlignHorizontalJustifyStartIcon, AlignLeftIcon, AlignRightIcon, AlignVerticalJustifyEndIcon, AlignVerticalJustifyStartIcon, BoxSelectIcon, CaseLowerIcon, CaseSensitiveIcon, CaseUpperIcon, CircleIcon, FilterIcon, Grid2X2Icon, Grid3x3Icon, GridIcon, ItalicIcon, MenuIcon, MoveHorizontalIcon, MoveVerticalIcon, SlashIcon, SquareIcon, StretchHorizontal, StretchVertical, Strikethrough, TypeIcon, Underline, X, XIcon } from "lucide-react";
 import { ButtonSelect, InputSelect, OptionsSelect, SettingsSection } from "../../types";
 //===== Alignment Settings ===========//
 export const alignment: ButtonSelect<'align'> = {
@@ -362,9 +362,10 @@ export const filter: OptionsSelect<'filter'> = {
     type: 'select',
     config: {
         property: 'filter',
-        value: 'greyscale'
+        value: 'none'
     },
     options: [
+        "none",
         "greyscale",
         "polaroid"
         , "sepia"
@@ -423,7 +424,7 @@ export const effects = {
             action: 'Shadow Color',
         } as InputSelect<'shadow.color'>,
         {
-            Icon: () => <SquareIcon size={18} />,
+            Icon: () => <XIcon size={18} />,
             type: 'int',
             config: {
                 property: 'shadow.offsetX',

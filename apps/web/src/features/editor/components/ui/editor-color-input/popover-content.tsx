@@ -3,6 +3,7 @@ import { EditorGradient } from "@designr/use-editor";
 import React, { useState } from "react";
 import { BaseColorPicker } from "./base-color-picker";
 import { GradientPicker } from "./gradient-picker";
+import { colord } from "colord";
 
 export function EditorColorInputPopoverContent({
     value,
@@ -17,14 +18,14 @@ export function EditorColorInputPopoverContent({
     const [activeTab, setActiveTab] = React.useState<"solid" | "gradient">("solid");
     const [gradient, setGradient] = React.useState<EditorGradient>(
         typeof value === "string"
-            ? { type: "linear", direction: "to right", colors: [{ color: value, offset: 0 }, { color: '#f00', offset: 1 }] }
+            ? { type: "linear", direction: "to right", colors: [{ color: value, offset: 0 }, { color: colord(value).lighten(30).toHex(), offset: 1 }] }
             : value
     );
     const [activeFormat, setActiveFormat] = useState<"hex" | "rgba" | "hsl">("hex");
 
     const handleGradientChange = (updatedGradient: EditorGradient) => {
-        setGradient(updatedGradient);
         onChange(updatedGradient);
+        setGradient(updatedGradient);
     };
 
     return (
