@@ -152,7 +152,7 @@ export function useCanvasInit({
         fabric.FabricObject.createControls = function () {
             return controls;
         }
-        fabric.FabricText.createControls = function () {
+        fabric.Textbox.createControls = function () {
             return controls;
         }
         fabric.FabricImage.createControls = function () {
