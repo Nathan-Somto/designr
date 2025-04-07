@@ -1,6 +1,6 @@
 import * as fabric from "fabric";
 import { Alignment, BorderStyle, CanvasHelpersProps, Workspace, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue } from '../types'
-import { FILL_COLOR, GRID_COLOR, GRID_WIDTH, STROKE_COLOR, WORKSPACE_NAME } from '../defaults'
+import { FILL_COLOR, GRID_COLOR, GRID_WIDTH, JSON_KEYS, STROKE_COLOR, WORKSPACE_NAME } from '../defaults'
 import { randomPosition } from './randomPosition';
 import { createLink } from './createLink';
 import { createFilter } from "./createFilter";
@@ -18,6 +18,8 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             top: workspace.top + (workspace.height - element.height * element.scaleY) / 2,
             left: workspace.left + (workspace.width - element.width * element.scaleX) / 2
         })
+        element.strokeDashArray = [];
+        element.strokeWidth = 0;
         canvas.add(element)
         canvas.setActiveObject(element)
     }
@@ -64,6 +66,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
                 angle: 45,
                 stroke: STROKE_COLOR,
                 fill: FILL_COLOR,
+                shapeType: 'Diamond',
                 ...diamondProps
             }
         )
@@ -104,7 +107,10 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             return new fabric.Polygon(points, {
                 fill: FILL_COLOR,
                 stroke: STROKE_COLOR,
-                strokeWidth: 2
+                strokeWidth: 2,
+                //@ts-expect-error: custom property
+                shapeType: 'Star',
+                selectable: true,
             });
         }
         const star = createStar({
@@ -145,28 +151,33 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
     const addText = (textConfig: TextConfig) => {
         const text = new fabric.Textbox(textConfig.value, {
             ...textConfig,
+            textTransform: 'capitalize'
         })
         insertElement(canvas, text)
         updateAction('Text')
     }
     const addImage = async (url: string) => {
-        const point = canvas.getCenterPoint();
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return;
         const image = await fabric.FabricImage.fromURL(url, {
             crossOrigin: 'anonymous',
-        },
-            {
-                left: point.x,
-                top: point.y,
-                originX: 'center',
-                originY: 'center'
-            }
+        }
         )
-        image.scaleToWidth(canvas.width * 0.5)
-        image.scaleToHeight(canvas.height * 0.5)
+        image.scaleToWidth(workspace.width * 0.5)
+        image.scaleToHeight(workspace.height * 0.5)
         insertElement(canvas, image)
 
     }
-    const removeGridsFromWorkspace = () => {
+    const addSvgString = async (svgString: string) => {
+        const workspace = getWorkspace(canvas);
+        if (!workspace) return;
+        const svg = await fabric.loadSVGFromString(svgString)
+        if (!svg.objects) return
+        //@ts-ignore
+        const obj = fabric.util.groupSVGElements(svg.objects, svg.options)
+        insertElement(canvas, obj)
+    }
+    const removeGridsFromWorkspace = (canvas: fabric.Canvas) => {
         canvas.getObjects().forEach((obj) => {
             //@ts-ignore
             if (obj.id === 'grid-horizontal-line' || obj.id === 'grid-vertical-line') {
@@ -185,7 +196,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
 
         // Remove existing grid lines before drawing new ones
 
-        removeGridsFromWorkspace();
+        removeGridsFromWorkspace(canvas);
         workspace.gridHorizontal = gridHorizontal;
         workspace.gridVertical = gridVertical;
 
@@ -315,8 +326,25 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         };
         return dashArrayMap[JSON.stringify(strokeDashArray) as keyof typeof dashArrayMap] ?? "custom";
     }
-    const isType = (object: fabric.Object, type: 'circle' | 'rectangle' | 'triangle' | 'image' | 'text') => {
+    const isType = (
+        object: fabric.Object,
+        type: 'group' | 'circle' | 'rectangle' | 'triangle' | 'image' | 'text' | 'star' | 'diamond'
+    ): object is
+        | fabric.Group
+        | fabric.Circle
+        | fabric.Rect
+        | fabric.Triangle
+        | fabric.Image
+        | fabric.Textbox
+        | (fabric.Polygon & { shapeType: 'Star' })
+        | (fabric.Rect & { shapeType: 'Diamond' }) => {
         switch (type) {
+            case 'star':
+                //@ts-expect-error
+                return object instanceof fabric.Polygon && object.shapeType === 'Star';
+            case 'diamond':
+                //@ts-expect-error
+                return object instanceof fabric.Rect && object.shapeType === 'Diamond';
             case 'circle':
                 return object instanceof fabric.Circle;
             case 'rectangle':
@@ -324,16 +352,34 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             case 'triangle':
                 return object instanceof fabric.Triangle;
             case 'image':
-                return object instanceof fabric.FabricImage;
+                return object instanceof fabric.Image;
             case 'text':
                 return object instanceof fabric.Textbox;
+            case 'group':
+                return object instanceof fabric.Group;
             default:
                 return false;
         }
-    }
+    };
+
+    const getType = (object: fabric.Object): string | null => {
+        if (object instanceof fabric.Circle) return 'Circle';
+        if (object instanceof fabric.Triangle) return 'Triangle';
+        if (object instanceof fabric.FabricImage) return 'Image';
+        if (object instanceof fabric.Textbox) return 'Text';
+        //@ts-expect-error
+        if (object instanceof fabric.Polygon && object.shapeType === 'Star') return 'Star';
+        //@ts-expect-error
+        if (object instanceof fabric.Rect && object.shapeType === 'Diamond') return 'Diamond';
+        if (object instanceof fabric.Rect) return 'Rectangle';
+        return null;
+    };
+
     //====== EXPORTERS ======
-    const exportAsPNG = () => {
-        const dataURL = canvas?.toDataURL({
+    const exportAsPNG = async () => {
+        const clonedCanvas = await canvas?.clone(JSON_KEYS);
+        removeGridsFromWorkspace(clonedCanvas)
+        const dataURL = clonedCanvas?.toDataURL({
             format: 'png',
             quality: 1,
             multiplier: 2,
@@ -541,7 +587,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             type: 'linear',
             gradientUnits: 'percentage',
             coords: coordsMap[direction],
-            colorStops: colors.map(({ offset, color }) => ({ offset, color }))
+            colorStops: colors.map(({ offset, color }) => ({ offset: (offset / colors.length), color })).toReversed()
         });
     }
     const updateImageFilter = (selectedObject: SelectedObject, value: FabricFilterType) => {
@@ -599,7 +645,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
 
         object.setCoords();
     }
-    const setBorderStyle = (object: fabric.Object, selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, 'custom'>) => {
+    const setBorderStyle = (selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, 'custom'>) => {
         const borderStyleMap: Record<Exclude<BorderStyle, 'custom'>, number[]> = {
             solid: [],
             dashed: [10, 5],
@@ -609,7 +655,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         };
 
         selectedObject.borderStyle = newStyle;
-        object.strokeDashArray = borderStyleMap[newStyle] ?? [];
+        selectedObject.object.strokeDashArray = borderStyleMap[newStyle] ?? [];
     }
     return {
         /**
@@ -952,6 +998,32 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          *      gridVertical:  12 
          * })
          */
-        setGridDimensions
+        setGridDimensions,
+        /**
+         * @description a function that is used to remove the grid lines from the canvas
+         * @example
+         * const {editor} = useEditor();
+         * editor?.removeGridsFromWorkspace(canvas);
+         * @private used internally in the addGridToCanvas function
+         * @private used internally in the setGridDimensions function
+         * @private used internally in the setZoomLevel function
+         */
+        removeGridsFromWorkspace,
+        /**
+         * @description a function that is used to get the type of an object
+         * @example
+         * const {editor} = useEditor();
+         * const type = editor?.getType(object); // returns 'circle' | 'rectangle' | 'triangle' | 'image' | 'text' | 'star' | 'diamond'
+         */
+        getType,
+        /**
+         * @description a function that is used to load an svg string into the canvas
+         * @param {string} svgString - The SVG string to load.
+         * @example
+         * const {editor} = useEditor();
+         * editor?.addSvgString('<svg>...</svg>');
+         * 
+         */
+        addSvgString,
     };
 }
