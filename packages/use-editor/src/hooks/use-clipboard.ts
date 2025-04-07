@@ -25,10 +25,9 @@ export const useClipboard = (canvas: fabric.Canvas | null) => {
     const paste = useCallback(async () => {
         if (!canvas || !copiedObjectRef.current) return;
         const cloned = await copiedObjectRef.current.clone(JSON_KEYS);
+        canvas.discardActiveObject();
         if (!cloned) return;
         if (
-            cloned.type === "activeSelection"
-            &&
             cloned instanceof fabric.ActiveSelection
         ) {
             cloned.canvas = canvas;
@@ -36,19 +35,22 @@ export const useClipboard = (canvas: fabric.Canvas | null) => {
                 canvas.add(obj);
             });
             cloned.setCoords();
-        } else {
+        }
+        else {
             canvas.add(cloned);
         }
         // we offset the position of the pasted object
         cloned.set({
             left: (cloned.left || 0) + 20,
             top: (cloned.top || 0) + 20,
+            evented: true
         });
-        canvas.add(cloned);
         canvas.setActiveObject(cloned);
         canvas.requestRenderAll();
     }, [canvas]);
-
+    const getRefState = useCallback(() => {
+        return copiedObjectRef.current;
+    }, []);
     return {
         /**
          * @description copies the active object on the canvas
@@ -65,6 +67,15 @@ export const useClipboard = (canvas: fabric.Canvas | null) => {
          * const {editor} = useEditor()
          * editor?.paste()
          */
-        paste
+        paste,
+        /**
+         * @description returns the current state of the copied object
+         * @description mutating it will not affect the copied object
+         * @returns fabric.Object | null
+         * @example 
+         * const {editor} = useEditor()
+         * editor?.getRefState()
+         */
+        getRefState
     };
 };
