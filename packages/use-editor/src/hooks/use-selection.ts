@@ -1,6 +1,7 @@
 import React from "react";
 import * as fabric from "fabric";
 import { Alignment, BorderStyle, EditorGradient, FabricFilterType, SelectedObject, SelectedObjectProps, UseSelectionProps } from "../types";
+import { isCapitalized, isLowercase, isUppercase, toCapitalize } from "../helpers/textTransformHelpers";
 //!Todo: handle multiple selections from select all
 /**
  * 
@@ -31,10 +32,10 @@ export function useSelection({ canvas,
                 y: target.top,
                 cornerSize: target.cornerSize,
                 opacity: target.opacity,
-                'shadow.color': target.shadow?.color ?? '#000',
-                'shadow.blur': target.shadow?.blur ?? 0,
-                'shadow.offsetX': target.shadow?.offsetX ?? 0,
-                'shadow.offsetY': target.shadow?.offsetY ?? 0,
+                'shadow.color': target.shadow?.color,
+                'shadow.blur': target.shadow?.blur,
+                'shadow.offsetX': target.shadow?.offsetX,
+                'shadow.offsetY': target.shadow?.offsetY,
                 strokeColor: target.stroke as string,
                 strokeWidth: target.strokeWidth,
                 skewX: target.skewX,
@@ -43,6 +44,7 @@ export function useSelection({ canvas,
                 scaleY: target.scaleY,
                 align: getAlignment?.(target, canvas as fabric.Canvas) ?? 'none',
                 borderStyle: getBorderStyleFromDashArray?.(target.strokeDashArray) ?? 'solid',
+                filter: 'none',
             };
 
             if (typeof target.fill === 'string') {
@@ -58,29 +60,20 @@ export function useSelection({ canvas,
                 selection.diameter = Math.round(target.radius * 2 * target.scaleX);
             }
             if (target instanceof fabric.FabricImage) {
-                //@ts-expect-error: the filter prop exists but the types are not included
-                selection.filter = target.filters[0]?.type;
+                selection.filter = target.filters[0]?.type as FabricFilterType;
             }
-
             if (target instanceof fabric.Textbox) {
                 selection.fontFamily = target.fontFamily;
                 selection.fontWeight = target.fontWeight;
                 selection.fontSize = target.fontSize;
-                //@ts-expect-error: the fontStyle prop exists but the types are not included
-                selection.fontStyle = target.fontStyle;
-                //@ts-expect-error: the textDecoration prop exists but the types are not included
-                selection.textDecoration = target.textDecoration;
-                //@ts-expect-error: the textAlign prop exists but the types are not included
-                selection.textAlign = target.textAlign;
-                //@ts-expect-error: the letterSpacing prop exists but the types are not included
-                selection.letterSpacing = target.letterSpacing;
+                selection.fontStyle = target.fontStyle as SelectedObject['fontStyle'];
+                selection.textAlign = target.textAlign as SelectedObject['textAlign'];
+                selection.letterSpacing = target.charSpacing;
                 selection.lineHeight = target.lineHeight;
-                //@ts-expect-error: the text transform prop exists but the types are not included
-                selection.textTransform = target.textTransform;
-                //@ts-expect-error: the underline prop exists but the types are not included
-                selection.underline = target.underline;
-                //@ts-expect-error: the lineThrough prop exists but the types are not included
-                selection.textDecoration = target.underline ? 'underline' : target.lineThrough ? 'line-through' : 'none';
+                //Todo: create helpers to determine type of text textTransform
+                const textValue = target.text
+                selection.textTransform = isCapitalized(textValue) ? 'capitalize' : isUppercase(textValue) ? 'uppercase' : isLowercase(textValue) ? 'lowercase' : 'none';
+                selection.textDecoration = target.underline ? 'underline' : target.linethrough ? 'line-through' : 'none';
             }
 
             return selection;
@@ -91,7 +84,6 @@ export function useSelection({ canvas,
 
     const updateSelectedObjectProperty = React.useCallback(<K extends SelectedObjectProps>(property: K, value: SelectedObject[K]) => {
         if (!selectedObjects || !canvas) return;
-
         selectedObjects.forEach((selectedObject) => {
             const { object } = selectedObject;
             if (property === 'x') {
@@ -103,16 +95,25 @@ export function useSelection({ canvas,
             } else if (property === 'align') {
                 alignObject?.(object, value as Alignment);
             }
+            else if (property === 'textTransform' && selectedObject.object instanceof fabric.Textbox) {
+                const textValue = selectedObject.object.text
+                object.set('text', value === 'capitalize' ? toCapitalize(textValue) : value === 'uppercase' ? textValue.toUpperCase() : value === 'lowercase' ? textValue.toLowerCase() : textValue)
+            }
             else if (property === 'borderStyle') {
-                setBorderStyle?.(object, selectedObject, value as Exclude<BorderStyle, "custom">);
+                setBorderStyle?.(selectedObject, value as Exclude<BorderStyle, "custom">);
+            }
+            else if (property === 'strokeColor') {
+                object.set('stroke', value)
             }
             else if (
                 property === 'fill'
-                &&
-                object.fill instanceof fabric.Gradient
-                && object.fill.type === 'linear'
+                && typeof value === 'object'
             ) {
-                object.set('fill', applyLinearGradient?.(value as EditorGradient));
+                object.set('fill', applyLinearGradient?.(value as EditorGradient<'linear'>));
+            }
+            else if (property === 'textDecoration') {
+                object.set('underline', value === 'underline')
+                object.set('linethrough', value === 'line-through')
             }
             else if (property.startsWith('shadow.')) {
                 const shadow = new fabric.Shadow({
@@ -121,16 +122,13 @@ export function useSelection({ canvas,
                     offsetX: property === 'shadow.offsetX' ? (value as number) : selectedObject['shadow.offsetX'],
                     offsetY: property === 'shadow.offsetY' ? (value as number) : selectedObject['shadow.offsetY'],
                 });
-                object.set({ shadow });
+                object.set('shadow', shadow);
             }
             else {
                 object.set(property, value);
             }
-
-            canvas.renderAll();
         });
 
-        canvas.renderAll();
         setSelectedObjects((prev) => {
             if (!prev) return prev;
             return prev.map((selectedObject) => ({
@@ -139,7 +137,8 @@ export function useSelection({ canvas,
             }));
         }
         );
-    }, [selectedObjects, canvas]);
+        canvas.renderAll();
+    }, [selectedObjects, canvas, applyLinearGradient]);
     /**
      * @description a callback that is run when an object is deselected
      * @description this method should be used internally by the editor
