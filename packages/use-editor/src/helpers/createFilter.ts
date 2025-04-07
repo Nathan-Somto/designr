@@ -2,6 +2,7 @@ import * as fabric from "fabric";
 import { FabricFilterType } from "../types";
 
 const filterMap: Record<FabricFilterType, any> = {
+    none: null,
     greyscale: new fabric.filters.Grayscale(),
     polaroid: new fabric.filters.Polaroid(),
     sepia: new fabric.filters.Sepia(),

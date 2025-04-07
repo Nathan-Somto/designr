@@ -55,6 +55,7 @@ type TextConfig = {
     value: string;
 }
 type FabricFilterType =
+    | "none"
     | "greyscale"
     | "polaroid"
     | "sepia"
@@ -136,7 +137,7 @@ type UseSelectionProps = {
     applyLinearGradient?: (fill: EditorGradient) => fabric.Gradient<'linear'>;
     alignObject?: (object: fabric.Object, alignment: Alignment) => void;
     updateImageFilter?: ((selectedObjects: SelectedObject, value: FabricFilterType) => void)
-    setBorderStyle?: (object: fabric.Object, selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, "custom">) => void
+    setBorderStyle?: (selectedObject: SelectedObject, newStyle: Exclude<BorderStyle, "custom">) => void
     getBorderStyleFromDashArray?: (strokeDashArray: number[] | null | undefined) => BorderStyle
 }
 type UseCanvasEventsProps = {
