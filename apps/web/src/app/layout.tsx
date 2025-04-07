@@ -30,7 +30,7 @@ export default function RootLayout({
         type='image/svg+xml'
         sizes="any"
       />
-      <body className={`${merienda.variable} font-merienda !pointer-events-auto`}
+      <body className={`${merienda.variable} font-merienda !pointer-events-auto !overflow-x-hidden`}
       >
         {children}
       </body>
