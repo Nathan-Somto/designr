@@ -1,5 +1,5 @@
 
-import { AlertTriangleIcon, BringToFrontIcon, ClipboardPaste, Copy, CopyPlusIcon, DownloadIcon, FilePlus2Icon, GlobeIcon, Group, HomeIcon, ImageIcon, ImagePlusIcon, ImportIcon, LockIcon, MousePointer2Icon, Redo2, SendToBackIcon, Trash, Undo2, Ungroup, ZoomIn, ZoomOut } from "lucide-react"
+import { AlertTriangleIcon, BringToFrontIcon, ClipboardPaste, Copy, CopyPlusIcon, DownloadIcon, FilePlus2Icon, GlobeIcon, Group, HeartIcon, HomeIcon, ImageIcon, ImagePlusIcon, ImportIcon, LockIcon, MousePointer2Icon, Redo2, SendToBackIcon, Trash, Undo2, Ungroup, ZoomIn, ZoomOut } from "lucide-react"
 import { Access } from "../../types"
 
 export const actionMenuItems = [
@@ -144,6 +144,11 @@ export const image =
                 </g>
             </svg>,
             action: 'Unsplash'
+        },
+        {
+            label: 'Icons',
+            Icon: () => <HeartIcon size={18} />,
+            action: 'Icons'
         }
     ] as const
 }

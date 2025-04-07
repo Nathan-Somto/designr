@@ -8,8 +8,8 @@ import TextMenu from './text-menu'
 import Hint from '@designr/ui/components/hint'
 import ImageMenu from './image-menu'
 import { BaseEditorCompProps } from '#/features/editor/types'
-export default function Toolbar({ editor }: BaseEditorCompProps) {
-    const isPending = false;
+export default function Toolbar({ editor, isSaving }: BaseEditorCompProps & { isSaving?: boolean }) {
+    const isPending = isSaving;
     const isError = false;
     return (
         <Menubar>
@@ -48,7 +48,9 @@ export default function Toolbar({ editor }: BaseEditorCompProps) {
                     editor={editor}
                 />
                 {/* Image Menu */}
-                <ImageMenu />
+                <ImageMenu
+                    editor={editor}
+                />
                 {/* Undo */}
                 <Hint label='undo'>
                     <Button

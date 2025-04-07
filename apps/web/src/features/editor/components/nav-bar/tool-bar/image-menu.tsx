@@ -4,8 +4,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import Hint from '@designr/ui/components/hint'
 import { image } from '../data'
 import React from 'react'
+import { AssetsDialog } from '../../dialogs/assets-dialog'
+import { BaseEditorCompProps } from '#/features/editor/types'
 type Action = typeof image.options[number]['action']
-export default function ImageMenu() {
+export default function ImageMenu({ editor }: BaseEditorCompProps) {
+    const [defaultTab, setDefaultTab] = React.useState<'uploaded' | 'unsplash' | 'icons'>('uploaded')
+    const [open, setOpen] = React.useState(false)
     const {
         Icon,
         action
@@ -21,6 +25,15 @@ export default function ImageMenu() {
             //! put the image in the canvas
         }
     })
+    const handleAddImageToCanvas = (image: string, url: 'svg' | 'url') => {
+        console.log("the image to add to canvas: ", image)
+        //! put the image in the canvas
+        if (url === 'svg') {
+            editor?.addSvgString(image)
+            return
+        }
+        editor?.addImage(image)
+    }
     const handleImageAction = (action: Action) => {
         switch (action) {
             case 'Upload':
@@ -28,9 +41,18 @@ export default function ImageMenu() {
                 break;
             case 'Unsplash':
                 //! open the asset modal and set the tab to unsplash
+                setOpen(true);
+                setDefaultTab('unsplash');
                 break;
             case 'Select':
                 //! open the asset modal and set the tab to select
+                setOpen(true);
+                setDefaultTab('uploaded');
+                break;
+            case 'Icons':
+                //! open the asset modal and set the tab to icons
+                setOpen(true);
+                setDefaultTab('icons');
                 break;
             default:
                 break;
@@ -78,6 +100,15 @@ export default function ImageMenu() {
                 </DropdownMenuContent>
             </DropdownMenu>
             <InputElement />
+            <AssetsDialog
+                defaultTab={defaultTab}
+                openProp={open}
+                onOpenChange={setOpen}
+                onSelect={(image, url) => {
+                    if (image) handleAddImageToCanvas(image, url)
+                    setOpen(false)
+                }}
+            />
         </>
     )
 }
