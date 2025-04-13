@@ -196,6 +196,8 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
 
         // Remove existing grid lines before drawing new ones
 
+        const originalFire = canvas.fire;
+        canvas.fire = () => false
         removeGridsFromWorkspace(canvas);
         workspace.gridHorizontal = gridHorizontal;
         workspace.gridVertical = gridVertical;
@@ -210,7 +212,6 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
 
         const verticalSpacing = width / (gridHorizontal - 1);
         const horizontalSpacing = height / (gridVertical - 1);
-
         // Draw vertical grid lines inside the workspace
         for (let i = 0; i < gridHorizontal; i++) {
             const x = left + i * verticalSpacing;
@@ -236,7 +237,7 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
             });
             canvas.add(horizontalLine);
         }
-
+        canvas.fire = originalFire;
         workspace.gridIsActive = true;
         canvas.renderAll();
     };
@@ -494,12 +495,23 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         canvas.renderAll()
     }
     const clearActiveObjects = () => {
-        const activeObjects = canvas.getActiveObjects()
-        activeObjects.forEach(object => {
-            canvas.remove(object)
-        })
-        canvas.discardActiveObject()
-    }
+        const activeObjects = canvas.getActiveObjects();
+
+        const removeRecursively = (object: fabric.Object) => {
+            if (object instanceof fabric.Group) {
+                object.getObjects().forEach(child => {
+                    removeRecursively(child);
+                });
+            }
+            canvas.remove(object);
+        };
+        activeObjects.forEach(obj => {
+            removeRecursively(obj);
+        });
+        canvas.discardActiveObject();
+        canvas.requestRenderAll();
+    };
+
     const zoomChange = (direction: ZoomDirection) => {
         let zoom = canvas.getZoom();
         zoom *= direction === '+' ? 1.5 : 0.5;
@@ -526,18 +538,22 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
     }
     const ungroupActiveObjects = () => {
         const group = canvas.getActiveObject()
-        if (!group || group.type !== 'group') return
+        if (!group) return
         //type safe check for is group
         if (!(group instanceof fabric.Group)) return
-        canvas.remove(group);
         // remove all groups from active selection
-        const sel = new fabric.ActiveSelection(
-            group.removeAll(),
-            {
-                canvas: canvas,
-            }
-        )
-        canvas.setActiveObject(sel)
+
+        canvas.remove(group);
+        group.forEachObject(object => {
+            canvas.remove(object);
+        })
+        //canvas.add(...group.removeAll());
+        const objects = group.removeAll();
+        canvas.add(...objects)
+        const sel = new fabric.ActiveSelection(objects, {
+            canvas: canvas
+        })
+        canvas.setActiveObject(sel);
         canvas.requestRenderAll()
     }
     const duplicateActiveObjects = async () => {
