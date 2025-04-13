@@ -33,19 +33,27 @@ export function useCanvasEvents({
             console.log('object:modified');
             onSave?.();
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
+            onObjectsSelection?.([e.target], false)
         });
+        canvas.on("object:scaling", (e) => {
+            onObjectsSelection?.([e.target], false);
+        })
         canvas?.on('object:removed', (e) => {
             console.log('object:removed');
             onObjectModified?.(e.target as unknown as fabric.FabricObject[]);
             onSave?.();
-            //onSave?.(e.target?.canvas?.toDatalessJSON());
         });
         canvas?.on('object:moving', () => {
             updateAction('Translating')
         });
         canvas?.on('selection:created', (e) => {
+            console.log("selection:created");
             onObjectsSelection?.(e.selected, false)
             updateAction('Selection');
+        })
+        canvas?.on('selection:updated', (e) => {
+            console.log("selection:updated");
+            onObjectsSelection?.(e.selected, false)
         })
         canvas?.on('selection:cleared', () => {
             onObjectsDeselection?.()
@@ -92,8 +100,11 @@ export function useCanvasEvents({
             canvas.off('object:removed');
             canvas.off('object:moving');
             canvas.off('selection:created');
+            canvas.off("selection:cleared");
+            canvas.off('selection:updated');
             canvas.off('mouse:wheel');
             canvas.off('contextmenu');
+            canvas.off('object:scaling');
             document.removeEventListener('click', handleClickOutside);
         }
     }, [canvas])

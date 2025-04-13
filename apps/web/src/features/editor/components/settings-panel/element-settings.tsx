@@ -43,7 +43,7 @@ export default function ElementSettings({
     // sync the state with the editor
     React.useEffect(() => {
         const selectedObject = editor?.selectedObjects?.[0]?.object;
-        console.log('selectedObject', selectedObject)
+        //console.log('selectedObject', selectedObject)
         if (selectedObject) {
             setElementState(prev => ({
                 ...prev,
@@ -93,7 +93,7 @@ export default function ElementSettings({
                                 <EditorInput
                                     key={index}
                                     type={item.type}
-                                    value={elementState[item.config.property as ElementType]}
+                                    value={elementState[item.config.property as ElementType]?.toFixed(2)}
                                     Icon={item.Icon}
                                     action={item.action}
                                     property={item.config.property as ElementType}

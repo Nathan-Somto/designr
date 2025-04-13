@@ -18,6 +18,18 @@ export default function TransformSettings({ editor }: BaseEditorCompProps) {
         skewX: editor?.selectedObjects?.[0]?.skewX ?? 0,
         skewY: editor?.selectedObjects?.[0]?.skewY ?? 0
     })
+    React.useEffect(() => {
+        const selectedObject = editor?.selectedObjects?.[0]?.object;
+        if (selectedObject) {
+            setTransformState(prev => ({
+                ...prev,
+                scaleX: selectedObject.scaleX,
+                scaleY: selectedObject.scaleY,
+                skewX: selectedObject.skewX,
+                skewY: selectedObject.skewY
+            }))
+        }
+    }, [editor?.selectedObjects])
     return (
         <div>
             <div
@@ -39,7 +51,7 @@ export default function TransformSettings({ editor }: BaseEditorCompProps) {
                         return (
                             <EditorInput
                                 key={index}
-                                value={item.config.property ? transformState[item.config.property] : 0}
+                                value={item.config.property ? transformState[item.config.property]?.toFixed(2) : 0}
                                 Icon={item.Icon}
                                 action={item.action}
                                 type={item.type}
