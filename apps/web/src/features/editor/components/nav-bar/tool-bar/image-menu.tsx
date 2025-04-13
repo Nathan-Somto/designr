@@ -75,6 +75,7 @@ export default function ImageMenu({ editor }: BaseEditorCompProps) {
                 <DropdownMenuContent
                     sideOffset={8}
                     align='end'
+                    className='z-[65]'
                 >
                     {image.options.map(({
                         Icon,

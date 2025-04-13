@@ -38,6 +38,7 @@ export default function TextMenu({ editor }: BaseEditorCompProps) {
             <DropdownMenuContent
                 sideOffset={8}
                 align='end'
+                className='z-[65]'
             >
                 {text.options.map(({
                     label,

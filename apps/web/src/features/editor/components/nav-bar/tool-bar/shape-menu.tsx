@@ -68,7 +68,7 @@ export default function ShapeMenu({
             </Hint>
             <DropdownMenuContent
                 sideOffset={8}
-                className='max-w-44 mx-auto'
+                className='max-w-44 mx-auto z-[65]'
                 align='end'
             >
                 {shapes.map(({
