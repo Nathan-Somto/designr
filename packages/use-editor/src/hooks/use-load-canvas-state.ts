@@ -12,7 +12,7 @@ export function useLoadCanvasState({ canvas, state, initCanvasHistory, autoZoomT
             //! state the history state here
             initCanvasHistory(state);
             //! auto zoom to the center point here
-            //autoZoomToFit();
+            autoZoomToFit();
         })
     }, [canvas, state])
 }
