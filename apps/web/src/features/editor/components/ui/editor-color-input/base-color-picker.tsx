@@ -39,12 +39,17 @@ export function BaseColorPicker({ value, onChange, format, onChangeFormat }: Bas
     }, [value]);
 
     const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newValue = e.target.value;
-        if (colord(newValue).isValid()) {
-            setInputValue(newValue);
-            onChange(newValue);
+        let value = e.target.value;
+        const hex = value.startsWith('#') ? value.slice(1) : value;
+        if (hex.length > 6) return;
+        if (hex.length === 3 || hex.length === 6) {
+            setInputValue(value);
+            onChange(value);
+        } else {
+            setInputValue(value);
         }
     };
+
 
     const handleNumberInputChange = (field: string, newValue: number) => {
         if (format === "rgba") {
