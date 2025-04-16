@@ -111,7 +111,7 @@ type SelectedObject = {
     lineHeight?: number;
     fill: string | EditorGradient;
     filter?: FabricFilterType;
-    cornerSize: number;
+    cornerSize?: number;
     'shadow.color'?: string;
     'shadow.blur'?: number;
     'shadow.offsetX'?: number;
@@ -168,6 +168,7 @@ type UseKeyboardShortcutsProps = {
 }
 type UseLayersProps = {
     canvas: fabric.Canvas | null
+    getType: (object: fabric.Object) => string | null
 }
 type Layers = {
     id: string

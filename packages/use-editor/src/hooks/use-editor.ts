@@ -44,7 +44,8 @@ export default function useEditor(props: UseEditorProps | void = {
         intialState,
         onSaveCallback,
         backgroundColor,
-        workspaceColor
+        workspaceColor,
+        filename = 'canvas'
     } = props
     // the editor instance
     const dimensions = React.useRef(initialDimensions)
@@ -81,18 +82,7 @@ export default function useEditor(props: UseEditorProps | void = {
         paste,
         getRefState
     } = useClipboard(canvas)
-    const {
-        layers,
-        selectedLayer,
-        onSelectLayer,
-        onLayersUpdate,
-        selectLayerInCanvas,
-        moveLayer,
-        toggleLayerLock,
-        toggleLayerVisibility
-    } = useLayers({
-        canvas
-    })
+
 
     const editorLineHelpers = React.useMemo(() => {
         if (!canvas) return null
@@ -108,12 +98,27 @@ export default function useEditor(props: UseEditorProps | void = {
         return canvasHelpers({
             canvas,
             setZoom,
-            updateAction: setCurrentAction
+            updateAction: setCurrentAction,
+            filename
         })
 
     }, [
-        canvas
+        canvas,
+        filename
     ])
+    const {
+        layers,
+        selectedLayer,
+        onSelectLayer,
+        onLayersUpdate,
+        selectLayerInCanvas,
+        moveLayer,
+        toggleLayerLock,
+        toggleLayerVisibility
+    } = useLayers({
+        canvas,
+        getType: editor?.getType ?? (() => null)
+    })
     const {
         selectedObjects,
         onObjectsSelection,
@@ -134,7 +139,7 @@ export default function useEditor(props: UseEditorProps | void = {
         onObjectModified: onLayersUpdate,
         onObjectsSelection: (target) => {
             onObjectsSelection(target)
-            onSelectLayer(target !== null && target[0] !== undefined ? target[0] : null)
+            onSelectLayer(target !== null && Array.isArray(target) ? target[0] : null)
         },
         onObjectsDeselection: () => {
             onObjectsDeselection()
