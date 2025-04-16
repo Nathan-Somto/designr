@@ -9,7 +9,6 @@ export function useCanvasInit({
     canvasRef,
     workspaceColor,
     setCanvas,
-    canvas,
     setZoom,
     initHistory
 }: Pick<UseEditorProps, 'initialDimensions' | 'backgroundColor' | 'workspaceColor'> & {
@@ -181,7 +180,6 @@ export function useCanvasInit({
         canvasInstance.clipPath = workspaceRect;
         canvasInstance.centerObject(workspaceRect);
         canvasInstance.add(workspaceRect);
-        canvasInstance.add(workspaceRect);
         const zoom = fabric.util.findScaleToFit({
             width: workspaceRect.width,
             height: workspaceRect.height
@@ -198,9 +196,10 @@ export function useCanvasInit({
             canvasInstance.toObject(JSON_KEYS)
         );
         initHistory(currentState)
+        //console.log("canvas get objects: ", canvasInstance.getObjects());
         canvasInstance.renderAll();
         console.log("Canvas Has Been Initialized")
-
+        return canvasInstance
         //! setup the history api here
         //! the current state of the canvas, the intial history state
     }, [])
@@ -210,9 +209,9 @@ export function useCanvasInit({
             URL.revokeObjectURL(svgBlobURL);
         }
         window.addEventListener('beforeunload', listener)
-        initialize();
+        const destroy = initialize();
         return () => {
-            canvas?.dispose();
+            destroy?.dispose();
             window.removeEventListener('beforeunload', listener)
         }
     }, [
