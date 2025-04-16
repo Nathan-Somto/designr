@@ -13,6 +13,7 @@ interface Props extends BaseEditorCompProps {
     isGroup?: boolean
     elements: string | string[]
     thereIsACircle?: boolean
+    thereIsARect?: boolean
     thereIsAText?: boolean
 }
 type ElementType = "width" | "height" | "x" | "y" | "angle" | "diameter" | "cornerSize";
@@ -21,6 +22,7 @@ export default function ElementSettings({
     isGroup,
     elements,
     thereIsACircle,
+    thereIsARect
 }: Props) {
     const [elementState, setElementState] = React.useState<Record<
         ElementType,
@@ -88,8 +90,7 @@ export default function ElementSettings({
                 {
                     elementData.inputs.map((item, index) => {
                         return (
-                            // don't show diameter unless there is a circle
-                            (thereIsACircle || item.config.property !== 'diameter') && (
+                            (thereIsACircle || item.config.property !== 'diameter') && (thereIsARect || item.config.property !== 'cornerSize') && (
                                 <EditorInput
                                     key={index}
                                     type={item.type}

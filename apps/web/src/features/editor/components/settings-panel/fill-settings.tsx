@@ -7,6 +7,7 @@ import TransparencyButton from './transparency-button'
 import { BaseEditorCompProps } from '../../types'
 export default function FillSettings({ editor }: BaseEditorCompProps) {
     const [color, setColor] = React.useState<string | EditorGradient>(editor?.selectedObjects?.[0]?.fill ?? '#000')
+    const [localOpacity, setLocalOpacity] = React.useState<number>((editor?.selectedObjects?.[0]?.opacity ?? 1) * 100)
     return (
         <div className='grid grid-cols-7 gap-x-2 items-center'>
             <EditorColorInput
@@ -25,7 +26,11 @@ export default function FillSettings({ editor }: BaseEditorCompProps) {
                 action={opacity.action}
                 property={opacity.config.property as string}
                 type={opacity.type}
-                value={opacity.config.value}
+                value={localOpacity}
+                onChange={(_, newOpacity) => {
+                    setLocalOpacity(newOpacity as number)
+                    editor?.updateSelectedObjectProperty('opacity', (newOpacity as number) / 100)
+                }}
                 className="col-span-2"
             />
 

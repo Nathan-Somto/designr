@@ -20,7 +20,8 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
             thereIsAnImage: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'image')) ?? false,
             thereIsAtext: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'text')) ?? false,
             thereIsACircle: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'circle')) ?? false,
-            shouldShowAlignment: editor?.selectedObjects?.length === 1
+            shouldShowAlignment: editor?.selectedObjects?.length === 1,
+            thereIsARect: editor?.selectedObjects?.some(item => editor?.isType(item.object, 'rectangle'))
         }
     }, [editor?.selectedObjects])
     //console.log("layers: ", editor?.layers);
@@ -64,6 +65,7 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         <ElementSettings
                             editor={editor}
                             thereIsACircle={uiStates?.thereIsACircle}
+                            thereIsARect={uiStates?.thereIsARect}
                             elements={getGroupElementCounts()}
                             isGroup={editor?.selectedObjects?.length === 1 && editor?.isType(editor?.selectedObjects?.[0]?.object, 'group')}
                         />
