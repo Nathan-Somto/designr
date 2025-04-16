@@ -4,6 +4,7 @@ import Image from "next/image";
 // eslint-disable-next-line no-unused-vars
 export function UnsplashImagesTab({ onSelect }: { onSelect: (image: string) => void }) {
     const unsplashImages = [
+        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=600&h=600&auto=format&fit=crop',
         'https://images.unsplash.com/photo-1626808642875-0aa545482dfb?w=350&h=350&fit=crop',
         'https://images.unsplash.com/photo-1526779259212-939e64788e3c?w=350&h=350&fit=crop',
         'https://images.unsplash.com/photo-1505968409348-bd000797c92e?w=350&h=350&fit=crop',

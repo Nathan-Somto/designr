@@ -14,7 +14,9 @@ export default function Navbar({ editor, isSaving = false }: BaseEditorCompProps
                 isSaving={isSaving}
             />
             <FilenameBar filename='Untitled' />
-            <ActionBar />
+            <ActionBar
+                editor={editor}
+            />
         </nav>
     )
 }

@@ -46,6 +46,12 @@ export type ObjectLike = Omit<object, 'symbol'>;
 interface BaseEditorCompProps {
     editor: Editor
 }
+interface DragState {
+    currentItemId: null | string;
+    parentId: null | string;
+    dropId: null | string;
+    dropZIndex: number
+}
 export {
     type BaseEditorProps,
     type Access,
@@ -54,5 +60,6 @@ export {
     type SettingsSection,
     type OptionsSelect,
     type EditorInputValue,
-    type BaseEditorCompProps
+    type BaseEditorCompProps,
+    type DragState
 }

@@ -82,8 +82,9 @@ export function IconsTab({ onSelect }: { onSelect: (svg: string) => void }) {
     const handleClick = async (name: string) => {
         setActiveIcon(name)
         const mod = await import('lucide-react')
-        const Icon = mod[name as keyof typeof mod] as unknown as React.ReactNode
-        const svg = renderToStaticMarkup(Icon)
+        const Icon = mod[name as keyof typeof mod]
+        //@ts-ignore
+        const svg = renderToStaticMarkup(<Icon />)
         onSelect(svg)
         setActiveIcon(null)
     }
