@@ -1,0 +1,23 @@
+{
+    "name": "@designr/db",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@neondatabase/serverless": "^1.0.0",
+        "drizzle-orm": "^0.41.0",
+        "pg": "^8.14.1"
+    },
+    "scripts": {
+        "db:generate:dev": "drizzle-kit generate --config=drizzle-dev.config.ts",
+        "db:generate:prod": "drizzle-kit generate --config=drizzle-prod.config.ts",
+        "db:migrate:dev": "drizzle-kit migrate --config=drizzle-dev.config.ts",
+        "db:migrate:prod": "drizzle-kit migrate --config=drizzle-prod.config.ts",
+        "db:push:dev": "drizzle-kit push --config=drizzle-dev.config.ts",
+        "db:push:prod": "drizzle-kit push --config=drizzle-prod.config.ts"
+    },
+    "devDependencies": {
+        "@types/pg": "^8.11.12",
+        "drizzle-kit": "^0.30.6"
+    }
+}
