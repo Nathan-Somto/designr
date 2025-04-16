@@ -2,8 +2,9 @@ import { Button } from '@designr/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@designr/ui/components/dropdown-menu'
 import { exportMenu } from '../data'
 import React from 'react'
+import { BaseEditorCompProps } from '#/features/editor/types'
 type Action = typeof exportMenu.options[number]['action']
-export default function ExportMenu() {
+export default function ExportMenu({ editor }: BaseEditorCompProps) {
     const {
         label,
         Icon,
@@ -12,6 +13,7 @@ export default function ExportMenu() {
         switch (action) {
             case 'JSON':
                 //! export the canvas to json
+                editor?.exportAsJSON();
                 break;
             case 'PNG':
                 //! export the canvas to png
@@ -34,6 +36,7 @@ export default function ExportMenu() {
             <DropdownMenuContent
                 sideOffset={8}
                 align='end'
+                className='z-[70]'
             >
                 {exportMenu.options.map(({
                     Icon,

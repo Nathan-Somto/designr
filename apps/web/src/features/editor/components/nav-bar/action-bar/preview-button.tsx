@@ -10,7 +10,8 @@ export default function PreviewButton({
     editor
 }: BaseEditorProps) {
     const {
-        EditorPreviewModal
+        EditorPreviewModal,
+        enterPreviewMode
     } = useEditorPreview({
         editor,
         showPreview: false,
@@ -21,6 +22,7 @@ export default function PreviewButton({
             <EditorPreviewModal />
             <Hint label="preview">
                 <Button
+                    onClick={() => enterPreviewMode()}
                     variant={'ghost'}
                     size={'shrink'}
                 >
