@@ -1,7 +1,9 @@
 import React from "react";
-import { UseLayersProps, Layers } from "../types";
+import { UseLayersProps, Layers, Workspace } from "../types";
 import * as fabric from "fabric";
-import { isInRange } from "../helpers/isInRange";
+import { WORKSPACE_NAME } from "../defaults";
+import { toCapitalize } from "../helpers/textTransformHelpers";
+import { findLayerAndParent } from "../helpers/find-layer-and-parent";
 type ModifiedFabricObject = fabric.FabricObject & {
     zIndex: number
     id: string
@@ -29,20 +31,18 @@ type ModifiedFabricObject = fabric.FabricObject & {
  * @private this hook is used internally by the editor but exposes some methods and values
  */
 export function useLayers({
-    canvas
+    canvas,
+    getType
 }: UseLayersProps
 
 ) {
     const [selectedLayer, setSelectedLayer] = React.useState<fabric.FabricObject | null>(null)
     const [layers, setLayers] = React.useState<Layers[]>([])
-    const addIdToObject = (object: ModifiedFabricObject) => {
-        object.id = `${object.type}-${new Date().getTime()}`
-        return object
-    }
     const updateZindices = (objects: ModifiedFabricObject[]) => {
+        //const baseTime = Date.now();
         objects.forEach((object, index) => {
-            addIdToObject(object as ModifiedFabricObject)
-            object.zIndex = index
+            //object.id = `${object.type}-${baseTime + index}`;
+            object.zIndex = index + 1;
         })
         return objects as (fabric.FabricObject & {
             zIndex: number
@@ -57,19 +57,21 @@ export function useLayers({
      * @private
      */
     const processLayer = (object: ModifiedFabricObject): Layers => {
+        let id = `${object.type}-${Date.now() + Math.floor(10000 * Math.random())}`
+        object.id = id;
         const layer: Layers = {
-            id: object.id,
+            id,
             zIndex: object.zIndex,
-            type: object.type,
-            isLocked: object.evented,
+            type: getType(object) ?? toCapitalize(object.type),
+            isLocked: !object.evented,
             isVisibile: object.opacity !== 0,
             children: object instanceof fabric.Group ? object.getObjects().map(object => processLayer(object as ModifiedFabricObject)) : undefined,
         };
         return layer;
     };
     const updateLayer = (layers: Layers[], targetLayer: Layers, updater: (layer: Layers) => Partial<Layers>): Layers[] => {
-        const clonedLayers = structuredClone(layers);
-
+        const clonedLayers = layers.slice();
+        //console.log("the cloned layers: ", clonedLayers);
         const update = (layerList: Layers[], targetZIndex: number | null = null): boolean => {
             for (const layer of layerList) {
                 // optimize this by checking if the layer is the target layer
@@ -94,126 +96,118 @@ export function useLayers({
 
     const onLayersUpdate = React.useCallback(() => {
         if (!canvas) return
-        const objects = canvas.getObjects().filter(object => object.type !== 'workspace')
+        console.log("on layers update")
+        const objects = canvas.getObjects()
+            .filter(obj => (obj as Workspace)?.name !== WORKSPACE_NAME && !(obj.group && obj.group.type === 'group'));
+        // console.log("the objects:", objects);
         // update the Zindex of the objects should be recursive and update the children as well
         const modified = updateZindices(objects as ModifiedFabricObject[]).map(object => processLayer(object))
-        setLayers(modified.reverse())
-    }, [])
+        setLayers(modified.toReversed())
+    }, [canvas])
     const onSelectLayer = React.useCallback((selectedObject: fabric.FabricObject | null) => {
         if (!selectedObject) return setSelectedLayer(null)
         if (!canvas) return
         const object = (canvas.getObjects() as ModifiedFabricObject[]).find(object => object.id === (selectedObject as ModifiedFabricObject)?.id)
         setSelectedLayer(object || null)
-    }, [])
+    }, [canvas])
     const selectLayerInCanvas = React.useCallback((id: string) => {
         if (!canvas) return
         const object = (canvas.getObjects() as ModifiedFabricObject[]).find(object => object.id === id)
         if (!object) return
+        setSelectedLayer(object);
         canvas.setActiveObject(object)
         canvas.renderAll()
-    }, [])
-    const moveLayer = React.useCallback((layerInfo: {
+    }, [canvas])
+    const moveLayer = React.useCallback(({
+        layerId,
+        targetIndex,
+        parentLayerId
+    }: {
         layerId: string
         targetIndex: number
         parentLayerId?: string
     }) => {
-        if (!canvas) return
-        if (selectedLayer) return
-        // find the layer and the parent layer
-        // returns the layer, its index and its parent layer
-        const findLayerAndParent = (layers: Layers[], id: string, parentLayer: Layers | null = null): [Layers | null, number, Layers | null] => {
-            for (let i = 0; i < layers.length; i++) {
-                if (layers[i].id === id) {
-                    return [
-                        layers[i],
-                        i,
-                        parentLayer
-                    ]
-                }
-                if (layers[i]?.children !== undefined
-                    && (layers[i]?.children as Layers[]).length > 0) {
-                    const childrenLayers = (layers[i] as Layers).children as Layers[]
-                    const parent = layers[i]
-                    const result = findLayerAndParent(childrenLayers, id, parent)
-                    if (result[0]) return result
-                }
-                return [
-                    null,
-                    -1,
-                    null
-                ]
-            }
-            return [
-                null,
-                -1,
-                null
-            ]
-        }
-        const updatedLayers = layers.slice()
-        const [layer, index, parentLayer] = findLayerAndParent(updatedLayers, layerInfo.layerId)
-        if (!layer) return
-        // if parent layer is null that means this layer is a top level layer
-        let prevObject: Layers | null = null
-        let currentObjectZIndex: number = layer.zIndex
-        if (!parentLayer) {
-            // check if the index is in bounds of layers
-            if (!isInRange(0, layerInfo.targetIndex, layers.length)) return
-            updatedLayers.splice(index, 1)
-            prevObject = updatedLayers[layerInfo.targetIndex]
-            updatedLayers.splice(layerInfo.targetIndex, 0, layer)
+        if (!canvas) return;
 
+        const updatedLayers = [...layers]/* .toReversed(); */
+        const [layerToMove, oldIndex, oldParent] = findLayerAndParent(updatedLayers, layerId);
+        if (!layerToMove) return;
+
+        // Step 1: Remove from current position
+        if (oldParent) {
+            oldParent.children?.splice(oldIndex, 1);
+        } else {
+            updatedLayers.splice(oldIndex, 1);
         }
-        else {
-            // based on the target parent layer id  find it, and attach our layer to it
-            if (!layerInfo.parentLayerId) return
-            const [parent] = findLayerAndParent(updatedLayers, layerInfo?.parentLayerId)
-            if (!parent) return
-            // check if the index is in bounds of layers
-            if (!isInRange(0, layerInfo.targetIndex, parent.children?.length as number)) return
-            // remove from its old parent(we are allowed to use splice because we are working with a copy of the layers)
-            parentLayer.children?.splice(index, 1)
-            prevObject = parent.children?.[layerInfo.targetIndex] ?? null
-            // add to the new parent
-            parent.children?.splice(layerInfo.targetIndex, 0, layer)
+
+        // Step 2: Insert into new position
+        if (parentLayerId) {
+            const [newParent] = findLayerAndParent(updatedLayers, parentLayerId);
+            if (!newParent) return;
+
+            if (!newParent.children) newParent.children = [];
+            newParent.children.splice(targetIndex - 1, 0, layerToMove);
+        } else {
+            updatedLayers.splice(targetIndex - 1, 0, layerToMove);
         }
-        // perform swap for state
-        const tempZ = layer.zIndex;
-        layer.zIndex = prevObject?.zIndex as number;
-        if (prevObject) prevObject.zIndex = tempZ;
-        setLayers(updatedLayers)
-        // update their indexes
-        const prevObjectInCanvas = canvas._objects[prevObject?.zIndex as number]
-        const currentObjectInCanvas = canvas._objects[currentObjectZIndex]
-        // perform swap for our canvas
-        const temp = currentObjectInCanvas
-        canvas._objects[currentObjectZIndex] = prevObjectInCanvas
-        canvas._objects[prevObject?.zIndex as number] = temp
-        canvas.renderAll()
-    }, [])
+
+
+
+        setLayers(updatedLayers);
+        const updateCanvasStackingFromLayers = (
+            layers: Layers[],
+            canvas: fabric.Canvas,
+            canvasObjects: fabric.Object[]
+        ) => {
+            // Find the workspace index first
+            let zIndex = 1;
+
+            const assignZIndex = (layerList: Layers[]) => {
+                for (const layer of layerList) {
+                    const obj = canvasObjects.find(o => o.id === layer.id);
+                    if (obj) {
+                        canvas.moveObjectTo(obj, zIndex);
+                        layer.zIndex = zIndex;
+                        zIndex++;
+                    }
+                    if (layer.children?.length) {
+                        assignZIndex(layer.children);
+                    }
+                }
+            };
+
+            assignZIndex(layers);
+            canvas.renderAll();
+        };
+
+        const objects = canvas.getObjects()
+            .filter(obj => (obj as Workspace)?.name !== WORKSPACE_NAME)
+        updateCanvasStackingFromLayers(layers, canvas, objects);
+        console.log("canvas objects:", canvas.getObjects());
+    }, [canvas, layers]);
+
     const toggleLayerVisibility = React.useCallback((layer: Layers) => {
         if (!canvas) return
         const updatedLayers = updateLayer(layers, layer, (layer) => ({
             isVisibile: !layer.isVisibile
         }))
         setLayers(updatedLayers)
+        const originalFire = canvas.fire;
+        canvas.fire = () => false;
         const object = (canvas.getObjects() as ModifiedFabricObject[]).find(object => object.id === layer.id)
         if (!object) return
         object.opacity = object.opacity === 0 ? 1 : 0
-        object.evented = object.opacity !== 0
-        object.selectable = object.opacity !== 0
-        object.lockMovementX = object.opacity === 0
-        object.lockMovementY = object.opacity === 0
-        object.lockRotation = object.opacity === 0
         canvas.renderAll()
-    }, [])
+        canvas.fire = originalFire;
+    }, [canvas, layers])
     const toggleLayerLock = React.useCallback((layer: Layers) => {
         if (!canvas) return
+        const object = (canvas.getObjects() as ModifiedFabricObject[]).find(object => object.id === layer.id)
+        if (!object) return
         const updatedLayers = updateLayer(layers, layer, (layer) => ({
             isLocked: !layer.isLocked
         }))
         setLayers(updatedLayers)
-        const object = (canvas.getObjects() as ModifiedFabricObject[]).find(object => object.id === layer.id)
-        if (!object) return
         object.evented = !object.evented
         object.selectable = !object.selectable
         object.lockMovementX = !object.lockMovementX
@@ -222,7 +216,7 @@ export function useLayers({
         object.lockScalingX = !object.lockScalingX
         object.lockScalingY = !object.lockScalingY
         canvas.renderAll()
-    }, [])
+    }, [canvas, layers])
     return {
         /**
          * @description The current list of layers in the canvas, represented as a tree structure.
