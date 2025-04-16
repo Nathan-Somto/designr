@@ -30,7 +30,6 @@ export function useSelection({ canvas,
                 angle: target.angle,
                 x: target.left,
                 y: target.top,
-                cornerSize: target.cornerSize,
                 opacity: target.opacity,
                 'shadow.color': target.shadow?.color,
                 'shadow.blur': target.shadow?.blur,
@@ -58,6 +57,9 @@ export function useSelection({ canvas,
                 selection.height = target.height * target.scaleY;
             } else if (target instanceof fabric.Circle) {
                 selection.diameter = Math.round(target.radius * 2 * target.scaleX);
+            }
+            if (target instanceof fabric.Rect) {
+                selection.cornerSize = Math.floor((target.rx + target.ry) / 2)
             }
             if (target instanceof fabric.FabricImage) {
                 selection.filter = target.filters[0]?.type as FabricFilterType;
@@ -103,17 +105,35 @@ export function useSelection({ canvas,
                 setBorderStyle?.(selectedObject, value as Exclude<BorderStyle, "custom">);
             }
             else if (property === 'strokeColor') {
-                object.set('stroke', value)
+                if (selectedObject.object instanceof fabric.Group) {
+                    selectedObject.object.getObjects().forEach(child => {
+                        child.set('stroke', value as string);
+                    });
+                } else {
+                    object.set('stroke', value);
+                }
             }
-            else if (
-                property === 'fill'
-                && typeof value === 'object'
-            ) {
-                object.set('fill', applyLinearGradient?.(value as EditorGradient<'linear'>));
+            else if (property === 'fill') {
+                if (typeof value === 'object') {
+                    object.set('fill', applyLinearGradient?.(value as EditorGradient<'linear'>));
+                } else {
+                    if (selectedObject.object instanceof fabric.Group) {
+                        selectedObject.object.getObjects().forEach(child => {
+                            child.set('fill', value as string);
+                        });
+                    } else {
+                        object.set('fill', value);
+                    }
+                }
             }
+
             else if (property === 'textDecoration') {
                 object.set('underline', value === 'underline')
                 object.set('linethrough', value === 'line-through')
+            }
+            else if (property === 'cornerSize') {
+                object.set('rx', value);
+                object.set('ry', value)
             }
             else if (property.startsWith('shadow.')) {
                 const shadow = new fabric.Shadow({
