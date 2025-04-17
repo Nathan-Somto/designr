@@ -2,7 +2,7 @@ import { Menubar, MenubarMenu } from '@designr/ui/components/menubar'
 import React from 'react'
 import PreviewButton from './preview-button'
 import ShareButton from './share-button'
-import ExportMenu from './export-menu'
+import DownloadButton from './download-button'
 import KeyboardShortcuts from './keyboard-shortcuts'
 import { BaseEditorCompProps } from '#/features/editor/types'
 
@@ -13,7 +13,9 @@ export default function ActionBar({ editor }: BaseEditorCompProps) {
                 {/* Share Button */}
                 <ShareButton />
                 {/* Export Menu*/}
-                <ExportMenu editor={editor} />
+                <DownloadButton
+                    editor={editor}
+                />
                 {/* Preview Button */}
                 <PreviewButton
                     editor={editor}

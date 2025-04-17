@@ -1,0 +1,30 @@
+import { Button } from '@designr/ui/components/button'
+import { downloadOptions } from '../data'
+import React from 'react'
+import { BaseEditorCompProps } from '#/features/editor/types'
+import DownloadDialog from '../../dialogs/download-dialog'
+export default function DownloadButton({ editor }: BaseEditorCompProps) {
+    const [open, setOpen] = React.useState(false)
+    const {
+        label,
+        Icon,
+    } = downloadOptions;
+    return (
+        <>
+            <Button
+                id="editor__action-bar__download-button"
+                onClick={() => setOpen(true)}
+                className='font-medium [&>svg]:!size-3.5 !h-8'
+            >
+                <Icon />
+                {label}
+            </Button>
+            <DownloadDialog
+                openProp={open}
+                onOpenChange={setOpen}
+                editor={editor}
+            />
+        </>
+
+    )
+}
