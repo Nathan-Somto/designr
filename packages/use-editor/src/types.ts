@@ -184,6 +184,13 @@ type UseHistoryProps = {
 }
 type ZoomDirection = '+' | '-';
 type ZoomValue = '50%' | '100%' | '200%' | 'fit';
+type ExportOptions = {
+    filename?: string;
+    quality?: number;
+    multiplier?: number;
+    includeGrids?: boolean;
+};
+
 export type {
     CanvasAction,
     UseEditorProps,
@@ -205,5 +212,6 @@ export type {
     EditorGradientDirection,
     UseSelectionProps,
     BorderStyle,
-    Workspace
+    Workspace,
+    ExportOptions
 }

@@ -1,5 +1,5 @@
 import * as fabric from "fabric";
-import { Alignment, BorderStyle, CanvasHelpersProps, Workspace, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue } from '../types'
+import { Alignment, BorderStyle, CanvasHelpersProps, Workspace, EditorGradient, EditorGradientDirection, FabricFilterType, SelectedObject, TextConfig, ZoomDirection, ZoomValue, ExportOptions } from '../types'
 import { FILL_COLOR, GRID_COLOR, GRID_WIDTH, JSON_KEYS, STROKE_COLOR, WORKSPACE_NAME } from '../defaults'
 import { randomPosition } from './randomPosition';
 import { createLink } from './createLink';
@@ -377,28 +377,86 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
     };
 
     //====== EXPORTERS ======
-    const exportAsPNG = async () => {
+    const getFilename = (customFilename?: string) =>
+        customFilename || filename || 'designr';
+
+    const exportAsPNG = async (options: ExportOptions = {}) => {
+        const {
+            filename: customFilename,
+            quality = 1,
+            multiplier = 2,
+            includeGrids = false,
+        } = options;
+
         const clonedCanvas = await canvas?.clone(JSON_KEYS);
-        removeGridsFromWorkspace(clonedCanvas)
+        if (!includeGrids) removeGridsFromWorkspace(clonedCanvas);
+
         const dataURL = clonedCanvas?.toDataURL({
             format: 'png',
-            quality: 1,
-            multiplier: 2,
+            quality,
+            multiplier,
         });
+
         if (!dataURL) return;
-        createLink(dataURL, `${filename}-${new Date().getTime()}.png`);
-    }
-    const exportAsJSON = () => {
-        const data = JSON.stringify(canvas?.toDatalessJSON());
-        createLink(`data:text/json;charset=utf-8,${encodeURIComponent(data)}`,
-            `${filename}-${new Date().getTime()}.json`);
-    }
-    const exportAsSVG = () => {
-        const data = canvas?.toSVG();
+        createLink(dataURL, `${getFilename(customFilename)}-${Date.now()}.png`);
+    };
+
+    const exportAsJPG = async (options: ExportOptions = {}) => {
+        const {
+            filename: customFilename,
+            quality = 0.8,
+            multiplier = 2,
+            includeGrids = false,
+        } = options;
+
+        const clonedCanvas = await canvas?.clone(JSON_KEYS);
+        if (!includeGrids) removeGridsFromWorkspace(clonedCanvas);
+
+        const dataURL = clonedCanvas?.toDataURL({
+            format: 'jpeg',
+            quality,
+            multiplier,
+        });
+
+        if (!dataURL) return;
+        createLink(dataURL, `${getFilename(customFilename)}-${Date.now()}.jpg`);
+    };
+
+    const exportAsJSON = async (options: ExportOptions & { prettifyJSON?: boolean; } = {}) => {
+        const {
+            filename: customFilename,
+            prettifyJSON = false,
+            includeGrids = false
+        } = options;
+        const clonedCanvas = await canvas?.clone(JSON_KEYS);
+        if (!includeGrids) removeGridsFromWorkspace(clonedCanvas);
+        const json = clonedCanvas?.toDatalessJSON(JSON_KEYS);
+        const data = JSON.stringify(json, null, prettifyJSON ? '\t' : undefined);
+
+        createLink(
+            `data:text/json;charset=utf-8,${encodeURIComponent(data)}`,
+            `${getFilename(customFilename)}-${Date.now()}.json`
+        );
+    };
+
+    const exportAsSVG = async (options: Pick<ExportOptions, 'filename' | 'includeGrids'> & {
+        width?: string,
+        height?: string
+    } = {}) => {
+        const { filename: customFilename, includeGrids, width, height } = options;
+        const clonedCanvas = await canvas?.clone(JSON_KEYS);
+        if (!includeGrids) removeGridsFromWorkspace(clonedCanvas);
+        const data = clonedCanvas?.toSVG({
+            height: height ?? void 0,
+            width: width ?? void 0
+        })
         if (!data) return;
-        createLink(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(data)}`,
-            `${filename}-${new Date().getTime()}.svg`);
-    }
+        createLink(
+            `data:image/svg+xml;charset=utf-8,${encodeURIComponent(data)}`,
+            `${getFilename(customFilename)}-${Date.now()}.svg`
+        );
+    };
+
     const previewCanvas = () => {
         const dataURL = canvas?.toDataURL({
             format: 'png',
@@ -789,14 +847,21 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * Exports the canvas as a JSON object. which is automatically downloaded
          * @example
          * const {editor} = useEditor();
-         * editor?.exportAsJSON();
+         * editor?.exportAsJSON({
+         *   prettifyJSON: true
+         *    });
          */
         exportAsJSON,
-
+        /**
+         * Exports the canvas as a JPG file which is automatically downloaded
+         * @example
+         * const jpg = editor?.exportAsJPG();
+         */
+        exportAsJPG,
         /**
          * Exports the canvas as an SVG string. which is automatically downloaded
          * @example
-         * const svg = canvasHelpers.exportAsSVG();
+         * const svg = editor?.exportAsSVG();
          */
         exportAsSVG,
 
