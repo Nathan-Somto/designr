@@ -4,7 +4,7 @@ import EditorColorInput from '../ui/editor-color-input'
 import { EditorInput } from '../ui/editor-input'
 import EditorSelect from '../ui/editor-select'
 import TransparencyButton from './transparency-button'
-import { BaseEditorCompProps } from '../../types'
+import { BaseEditorCompProps, EditorInputValue } from '../../types'
 export default function StrokeSettings({
     editor
 }: BaseEditorCompProps) {
@@ -53,7 +53,7 @@ export default function StrokeSettings({
                 Icon={stroke.inputs[1].Icon}
                 action={stroke.inputs[1].action}
                 property={stroke.inputs[1].config.property as string}
-                type={stroke.inputs[1].type}
+                type={stroke.inputs[1].type as Exclude<EditorInputValue, 'color'>}
                 value={strokeState.strokeWidth}
                 onChange={(_, newWidth) => {
                     updateStrokeState('strokeWidth', newWidth)

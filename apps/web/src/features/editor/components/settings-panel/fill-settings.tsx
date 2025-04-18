@@ -25,7 +25,7 @@ export default function FillSettings({ editor }: BaseEditorCompProps) {
                 Icon={opacity.Icon}
                 action={opacity.action}
                 property={opacity.config.property as string}
-                type={opacity.type}
+                type={'int'}
                 value={localOpacity}
                 onChange={(_, newOpacity) => {
                     setLocalOpacity(newOpacity as number)

@@ -90,7 +90,7 @@ export default function TextSettings({ editor }: BaseEditorCompProps) {
                     value={textState?.fontSize ?? fontSize.config.value}
                     Icon={fontSize.Icon}
                     action={fontSize.action}
-                    type={fontSize.type}
+                    type={'int'}
                     property={fontSize.config.property ?? ''}
                     onChange={(_, value) => updateTextState('fontSize', value)}
                 />

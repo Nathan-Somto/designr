@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { workspace } from './data'
 import { EditorInput } from '../ui/editor-input'
 import EditorSelect from '../ui/editor-select'
@@ -17,14 +17,13 @@ export default function WorkspaceSettings({ editor }: BaseEditorCompProps) {
     const [backgroundColor, setBackgroundColor] = useState(properties?.fill ?? '#fff');
     const [gridDimensions, setGridDimensions] = useState(`${properties?.gridHorizontal ?? 12}x${properties?.gridVertical ?? 12}`)
 
-    /*  useEffect(() => {
-         if (!properties) return;
-         setWidth(properties.width);
-         setHeight(properties.height);
-         setGridHorizontal(properties.gridHorizontal);
-         setGridVertical(properties.gridVertical);
-         setGridIsActive(properties.gridIsActive);
-     }, [properties]); */
+    useEffect(() => {
+        if (!properties) return;
+        setWidth(properties.width);
+        setHeight(properties.height);
+        setGridDimensions(`${properties.gridHorizontal}x${properties.gridVertical}`)
+        setGridIsActive(properties.gridIsActive);
+    }, [properties]);
 
     return (
         <div>

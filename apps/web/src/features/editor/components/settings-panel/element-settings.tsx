@@ -7,7 +7,7 @@ import {
 import {
     element as elementData
 } from './data'
-import { BaseEditorCompProps } from '../../types'
+import { BaseEditorCompProps, EditorInputValue } from '../../types'
 import { SelectedObject } from '@designr/use-editor'
 interface Props extends BaseEditorCompProps {
     isGroup?: boolean
@@ -93,7 +93,7 @@ export default function ElementSettings({
                             (thereIsACircle || item.config.property !== 'diameter') && (thereIsARect || item.config.property !== 'cornerSize') && (
                                 <EditorInput
                                     key={index}
-                                    type={item.type}
+                                    type={item.type as Exclude<EditorInputValue, 'color'>}
                                     value={elementState[item.config.property as ElementType]?.toFixed(2)}
                                     Icon={item.Icon}
                                     action={item.action}

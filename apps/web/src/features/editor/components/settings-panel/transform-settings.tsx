@@ -7,7 +7,7 @@ import {
 } from './data'
 import Hint from '@designr/ui/components/hint'
 import { HelpCircleIcon } from 'lucide-react'
-import { BaseEditorCompProps } from '../../types'
+import { BaseEditorCompProps, EditorInputValue } from '../../types'
 import { SelectedObject } from '@designr/use-editor'
 export default function TransformSettings({ editor }: BaseEditorCompProps) {
     const [transformState, setTransformState] = React.useState<
@@ -54,7 +54,7 @@ export default function TransformSettings({ editor }: BaseEditorCompProps) {
                                 value={item.config.property ? transformState[item.config.property]?.toFixed(2) : 0}
                                 Icon={item.Icon}
                                 action={item.action}
-                                type={item.type}
+                                type={item.type as Exclude<EditorInputValue, 'color'>}
                                 property={item.config.property ?? ''}
                                 onChange={(key, value) => {
                                     setTransformState(prev => ({
