@@ -1,4 +1,5 @@
-import { Access } from "#/features/editor/types";
+/* eslint-disable @next/next/no-img-element */
+import { Access, BaseEditorCompProps } from "#/features/editor/types";
 import { Button } from "@designr/ui/components/button";
 import {
     Dialog,
@@ -13,14 +14,19 @@ import {
     SelectContent,
     SelectItem,
 } from "@designr/ui/components/select";
+import { Checkbox } from "@designr/ui/components/checkbox"
 import { LinkIcon, XIcon } from "lucide-react";
 import React from "react";
 import { shareOptions } from "../data";
+import { Switch } from "@designr/ui/components/switch";
 
-export default function ShareButton() {
+export default function ShareButton({
+    editor
+}: BaseEditorCompProps) {
     const [viewAccess, setViewAccess] = React.useState<Access>("public");
-    const [editAccess, setEditAccess] = React.useState<Access>("public");
-
+    const [editAccess, setEditAccess] = React.useState<Access>("self");
+    const [isTemplate, setIsTemplate] = React.useState(false);
+    const [showIdentity, setShowIdentity] = React.useState(true);
     const currentPageUrl = typeof window !== "undefined" ? window.location.href : "";
 
     const handleCopy = () => {
@@ -36,7 +42,13 @@ export default function ShareButton() {
         const index = access === "public" ? 0 : 1;
         return shareOptions[index];
     }
-
+    const canvasPreviewUrl = React.useMemo(() => {
+        if (isTemplate) {
+            return editor?.previewCanvas() ?? null
+        }
+        return null
+    }, [isTemplate, editor])
+    const userIdentity = 'John Doe';
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -70,61 +82,78 @@ export default function ShareButton() {
                         <Button onClick={handleCopy} size='sm'>Copy</Button>
                     </div>
 
-                    {/* Share Choices */}
-                    <div className="mt-10">
-                        <h3 className="text-sm font-medium mb-2">Who can view?</h3>
-                        <Select value={editAccess} onValueChange={(value) => setViewAccess(value as Access)}>
-                            <SelectTrigger
-                                className="focus-visible:ring-transparent"
-                            >
-                                <div className="flex text-muted-foreground text-xs items-center gap-2">
-                                    {getSelectedOption(viewAccess)?.Icon()}
-                                    {getSelectedOption(viewAccess)?.label}
-                                </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {shareOptions.map(({ label, Icon, action }) => (
-                                    <SelectItem
-                                        key={action}
-                                        value={action}
-                                        className="py-3"
-                                    >
-                                        <div className="flex items-center gap-2 [&>svg]:size-3.5 text-xs">
-                                            <Icon />
-                                            {label}
+                    {!isTemplate ? (
+                        <>
+                            <div className="mt-10">
+                                <h3 className="text-sm font-medium mb-2">Who can view?</h3>
+                                <Select value={viewAccess} onValueChange={(value) => setViewAccess(value as Access)}>
+                                    <SelectTrigger className="focus-visible:ring-transparent">
+                                        <div className="flex text-muted-foreground text-xs items-center gap-2">
+                                            {getSelectedOption(viewAccess)?.Icon()}
+                                            {getSelectedOption(viewAccess)?.label}
                                         </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                                    </SelectTrigger>
+                                    <SelectContent className="z-[950]">
+                                        {shareOptions.map(({ label, Icon, action }) => (
+                                            <SelectItem key={action} value={action} className="py-3">
+                                                <div className="flex items-center gap-2 [&>svg]:size-3.5 text-xs">
+                                                    <Icon />
+                                                    {label}
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                    <div className="mt-5">
-                        <h3 className="text-sm font-medium mb-2">Who can edit?</h3>
-                        <Select value={editAccess} onValueChange={(value) => setEditAccess(value as Access)}>
-                            <SelectTrigger
-                                className="focus-visible:ring-transparent"
-                            >
-                                <div className="flex text-muted-foreground text-xs items-center gap-2">
-                                    {getSelectedOption(editAccess)?.Icon()}
-                                    {getSelectedOption(editAccess)?.label}
-                                </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {shareOptions.map(({ label, Icon, action }) => (
-                                    <SelectItem
-                                        key={action}
-                                        value={action}
-                                        className="py-3"
-                                    >
-                                        <div className="flex items-center gap-2 [&>svg]:size-3.5 text-xs">
-                                            <Icon />
-                                            {label}
+                            <div className="mt-5">
+                                <h3 className="text-sm font-medium mb-2">Who can edit?</h3>
+                                <Select value={editAccess} onValueChange={(value) => setEditAccess(value as Access)}>
+                                    <SelectTrigger className="focus-visible:ring-transparent">
+                                        <div className="flex text-muted-foreground text-xs items-center gap-2">
+                                            {getSelectedOption(editAccess)?.Icon()}
+                                            {getSelectedOption(editAccess)?.label}
                                         </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                                    </SelectTrigger>
+                                    <SelectContent className="z-[950]">
+                                        {shareOptions.slice(1).map(({ label, Icon, action }) => (
+                                            <SelectItem key={action} value={action} className="py-3">
+                                                <div className="flex items-center gap-2 [&>svg]:size-3.5 text-xs">
+                                                    <Icon />
+                                                    {label}
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="mt-6">
+                            <h3 className="text-sm font-medium mb-2">Canvas Preview</h3>
+                            <img
+                                src={canvasPreviewUrl ?? ''}
+                                alt="Preview of the project canvas"
+                                className="w-full max-w-md h-auto border rounded-md object-cover"
+                            />
+
+                            <div className="flex items-center gap-2 mt-3">
+                                <Checkbox
+                                    id="show-identity"
+                                    checked={showIdentity}
+                                    onCheckedChange={(checkedState) => {
+                                        setShowIdentity(checkedState.valueOf() as boolean)
+                                    }}
+                                />
+                                <label htmlFor="show-identity" className="text-xs text-muted-foreground">
+                                    Show your identity publicly <span className="italic">(e.g., {userIdentity})</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+                    <div className="mt-5 mb-8 flex items-center justify-between">
+                        <label htmlFor="make-template" className="text-sm font-medium">Make this a template</label>
+                        <Switch id="make-template" checked={isTemplate} onCheckedChange={setIsTemplate} />
                     </div>
                     <div
                         className="flex justify-end w-full mt-4"

@@ -1,6 +1,7 @@
 
 import { AlertTriangleIcon, BringToFrontIcon, ClipboardPaste, Copy, CopyPlusIcon, DownloadIcon, FilePlus2Icon, GlobeIcon, Group, HeartIcon, HomeIcon, ImageIcon, ImagePlusIcon, ImportIcon, LockIcon, MousePointer2Icon, Redo2, SendToBackIcon, Trash, Undo2, Ungroup, ZoomIn, ZoomOut } from "lucide-react"
 import { Access } from "../../types"
+import { PersonIcon } from "@designr/ui/react-icons"
 
 export const actionMenuItems = [
     {
@@ -156,11 +157,17 @@ export const shareOptions = [{
     label: 'Any one with the link(public)',
     Icon: () => <GlobeIcon />,
     action: 'public' as Access
-}, {
+},
+{
+    label: 'Only me(self)',
+    Icon: () => <PersonIcon />,
+    action: 'self' as Access
+},
+{
     label: 'Only team members(private)',
     Icon: () => <LockIcon />,
-    action: 'private' as Access
-}
+    action: 'org' as Access
+},
 ]
 export const downloadOptions = {
     label: 'Download',

@@ -11,7 +11,9 @@ export default function ActionBar({ editor }: BaseEditorCompProps) {
         <Menubar className='space-x-2'>
             <MenubarMenu>
                 {/* Share Button */}
-                <ShareButton />
+                <ShareButton
+                    editor={editor}
+                />
                 {/* Export Menu*/}
                 <DownloadButton
                     editor={editor}
