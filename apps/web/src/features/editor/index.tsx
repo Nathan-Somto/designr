@@ -6,6 +6,9 @@ import ContextMenu from './components/context-menu'
 import LayersPanel from './components/layers-panel'
 import Navbar from './components/nav-bar'
 import SettingsPanel from './components/settings-panel'
+import MobileWarning from './components/mobile-warning';
+import OnlineStatus from '#/components/online-status';
+import useIsOnline from '#/hooks/useIsOnline';
 type Props = {
   initialState: {
     width: number,
@@ -50,34 +53,39 @@ export default function Editor({ initialState }: Props) {
     //@ts-ignore
     intialState: initialState?.state ?? undefined
   })
+  const isOnline = useIsOnline()
   return (
-    <div id="editor" className='h-screen w-screen overflow-hidden'>
-      <Navbar
-        isSaving={isPending}
-        //key={'nav-bar'}
-        editor={editor}
-      />
-      <div className='h-screen w-screen   flex flex-col items-center justify-center'>
-        <canvas ref={canvasRef}
-          style={{
-            height: '100vh',
-            width: '100vw',
-          }} />
+    <>
+      <OnlineStatus isOnline={isOnline} />
+      <MobileWarning />
+      <div id="editor" className='h-screen w-screen overflow-hidden'>
+        <Navbar
+          isSaving={isPending}
+          //key={'nav-bar'}
+          editor={editor}
+        />
+        <div className='h-screen w-screen   flex flex-col items-center justify-center'>
+          <canvas ref={canvasRef}
+            style={{
+              height: '100vh',
+              width: '100vw',
+            }} />
+        </div>
+        <LayersPanel
+          editor={editor}
+        />
+        <SettingsPanel
+          editor={editor}
+        />
+        <BottomToolbar
+          editor={editor}
+        />
+        <ContextMenu
+          menuRef={menuRef}
+          contextMenuPostion={contextMenuPostion}
+          editor={editor}
+        />
       </div>
-      <LayersPanel
-        editor={editor}
-      />
-      <SettingsPanel
-        editor={editor}
-      />
-      <BottomToolbar
-        editor={editor}
-      />
-      <ContextMenu
-        menuRef={menuRef}
-        contextMenuPostion={contextMenuPostion}
-        editor={editor}
-      />
-    </div>
+    </>
   )
 }

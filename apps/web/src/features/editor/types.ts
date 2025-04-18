@@ -3,7 +3,7 @@ import { Editor, SelectedObject } from "@designr/use-editor"
 type BaseEditorProps = {
     editor: Editor
 }
-type Access = 'public' | 'private'
+type Access = 'self' | 'org' | 'public'
 type EditorInputValue = 'int' | 'float' | 'color' | 'string'
 //===These Types are used for data.tsx files in the settings-panel folder===//
 interface ButtonSelect<K extends keyof SelectedObject> {

@@ -5,13 +5,15 @@ import { cn } from '@designr/ui/lib/utils';
 
 interface EditorInputProps {
     action: string;
-    type: Omit<EditorInputValue, 'color'>;
-    Icon: () => JSX.Element;
+    type: Exclude<EditorInputValue, 'color'>;
+    Icon?: () => JSX.Element;
     property: string;
     value?: string | number // Current value
     // eslint-disable-next-line no-unused-vars
     onChange?: (key: string, value: string | number) => void;
     className?: string
+    max?: number
+    min?: number
 }
 
 export function EditorInput({
@@ -21,7 +23,9 @@ export function EditorInput({
     onChange,
     value,
     type,
-    className
+    className,
+    max,
+    min
 }: EditorInputProps) {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +40,9 @@ export function EditorInput({
             newValue = parseFloat(newValue);
             if (isNaN(newValue)) newValue = 0.0;
         }
-
+        if ((max && min) && typeof newValue === 'number') {
+            if (!(min < newValue && max > newValue)) return;
+        }
         onChange?.(property, newValue);
     };
 
@@ -46,9 +52,10 @@ export function EditorInput({
             className='z-[200000]'
         >
             <div className={cn("flex bg-transparent text-muted-foreground focus-within:text-primary/70 focus-visible:text-primary/70  items-center border-transparent border hover:border-muted-foreground rounded-md px-2 py-1 focus-within:bg-primary/30 focus-within:border-primary focus-visible:border-primary transition", className)}>
-                <span className="mr-2 [&>~]:!size-[18px]">
+                {Icon && (<span className="mr-2 [&>~]:!size-[18px]">
                     <Icon />
                 </span>
+                )}
                 <input
                     type="text"
                     value={value as string | number}
