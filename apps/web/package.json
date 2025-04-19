@@ -12,6 +12,7 @@
     "@designr/ui": "*",
     "@designr/use-editor": "*",
     "colord": "^2.9.3",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.485.0",
     "motion": "^12.6.5",
     "next": "15.2.3",
