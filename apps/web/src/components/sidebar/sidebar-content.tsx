@@ -3,17 +3,19 @@ import { LayoutGroup, motion } from 'motion/react'
 import { useSidebar } from './sidebar-provider'
 import Image from 'next/image'
 import { Button } from '@designr/ui/components/button'
-import { ChevronLeftIcon, HomeIcon, LayoutTemplateIcon, SettingsIcon } from 'lucide-react'
+import { ChevronLeftIcon, HomeIcon, LayoutTemplateIcon, SettingsIcon, StarIcon } from 'lucide-react'
 import { SidebarItem } from './sidebar-item'
 import { cn } from '@designr/ui/lib/utils'
 import ProStatus from './pro-status'
-const AccountSwitcher = () => <div className="text-xs border-dashed border-destructive border mb-2 py-2 text-muted-foreground">Account Switcher</div>;
+import { LINKS } from '#/constants/links'
+
 
 
 const items = [
-    { icon: HomeIcon, label: "Home", href: '/dashboard' },
-    { icon: LayoutTemplateIcon, label: "Community", href: '/community' },
-    { icon: SettingsIcon, label: "Settings", href: '/settings' },
+    { icon: HomeIcon, label: "Home", href: LINKS.DASHBOARD },
+    { icon: LayoutTemplateIcon, label: "Community", href: LINKS.COMMUNITY },
+    { icon: SettingsIcon, label: "Settings", href: LINKS.SETTINGS },
+    { icon: StarIcon, label: 'Favourites', href: LINKS.FAVOURITES }
 ];
 export default function SidebarContent() {
     const {
@@ -32,12 +34,10 @@ export default function SidebarContent() {
             layout
             key="sidebar-content"
             transition={{
-                duration: 0.35, ease: 'easeIn', /* layout: {
-                    duration: 0.35,
-                    ease: 'easeIn'
-                } */
+                duration: 0.35,
+                ease: 'easeIn',
             }}
-            className="fixed top-0 left-0 h-full bg-transparent z-40 flex flex-col"
+            className={cn("fixed top-0 left-0 h-full bg-transparent z-[500] flex flex-col", isMobile && 'bg-violet-100')}
             style={{ width: sidebarWidth }}
         >
             <div className={cn("flex items-center justify-between px-4 py-3 border-b", isCollapsed && 'flex-col-reverse gap-y-3')}>
@@ -45,13 +45,17 @@ export default function SidebarContent() {
                     <Image src="/logo.svg" alt="Designr Logo" className={cn("size-6 mr-2", isCollapsed && 'mr-0')} width={40} height={40} />
                     {!isCollapsed && <span className="text-xl font-bold text-primary">Designr</span>}
                 </div>
-                <Button
-                    variant="ghost"
-                    size='icon'
-                    onClick={() => isMobile ? setIsMobileOpen(false) : setIsCollapsed(!isCollapsed)}
-                >
-                    <ChevronLeftIcon className={`size-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`} />
-                </Button>
+                {
+                    !isMobile && (
+                        <Button
+                            variant="ghost"
+                            size='icon'
+                            onClick={() => isMobile ? setIsMobileOpen(false) : setIsCollapsed(!isCollapsed)}
+                        >
+                            <ChevronLeftIcon className={`size-4 transition-transform ${isCollapsed ? "rotate-180" : ""}`} />
+                        </Button>
+                    )
+                }
             </div>
             <ProStatus isPro />
             <LayoutGroup>
@@ -62,8 +66,7 @@ export default function SidebarContent() {
                 </div>
             </LayoutGroup>
 
-            <div className="mt-auto mb-4">
-                <AccountSwitcher />
+            <div className="mt-auto mb-4 px-3">
                 {
                     !isCollapsed && (
                         <footer className='text-xs text-muted-foreground mt-3'>

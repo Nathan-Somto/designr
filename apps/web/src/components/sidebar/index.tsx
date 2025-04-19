@@ -23,7 +23,7 @@ export default function Sidebar() {
                     onClick={() => setIsMobileOpen(true)}
                     variant="ghost"
                     size="icon"
-                    className="fixed top-4 left-4 z-50"
+                    className="fixed top-4 left-4 z-[3000000]"
                 >
                     <MenuIcon className="size-4" />
                 </Button>
@@ -35,7 +35,7 @@ export default function Sidebar() {
 
             {isMobile && isMobileOpen && (
                 <div
-                    className="fixed inset-0 z-30 bg-black/50"
+                    className="fixed inset-0 z-[2000] bg-black/50"
                     onClick={() => setIsMobileOpen(false)}
                 />
             )}
