@@ -710,5 +710,6 @@
             "skewY": 0
         }
     ],
-    "background": "rgb(242,243,246)"
+    "background": "rgb(242,243,246)",
+    "thumbnailUrl": "https://res.cloudinary.com/deqcvllx1/image/upload/v1745099406/canvas-1745098608558_dpuhwy.png"
 }
