@@ -1,100 +1,148 @@
 import {
-    pgTable, uuid, text, timestamp, boolean, json, integer,
-    primaryKey, foreignKey,
-    serial,
+    pgTable,
+    uuid,
+    text,
+    timestamp,
+    boolean,
+    json,
+    integer,
     pgEnum
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+
+const baseSchemaProps = {
+    id: uuid("public_id").defaultRandom().primaryKey(),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp('updated_at')
+}
 //== USERS ===//
 export const users = pgTable("users", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    clerkId: text("clerk_id").notNull().unique(),
+    name: text('name').notNull(),
     email: text("email").notNull(),
-    createdAt: timestamp("created_at").defaultNow()
+    emailVerified: boolean('email_verified'),
+    imageUrl: text('image_url'),
+    ...baseSchemaProps
 });
+//== SESSION ===//
+export const session = pgTable('session', {
+    ...baseSchemaProps,
+    userId: uuid('user_id').references(() => users.id),
+    token: text('token'),
+    expiresAt: timestamp('expires_at'),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    activeOrganizationId: text('active_organization_id')
+})
+//== ACCOUNT ===//
+export const account = pgTable('account', {
+    ...baseSchemaProps,
+    userId: uuid('user_id').references(() => users.id),
+    accountId: text('account_id').notNull(),
+    providerId: text('provider_id').notNull(),
+    accessToken: text('access_token'),
+    refreshToken: text('refresh_token'),
+    accountTokenExpiresAt: timestamp('account_token_expires_at'),
+    refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+    scope: text('scope'),
+    idToken: text('id_token'),
+    password: text('password')
+})
+//== Verification ===//
+export const verifications = pgTable('verification', {
+    ...baseSchemaProps,
+    identifier: text('identifier'),
+    value: text('value'),
+    expiresAt: timestamp('expiresAt')
+})
 //== USER SETTINGS ===//
 export const userSettings = pgTable("user_settings", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    userId: integer("user_id").references(() => users.id).notNull(),
+    userId: uuid("user_id").references(() => users.id).notNull(),
     settings: json("settings"),
-    createdAt: timestamp("created_at").defaultNow()
+    ...baseSchemaProps
 });
 //== ORGANIZATIONS ====//
 export const organizations = pgTable("organizations", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    clerkId: text("clerk_id").notNull().unique(),
     name: text("name").notNull(),
-    createdAt: timestamp("created_at").defaultNow()
+    slug: text('slug').notNull(),
+    logo: text('logo'),
+    metadata: text('metadata'),
+    ...baseSchemaProps
 });
+//==MEMBER===//
+export const members = pgTable('members', {
+    userId: uuid('user_id').references(() => users.id),
+    organizationId: uuid('organization_id').references(() => organizations.id),
+    role: text('role'),
+    email: text('email'),
+    ...baseSchemaProps,
+})
+//==INVITATION===//
+export const invitations = pgTable('invitation', {
+    ...baseSchemaProps,
+    email: text('email'),
+    inviterId: uuid('inviter_id').references(() => members.id),
+    role: text('role'),
+    status: text('status'),
+    expiresAt: timestamp('expires_at')
+})
 //== PROJECTS ===// 
 export const ProjectViewEnum = pgEnum('can_view', ['ORG', 'PUBLIC', 'SELF']);
 export const ProjectEditEnum = pgEnum('can_edit', ['ORG', 'SELF']);
 export const projects = pgTable("projects", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
+    ...baseSchemaProps,
     name: text("name").notNull(),
-    userId: integer("user_id").references(() => users.id),
-    organizationId: integer("organization_id").references(() => organizations.id),
+    userId: uuid("user_id").references(() => users.id),
+    organizationId: uuid("organization_id").references(() => organizations.id),
     isTemplate: boolean("is_template").default(false),
     isProTemplate: boolean("is_pro_template").default(false),
     category: text("category"),
     width: integer('width').notNull(),
-    height: integer('height'),
+    height: integer('height').notNull(),
     data: json('data').notNull(),
     showUserIdentity: boolean('show_user_identity').default(true),
-    canView: ProjectViewEnum().default('SELF'),
-    canEdit: ProjectEditEnum().default('SELF'),
+    canView: ProjectViewEnum('can_view').default('SELF'),
+    canEdit: ProjectEditEnum('can_edit').default('SELF'),
     thumbnailUrl: text("thumbnail_url"),
-    createdAt: timestamp("created_at").defaultNow()
 });
 //=== PROJECT LOCKS ===//
 export const projectLocks = pgTable("project_locks", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    projectId: integer("project_id").references(() => projects.id).unique().notNull(),
-    lockedBy: integer("user_id").references(() => users.id).notNull(),
+    ...baseSchemaProps,
+    projectId: uuid("project_id").references(() => projects.id).unique().notNull(),
+    lockedBy: uuid("user_id").references(() => users.id).notNull(),
     lockedAt: timestamp("locked_at").defaultNow()
 });
 //=== USER MEDIA ===//
-const userMediaEnum = pgEnum('type', ['IMG', 'VIDEO'])
+export const userMediaEnum = pgEnum('media_type', ['IMG', 'VIDEO'])
 export const userMedia = pgTable("user_media", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    userId: integer("user_id").references(() => users.id).notNull(),
+    userId: uuid("user_id").references(() => users.id).notNull(),
     url: text("url").notNull(),
-    type: userMediaEnum().default('IMG'),
-    createdAt: timestamp("created_at").defaultNow()
+    mediaType: userMediaEnum().default('IMG'),
+    ...baseSchemaProps
 });
 //== TEMPLATE FAVOURITES==//
 export const templateFavourites = pgTable("template_favourites", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    userId: integer("user_id").references(() => users.id).notNull(),
-    projectId: integer("project_id").references(() => projects.id).notNull(),
-    createdAt: timestamp("created_at").defaultNow()
+    userId: uuid("user_id").references(() => users.id).notNull(),
+    projectId: uuid("project_id").references(() => projects.id).notNull(),
+    ...baseSchemaProps
 });
 //== USER USAGE ===//
-export const FeatureEnum = pgEnum('feature', ['TEXT_TO_DESIGN', 'IMG_GEN', 'IMG_TRANSFORMATION'])
+export const FeatureEnum = pgEnum('feature', ['TEXT_TO_DESIGN', 'IMG_GEN', 'IMG_TRANSFORMATION', 'ORGANIZATIONS'])
 export const featureUsage = pgTable("feature_usage", {
-    id: serial("id").primaryKey(),
-    publicId: uuid("public_id").defaultRandom().unique().notNull(),
-    userId: integer("user_id").references(() => users.id).notNull(),
-    feature: FeatureEnum().notNull(),
+    ...baseSchemaProps,
+    userId: uuid("user_id").references(() => users.id).notNull(),
+    feature: FeatureEnum('feature').notNull(),
     count: integer("count").default(0),
     lastUsed: timestamp("last_used").defaultNow()
 });
 //== SUBCRIPTIONS ===//
 export const PlanEnum = pgEnum('plan', ['FREE', 'PRO'])
 export const subscriptions = pgTable("subscriptions", {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id").references(() => users.id),
-    plan: PlanEnum().notNull(),
+    userId: uuid("user_id").references(() => users.id),
+    plan: PlanEnum('plan').notNull(),
     active: boolean("active").default(false),
     expiresAt: timestamp("expires_at"),
     metadata: json("metadata"),
+    ...baseSchemaProps
 });
 //== RELATIONSHIPS ===//
 // users → userSettings (1:1)
@@ -112,10 +160,19 @@ export const userRelations = relations(users, ({ one, many }) => ({
     favourites: many(templateFavourites),
     locks: many(projectLocks),
     usage: many(featureUsage),
+    members: many(members),
+    invitationsSent: many(invitations),
 }));
-
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+    invitedBy: one(users, {
+        fields: [invitations.inviterId],
+        references: [users.id],
+    }),
+}));
 export const orgRelations = relations(organizations, ({ many }) => ({
     projects: many(projects),
+    invitation: many(invitations),
+    members: many(members)
 }));
 
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({
