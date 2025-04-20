@@ -1,0 +1,10 @@
+{
+    "name": "@designr/auth",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "better-auth": "^1.2.7",
+        "@designr/db": "*"
+    }
+}
