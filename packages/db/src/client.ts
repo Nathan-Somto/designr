@@ -2,9 +2,9 @@ import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
 import { neon, NeonQueryFunction } from '@neondatabase/serverless';
 import pg from 'pg';
-import dotenv from "dotenv";
+//import dotenv from "dotenv";
 
-dotenv.config();
+//dotenv.config();
 //import * as schema from './schema';
 // the connections are cached depending on the environment
 const globalForDb = globalThis as unknown as {

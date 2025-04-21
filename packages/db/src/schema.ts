@@ -41,6 +41,7 @@ export const account = pgTable('account', {
     providerId: text('provider_id').notNull(),
     accessToken: text('access_token'),
     refreshToken: text('refresh_token'),
+    accessTokenExpiresAt: timestamp('access_token_expires_at'),
     accountTokenExpiresAt: timestamp('account_token_expires_at'),
     refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
     scope: text('scope'),
@@ -48,7 +49,7 @@ export const account = pgTable('account', {
     password: text('password')
 })
 //== Verification ===//
-export const verifications = pgTable('verification', {
+export const verification = pgTable('verification', {
     ...baseSchemaProps,
     identifier: text('identifier'),
     value: text('value'),
@@ -77,13 +78,14 @@ export const members = pgTable('members', {
     ...baseSchemaProps,
 })
 //==INVITATION===//
-export const invitations = pgTable('invitation', {
+export const invitation = pgTable('invitation', {
     ...baseSchemaProps,
     email: text('email'),
     inviterId: uuid('inviter_id').references(() => members.id),
     role: text('role'),
     status: text('status'),
-    expiresAt: timestamp('expires_at')
+    expiresAt: timestamp('expires_at'),
+    organizationId: uuid("organization_id").references(() => organizations.id)
 })
 //== PROJECTS ===// 
 export const ProjectViewEnum = pgEnum('can_view', ['ORG', 'PUBLIC', 'SELF']);
@@ -161,17 +163,21 @@ export const userRelations = relations(users, ({ one, many }) => ({
     locks: many(projectLocks),
     usage: many(featureUsage),
     members: many(members),
-    invitationsSent: many(invitations),
+    invitationsSent: many(invitation),
 }));
-export const invitationsRelations = relations(invitations, ({ one }) => ({
+export const invitationsRelations = relations(invitation, ({ one }) => ({
     invitedBy: one(users, {
-        fields: [invitations.inviterId],
+        fields: [invitation.inviterId],
         references: [users.id],
     }),
+    organization: one(organizations, {
+        fields: [invitation.id],
+        references: [organizations.id]
+    })
 }));
 export const orgRelations = relations(organizations, ({ many }) => ({
     projects: many(projects),
-    invitation: many(invitations),
+    invitation: many(invitation),
     members: many(members)
 }));
 
