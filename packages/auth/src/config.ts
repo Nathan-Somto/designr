@@ -1,8 +1,20 @@
 import { betterAuth } from 'better-auth';
 import { db, schema } from '@designr/db'
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization } from "better-auth/plugins"
+import { drizzleAdapter } from './drizzle-adapter';
 export const auth = betterAuth({
+    appName: "Designr",
+    advanced: {
+        database: {
+            generateId: false,
+        },
+    },
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 10 * 60
+        }
+    },
     emailAndPassword: {
         enabled: true,
     },
@@ -13,19 +25,30 @@ export const auth = betterAuth({
         }
     },
     user: {
+        modelName: 'users',
         fields: {
             image: 'imageUrl',
         }
     },
     database: drizzleAdapter(db, {
         provider: 'pg',
-        usePlural: true
+        //usePlural: true,
+        schema
     }),
     plugins: [organization({
         allowUserToCreateOrganization(user) {
             // if the user is on a free account and created 5 organizations prevent them
             return true
         },
+        schema: {
+            organization: {
+                modelName: 'organizations'
+            },
+            member: {
+                modelName: 'members',
+            }
+
+        }
     })],
     databaseHooks: {
         user: {

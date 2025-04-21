@@ -1,10 +1,13 @@
 {
     "name": "@designr/auth",
+    "type": "module",
+    "private": "true",
     "exports": {
-        ".": "./src/index.ts"
+        ".": "./src/index.ts",
+        "./client": "./src/client.ts"
     },
     "dependencies": {
-        "better-auth": "^1.2.7",
-        "@designr/db": "*"
+        "@designr/db": "*",
+        "better-auth": "^1.2.7"
     }
 }
