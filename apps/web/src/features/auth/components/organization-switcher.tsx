@@ -9,8 +9,8 @@ import {
     PopoverTrigger,
 } from "@designr/ui/components/popover";
 import { authClient, ActiveOrganization } from "@designr/auth/client";
-import { useRouter } from "next/navigation";
-import { LINKS } from "#/constants/links";
+//import { useRouter } from "next/navigation";
+//import { LINKS } from "#/constants/links";
 import { Divider } from "@designr/ui/components/divider";
 import { CheckIcon, ChevronDownIcon, Loader2, UsersIcon } from "lucide-react";
 import { ScrollArea } from "@designr/ui/components/scroll-area";
@@ -19,7 +19,7 @@ type ElementType<T> = T extends (infer U)[] ? U : never;
 export default function OrganizationSwitcher(props: {
     activeOrganization: ActiveOrganization | null;
 }) {
-    console.log("active organization", props.activeOrganization)
+    //console.log("active organization", props.activeOrganization)
     const [activeOrganization, setActiveOrganization] = useState(props.activeOrganization)
     const { data: currentUser, } = authClient.useSession();
     const { data: organizationsData, isPending, error: organizationError } = authClient.useListOrganizations();
@@ -34,9 +34,9 @@ export default function OrganizationSwitcher(props: {
             ...(prev ?? [])
         ]))
         setOpen(false);
-        router.push(`${LINKS.DASHBOARD}/team/${org.id}`);
+        //router.push(`${LINKS.DASHBOARD}/team/${org.id}`);
     }
-    const router = useRouter();
+    //const router = useRouter();
     return (
         <>
             <Popover open={open} onOpenChange={setOpen}>
@@ -50,10 +50,10 @@ export default function OrganizationSwitcher(props: {
                     >
                         <Avatar className="mr-1.5 size-8 border border-primary">
                             <AvatarImage
-                                src={currentUser?.user.image || undefined}
+                                src={activeOrganization?.logo ?? currentUser?.user.image ?? undefined}
                                 alt={currentUser?.user.name}
                             />
-                            <AvatarFallback>{currentUser?.user.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{activeOrganization?.name.charAt(0) ?? currentUser?.user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="text-left">
                             <p className="font-semibold text-xs line-clamp-1">{activeOrganization?.name ?? 'No Organization'}</p>
@@ -112,10 +112,10 @@ export default function OrganizationSwitcher(props: {
                                         const optimisticOrg = await authClient.organization.setActive({
                                             organizationId: org.id,
                                         });
-                                        const isPersonal = org.name === 'Personal';
+                                        //const isPersonal = org.name === 'Personal';
                                         setActiveOrganization(optimisticOrg.data);
                                         setOpen(false);
-                                        router.push(`${LINKS.DASHBOARD}/${isPersonal ? 'personal' : 'team'}/${org.id}`);
+                                        //router.push(`${LINKS.DASHBOARD}/${isPersonal ? 'personal' : 'team'}/${org.id}`);
                                     }}
                                     className="text-sm flex rounded-[4px] w-[calc(100%-20px)] mx-auto mt-2"
                                 >
