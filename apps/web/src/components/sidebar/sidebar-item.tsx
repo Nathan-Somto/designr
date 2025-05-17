@@ -8,12 +8,14 @@ export function SidebarItem({
     icon: Icon,
     label,
     collapsed,
-    href
+    href,
+    shortPath
 }: {
     icon: LucideIcon;
     label: string;
     collapsed: boolean;
     href: string;
+    shortPath?: string;
 }) {
     const pathname = usePathname();
     const { smallSidebarWidth, isCollapsed } = useSidebar();
@@ -28,7 +30,7 @@ export function SidebarItem({
                 duration: 0.2,
                 layout: { duration: 0.3, delay: 0.25 },
             }}
-            data-active={pathname.includes(href)}
+            data-active={pathname.includes(shortPath ?? href)}
             style={{
                 width: isCollapsed ? smallSidebarWidth - 10 : '95%',
             }}

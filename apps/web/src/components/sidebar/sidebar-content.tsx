@@ -12,12 +12,12 @@ import { LINKS } from '#/constants/links'
 
 
 const items = [
-    { icon: HomeIcon, label: "Home", href: LINKS.DASHBOARD },
+    { icon: HomeIcon, label: "Home", href: (value: string) => value, shortPath: LINKS.DASHBOARD },
     { icon: LayoutTemplateIcon, label: "Community", href: LINKS.COMMUNITY },
+    { icon: StarIcon, label: 'Favourites', href: LINKS.FAVOURITES },
     { icon: SettingsIcon, label: "Settings", href: LINKS.SETTINGS },
-    { icon: StarIcon, label: 'Favourites', href: LINKS.FAVOURITES }
 ];
-export default function SidebarContent() {
+export default function SidebarContent({ dashboardUrl }: { dashboardUrl: string }) {
     const {
         isMobile,
         sidebarWidth,
@@ -37,7 +37,7 @@ export default function SidebarContent() {
                 duration: 0.35,
                 ease: 'easeIn',
             }}
-            className={cn("fixed top-0 left-0 h-full bg-transparent z-[500] flex flex-col", isMobile && 'bg-violet-100')}
+            className={cn("fixed top-0 left-0 h-full bg-transparent z-[2100] flex flex-col", isMobile && 'bg-violet-100')}
             style={{ width: sidebarWidth }}
         >
             <div className={cn("flex items-center justify-between px-4 py-3 border-b", isCollapsed && 'flex-col-reverse gap-y-3')}>
@@ -61,7 +61,14 @@ export default function SidebarContent() {
             <LayoutGroup>
                 <div className="flex-1 overflow-y-auto space-y-2 mt-4">
                     {items.map((item, index) => (
-                        <SidebarItem key={index} href={item.href} icon={item.icon} label={item.label} collapsed={isCollapsed} />
+                        <SidebarItem
+                            key={index}
+                            href={typeof item.href === 'function' ? item.href(dashboardUrl) : item.href}
+                            icon={item.icon}
+                            label={item.label}
+                            collapsed={isCollapsed}
+                            shortPath={item?.shortPath}
+                        />
                     ))}
                 </div>
             </LayoutGroup>

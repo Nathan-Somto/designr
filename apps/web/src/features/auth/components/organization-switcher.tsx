@@ -9,8 +9,8 @@ import {
     PopoverTrigger,
 } from "@designr/ui/components/popover";
 import { authClient, ActiveOrganization } from "@designr/auth/client";
-//import { useRouter } from "next/navigation";
-//import { LINKS } from "#/constants/links";
+import { useRouter } from "next/navigation";
+import { LINKS } from "#/constants/links";
 import { Divider } from "@designr/ui/components/divider";
 import { CheckIcon, ChevronDownIcon, Loader2, UsersIcon } from "lucide-react";
 import { ScrollArea } from "@designr/ui/components/scroll-area";
@@ -34,9 +34,9 @@ export default function OrganizationSwitcher(props: {
             ...(prev ?? [])
         ]))
         setOpen(false);
-        //router.push(`${LINKS.DASHBOARD}/team/${org.id}`);
+        router.push(`${LINKS.DASHBOARD}/team/${org.id}`);
     }
-    //const router = useRouter();
+    const router = useRouter();
     return (
         <>
             <Popover open={open} onOpenChange={setOpen}>
@@ -112,10 +112,10 @@ export default function OrganizationSwitcher(props: {
                                         const optimisticOrg = await authClient.organization.setActive({
                                             organizationId: org.id,
                                         });
-                                        //const isPersonal = org.name === 'Personal';
+                                        const isPersonal = org.name === 'Personal';
                                         setActiveOrganization(optimisticOrg.data);
                                         setOpen(false);
-                                        //router.push(`${LINKS.DASHBOARD}/${isPersonal ? 'personal' : 'team'}/${org.id}`);
+                                        router.push(`${LINKS.DASHBOARD}/${isPersonal ? 'personal' : 'team'}/${org.id}`);
                                     }}
                                     className="text-sm flex rounded-[4px] w-[calc(100%-20px)] mx-auto mt-2"
                                 >
