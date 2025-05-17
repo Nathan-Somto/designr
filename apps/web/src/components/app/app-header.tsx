@@ -1,41 +1,73 @@
+'use client';
+import { LINKS } from '#/constants/links';
+import OrganizationSwitcher from '#/features/auth/components/organization-switcher';
+import { ActiveOrganization } from '@designr/auth/client';
 import { Button } from '@designr/ui/components/button';
 import Hint from '@designr/ui/components/hint';
 import { SearchBar } from '@designr/ui/components/search-bar'
-import { CreditCardIcon, InfoIcon } from 'lucide-react';
+import { BellIcon, CreditCardIcon } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import React from 'react'
-const AccountSwitcher = () => <div className="text-xs border-dashed border-destructive border max-w-[200px] mb-2 py-2 text-muted-foreground">Account Switcher</div>;
-export default function AppHeader() {
+import { NotificationPopover } from './notifications-popover';
+type Props = {
+  placeholder?: string
+  onSearch?: (term: string) => void;
+  organization: ActiveOrganization | null
+}
+
+export default function AppHeader({
+  onSearch,
+  placeholder,
+  organization
+}: Props) {
+  const pathname = usePathname();
   return (
     <header className='pl-10 sticky flex h-20 z-[50] m items-center gap-x-5 top-0 bg-white w-full inset-x-0'>
-      <SearchBar
-        placeholder='Search your Designs'
-        className='flex-1 max-w-[500px] mx-auto'
-        inputClassName='h-[42px]'
-      />
+      {pathname !== LINKS.SETTINGS && (
+        <SearchBar
+          placeholder={placeholder ?? 'Search your Designs'}
+          onChange={(e) => {
+            onSearch?.(e.target.value);
+          }}
+          className='flex-1 max-w-[500px] mx-auto'
+          inputClassName='h-[42px]'
+        />
+      )}
+      {
+        pathname === LINKS.SETTINGS && (
+          <h2 className='text-2xl font-semibold flex-1 my-auto self-center'>
+            Settings
+          </h2>
+        )
+      }
       <div className='gap-x-0.5 flex items-center'>
         <Hint
           label='Billing'
           side='bottom'
         >
-          <Button size="shrink" className='px-0.5 hidden sm:flex' variant={'ghost'}>
+          <Button size="shrink" className='px-0.5 hidden h-fit sm:flex' variant={'ghost'}>
             <CreditCardIcon />
             <span className='sr-only'>
               Billing
             </span>
           </Button>
         </Hint>
-        <Hint
-          label='Privacy Policy'
-          side='bottom'
-        >
-          <Button size="shrink" className='px-0.5 hidden sm:flex' variant={'ghost'}>
-            <InfoIcon />
+        <NotificationPopover>
+          <Button
+            size="shrink"
+            className='px-0.5 hidden h-fit sm:flex relative'
+            variant={'ghost'}>
+
+            <BellIcon />
             <span className='sr-only'>
-              Privacy Policy
+              Notifications
             </span>
+            <div className='absolute top-[10px] right-[11.5px] bg-primary size-1.5 rounded-full animate-pulse' />
           </Button>
-        </Hint>
-        <AccountSwitcher />
+        </NotificationPopover>
+        <OrganizationSwitcher
+          activeOrganization={organization}
+        />
       </div>
     </header>
   )
