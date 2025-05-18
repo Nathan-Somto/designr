@@ -1,4 +1,5 @@
 import { Button } from '@designr/ui/components/button';
+import { Skeleton } from '@designr/ui/components/skeleton';
 import Hint from '@designr/ui/components/hint';
 import { CrownIcon } from 'lucide-react';
 import React from 'react';
@@ -41,6 +42,28 @@ export default function ProStatus({ isPro = false }: { isPro?: boolean }) {
                     Upgrade to Pro
                 </span>
             </Button>
+        </div>
+    );
+}
+export function ProStatusSkeleton() {
+    const { isCollapsed } = useSidebar();
+
+    if (isCollapsed) {
+        return (
+            <div
+                className={cn(
+                    'mx-auto w-[90%] mt-2 flex justify-center items-center p-2 rounded',
+                    'bg-muted'
+                )}
+            >
+                <Skeleton className="size-4 rounded-full" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-5 mb-3 px-2">
+            <Skeleton className="h-8 w-full rounded-md" />
         </div>
     );
 }

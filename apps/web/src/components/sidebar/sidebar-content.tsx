@@ -6,8 +6,9 @@ import { Button } from '@designr/ui/components/button'
 import { ChevronLeftIcon, HomeIcon, LayoutTemplateIcon, SettingsIcon, StarIcon } from 'lucide-react'
 import { SidebarItem } from './sidebar-item'
 import { cn } from '@designr/ui/lib/utils'
-import ProStatus from './pro-status'
+import ProStatus, { ProStatusSkeleton } from './pro-status'
 import { LINKS } from '#/constants/links'
+import { authClient } from '@designr/auth/client'
 
 
 
@@ -25,6 +26,10 @@ export default function SidebarContent({ dashboardUrl }: { dashboardUrl: string 
         setIsMobileOpen,
         setIsCollapsed
     } = useSidebar()
+    const {
+        data: session,
+        isPending: isLoadingProStatus
+    } = authClient.useSession();
     return (
 
         <motion.aside
@@ -57,7 +62,12 @@ export default function SidebarContent({ dashboardUrl }: { dashboardUrl: string 
                     )
                 }
             </div>
-            <ProStatus isPro />
+            {
+                isLoadingProStatus ? (<ProStatusSkeleton />) :
+                    (
+                        <ProStatus isPro={session?.user.isPro} />
+                    )
+            }
             <LayoutGroup>
                 <div className="flex-1 overflow-y-auto space-y-2 mt-4">
                     {items.map((item, index) => (
