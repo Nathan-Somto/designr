@@ -5,5 +5,7 @@ export const LINKS = Object.freeze({
     SETTINGS: '/settings',
     EDITOR: '/editor',
     COMMUNITY: '/community',
-    FAVOURITES: '/favourites'
+    FAVOURITES: '/favourites',
+    HOME: '/',
+    SUBSCRIPTIONS: '/subscriptions'
 })

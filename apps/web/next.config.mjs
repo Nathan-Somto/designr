@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@designr/ui", "@designr/use-editor"],
+  transpilePackages: ["@designr/ui", "@designr/use-editor", '@designr/auth', '@designr/db'],
   images: {
     remotePatterns: [
       {
@@ -8,9 +8,17 @@ const nextConfig = {
         pathname: '/**',
         port: '',
         protocol: 'https',
+      },
+      {
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+        port: '',
+        protocol: 'https',
       }
     ]
+  },
   }
-};
+  
+
 
 export default nextConfig;
