@@ -5,6 +5,7 @@ import {
     Pencil,
     UserIcon,
     StarIcon,
+    Loader,
 } from "lucide-react";
 import {
     Dialog,
@@ -15,11 +16,16 @@ import {
 } from "@designr/ui/components/dialog";
 import { Button } from "@designr/ui/components/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@designr/ui/components/avatar";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import ProBadge from "./pro-badge";
 import { TemplateCard } from "./template-card";
 import { cn } from "@designr/ui/lib/utils";
-
+import { CommunityProjectsData, useProjects } from "#/hooks/useProjects";
+import { useStarTemplate } from "#/hooks/useStarTemplate";
+import { useSettings } from "../settings/settings-provider";
+import { useRouter } from 'next/navigation'
+import { createProjectFromTemplate } from "#/services/projects";
+import { LINKS } from "#/constants/links";
 const PreviewDialog = ({
     open,
     onOpenChange,
@@ -27,104 +33,122 @@ const PreviewDialog = ({
 }: {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-    template: (typeof templates)[0];
-}) => (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <img
-                    src={template.image}
-                    alt="Preview"
-                    className="rounded-md w-full object-cover"
-                />
-                <div className="flex flex-col justify-between">
-                    <div>
-                        <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                {template.name}
-                                {template.isPro && <ProBadge />}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="mt-4 flex items-center gap-2">
-                            <Avatar className="h-7 w-7">
-                                <AvatarImage src={template.createdBy?.image} />
-                                <AvatarFallback>
-                                    <UserIcon className="size-3.5" />
-                                </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm text-muted-foreground">
-                                {template.createdBy?.name || "Anonymous"}
-                            </span>
-                        </div>
-                    </div>
-                    <DialogFooter className="mt-6">
-                        <Button>
-                            <Pencil className="size-4 mr-2" />
-                            Open in Editor
-                        </Button>
-                        <Button variant="outline">
-                            <StarIcon className="size-4" fill={template.isStarred ? "text-yellow-500" : "none"} />
-                            Star Template
-                        </Button>
-                    </DialogFooter>
-                </div>
-            </div>
-        </DialogContent>
-    </Dialog>
-);
-
-const templates = [
-    {
-        id: "1",
-        name: "Modern Portfolio",
-        image: "https://placehold.co/800x600",
-        createdBy: { name: "Elanathan", image: "/user.jpg" },
-        isPro: true,
-        isStarred: false
-    },
-    {
-        id: "2",
-        name: "Minimal Resume",
-        image: "https://placehold.co/750x600",
-        createdBy: null,
-        isPro: false,
-        isStarred: true
-    },
-    {
-        id: "3",
-        name: "Creative Agency",
-        image: "https://placehold.co/700x700",
-        createdBy: { name: "Cynthia Doe", image: "/user2.jpg" },
-        isPro: true,
-        isStarred: true
-    },
-    {
-        id: "4",
-        name: "Freelancer Kit",
-        image: "https://placehold.co/800x500",
-        createdBy: null,
-        isPro: false,
-        isStarred: false
-    },
-    {
-        id: "5",
-        name: "E-commerce Launch",
-        image: "https://placehold.co/800x640",
-        createdBy: { name: "Dev Boss", image: "/user3.jpg" },
-        isPro: true,
-        isStarred: false
+    template: CommunityProjectsData;
+}) => {
+    const {
+        settings
+    } = useSettings();
+    const [isCreatingProject, startTransition] = useTransition()
+    const router = useRouter();
+    const handleProjectCreation = async () => {
+        startTransition(async () => {
+            const res = await createProjectFromTemplate(template.id)
+            startTransition(() => {
+                const projectUrl = `${LINKS.EDITOR}/${res.organizationId}/${res.id}`
+                if (settings?.openDesignsInNewTab) {
+                    window.open(projectUrl, '_blank')
+                }
+                else {
+                    router.push(projectUrl)
+                }
+                onOpenChange(false)
+            })
+        })
     }
-];
+    const {
+        starTemplate,
+        isPending
+    } = useStarTemplate();
+    return (
+        <Dialog
+            open={open}
+            onOpenChange={onOpenChange}
 
-export default function TemplateGrid() {
+        >
+            <DialogContent className="max-w-3xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <img
+                        src={template.image ?? ''}
+                        alt="Preview"
+                        className="rounded-md w-full object-cover"
+                    />
+                    <div className="flex flex-col justify-between">
+                        <div>
+                            <DialogHeader>
+                                <DialogTitle className="flex leading-9 items-center gap-2">
+                                    {template.name}
+                                    {template.isPro && <ProBadge />}
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="mt-4 flex items-center gap-2">
+                                <Avatar className="h-7 w-7">
+                                    <AvatarImage src={template.createdBy?.image ?? ''} />
+                                    <AvatarFallback>
+                                        <UserIcon className="size-3.5" />
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm text-muted-foreground">
+                                    {template.createdBy?.name || "Anonymous"}
+                                </span>
+                            </div>
+                        </div>
+                        <DialogFooter className="mt-6 !justify-start">
+                            <Button
+                                disabled={isCreatingProject || isPending}
+                                onClick={handleProjectCreation}
+                            >
+                                <Pencil className="size-4 mr-2" />
+                                {isCreatingProject ? 'Creating...' : 'Open in Editor'}
+                            </Button>
+                            <Button
+                                variant={template.isStarred ? 'ghost' : 'outline'}
+                                disabled={isPending || isCreatingProject}
+                                className={`${template.isStarred ? "!text-muted-foreground/70" : ""}`}
+                                onClick={async () => await starTemplate(template.id, template.isStarred, 'community')}
+                            >
+                                <StarIcon className={`size-4 ${template.isStarred ? "!fill-yellow-500 !text-yellow-500" : ""}`} />
+                                {!template.isStarred ? 'Star Template' : 'Starred'}
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+};
+
+
+type Props = {
+    data: CommunityProjectsData[]
+}
+export default function TemplateGrid({ data }: Props) {
     const [previewOpen, setPreviewOpen] = useState(false);
-    const [selectedTemplate, setSelectedTemplate] = useState<(typeof templates)[0] | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedTemplate, setSelectedTemplate] = useState<CommunityProjectsData | null>(null);
+    const {
+        setSlice,
+        state: {
+            community: {
+                data: realData,
+                filteredData: filteredData
+            }
+        },
+    } = useProjects();
 
-    const handlePreview = (template: (typeof templates)[0]) => {
+    useEffect(() => {
+        setSlice({
+            slice: 'community',
+            data,
+            mode: 'replace',
+        })
+        setLoading(false)
+    }, [data])
+    const handlePreview = (template: CommunityProjectsData) => {
         setSelectedTemplate(template);
         setPreviewOpen(true);
     };
-
+    const templates = filteredData ?? realData;
+    const isFiltered = filteredData !== undefined
     const layoutClasses = useMemo(() => {
         return templates.map((_, index) => {
             switch (index % 6) {
@@ -161,29 +185,52 @@ export default function TemplateGrid() {
                     duration: 0.234
                 }}
                 className="font-semibold text-lg">Start your Journery</motion.h3>
-            <div className="grid gap-5 pb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4  mt-4">
-                {templates.map((template, index) => (
-                    <motion.div
-                        key={template.id}
-                        className={cn("relative", layoutClasses[index])}
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.05 }}
-                    >
-                        <TemplateCard
-                            template={template}
-                            onPreview={() => handlePreview(template)}
-                            handleEditorOpen={(id) =>
-                                new Promise((resolve) => {
-                                    resolve(console.log(id));
-                                })
-                            }
-                        />
-                    </motion.div>
-                ))}
+            {
+                loading ? (
+                    <div className="flex flex-col gap-y-4 items-center justify-center h-32">
+                        <Loader className="size-6 animate-spin text-muted-foreground" />
+                    </div>
+                ) : (
 
-            </div>
+                    templates.length === 0 ? (
+                        <>
+                            {
+                                <p className="text-center h-full grid place-items-center text-muted-foreground text-sm py-4">
+                                    {
+                                        isFiltered ? 'no template matches the filter' : 'no templates available'
+                                    }
+                                </p>
+                            }
+                        </>
+                    ) : (
+                        <div className="grid gap-5 pb-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4  mt-4">
+                            {templates.map((template, index) => (
+                                <motion.div
+                                    key={template.id}
+                                    className={cn("relative", layoutClasses[index])}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.05 }}
+                                >
+                                    <TemplateCard
+                                        template={{
+                                            id: template.id,
+                                            image: template.image ?? '',
+                                            isStarred: template.isStarred,
+                                            name: template.name,
+                                            isPro: template.isPro
+                                        }}
+                                        onPreview={() => handlePreview(template)}
+                                    />
+                                </motion.div>
+                            ))}
+
+                        </div>
+                    )
+
+                )
+            }
 
             {selectedTemplate && (
                 <PreviewDialog

@@ -1,14 +1,16 @@
-import AppHeader from '#/components/app/app-header'
 import TemplateGrid from '#/features/community/template-grid'
 import { TemplatesFilter } from '#/features/community/templates-filter'
+import { getCommunityProjects } from '#/services/projects'
 import React from 'react'
-
-export default function CommunityPage() {
+//Todo: implement pagination
+export default async function CommunityPage() {
+    const data = await getCommunityProjects();
     return (
         <>
-            {/* Search through our community curated templates */}
             <TemplatesFilter />
-            <TemplateGrid />
+            <TemplateGrid
+                data={data}
+            />
         </>
     )
 }

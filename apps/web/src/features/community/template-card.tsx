@@ -10,12 +10,15 @@ import {
     MoreHorizontal,
     Eye,
     Pencil,
+    FlagIcon,
 } from "lucide-react";
 import ProBadge from "./pro-badge";
+import Image from "next/image";
+import { useStarTemplate } from "#/hooks/useStarTemplate";
+import { toast } from "sonner";
 export function TemplateCard({
     template,
     onPreview,
-    handleEditorOpen
 }: {
     template: {
         name: string
@@ -25,26 +28,40 @@ export function TemplateCard({
         id: string
     };
     onPreview: () => void;
-    handleEditorOpen: (id: string) => Promise<void>;
 }) {
-    const [starred, setStarred] = React.useState(template.isStarred);
-
+    const starred = template.isStarred;
+    const {
+        starTemplate,
+        isPending
+    } = useStarTemplate();
     return (
         <div className="relative group overflow-hidden rounded-md border border-border transition hover:shadow-md">
-            <img
-                src={template.image}
-                alt={template.name}
-                className="w-full object-cover aspect-video h-56"
-            />
-            <div className="absolute cursor-pointer inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition duration-300 ease-in flex items-center justify-center">
-                <span className="text-white text-sm font-medium">Open in Editor</span>
+            <figure
+                className="h-56 relative w-full"
+            >
+                <Image
+                    src={template.image}
+                    alt={template.name}
+                    fill
+                    className="!w-[90%] origin-center object-cover object-center aspect-video h-56"
+                />
+            </figure>
+            <div
+                onClick={onPreview}
+                className="absolute cursor-pointer inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition duration-300 ease-in flex items-center justify-center">
+                <span className="text-white text-sm font-medium">Preview Template</span>
                 <div className="absolute top-2 right-2 flex gap-1">
                     <StarButton
+                        disabled={isPending}
                         isStarred={starred}
-                        onToggle={() => setStarred(!starred)} />
+                        onToggle={async () => await starTemplate(template.id, !starred, 'community')} />
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button size="icon" variant="ghost" className="px-2 hvoer:bg-transparent">
+                            <Button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                }}
+                                size="icon" variant="ghost" className="px-2 hvoer:bg-transparent">
                                 <MoreHorizontal className="size-4 text-black" />
                             </Button>
                         </PopoverTrigger>
@@ -52,18 +69,24 @@ export function TemplateCard({
                             <div className="mb-2 text-sm font-semibold px-4">{template.name}</div>
                             <Button
                                 variant="ghost"
-                                onClick={async () => await handleEditorOpen.bind(template.id)}
-                                className="w-[90%] mx-auto justify-start text-sm ">
-                                <Pencil className="size-4 mr-1" />
-                                Open in Editor
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className="w-[90%] mx-auto justify-start text-sm"
-                                onClick={onPreview}
+                                className="w-[90%] flex mx-auto justify-start text-sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onPreview();
+                                }}
                             >
                                 <Eye className="size-4 mr-1" />
                                 Preview Template
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={async (e) => {
+                                    e.stopPropagation();
+                                    toast.success("successfully reported template")
+                                }}
+                                className="w-[90%] flex mx-auto justify-start text-sm ">
+                                <FlagIcon className="size-4 mr-1" />
+                                Report
                             </Button>
                         </PopoverContent>
                     </Popover>

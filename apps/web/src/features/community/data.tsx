@@ -7,10 +7,12 @@ import {
     Facebook,
     Twitter,
     File,
-    ShapesIcon
+    ShapesIcon,
+    LayoutGridIcon
 } from "lucide-react";
 
 export const dimensionsList = [
+    { label: 'All', value: null, icon: LayoutGridIcon, iconColor: 'text-violet-400' },
     { label: "Social Media", value: "1080x1080", icon: Image, iconColor: "text-pink-500" },
     { label: "YouTube Thumbnail", value: "1280x720", icon: Youtube, iconColor: "text-red-500" },
     { label: "LinkedIn Banner", value: "1584x396", icon: Linkedin, iconColor: "text-blue-500" },

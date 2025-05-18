@@ -4,10 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { dimensionsList } from "./data";
 import Hint from "@designr/ui/components/hint";
+import { useProjects } from "#/hooks/useProjects";
 
 type DimensionItem = {
     label: string;
-    value: string;
+    value: string | null;
     icon: React.ElementType;
     iconColor?: string;
 };
@@ -31,12 +32,22 @@ const childVariants = {
     animate: { opacity: 1, y: 0 },
 };
 
-export function TemplatesFilter({ items = dimensionsList, onSelect }: Props) {
+export function TemplatesFilter({ items = dimensionsList }: Props) {
     const [selected, setSelected] = useState<string | null>(null);
+    const {
+        filterByFn,
+        clearFilter
+    } = useProjects();
 
     const handleSelect = (item: DimensionItem) => {
         setSelected(item.value);
-        onSelect?.(item);
+        if (item.value === null) {
+            clearFilter('community')
+            return;
+        }
+        filterByFn('community', (d) => {
+            return d.dimensions === item.value
+        })
     };
 
     return (
@@ -53,7 +64,7 @@ export function TemplatesFilter({ items = dimensionsList, onSelect }: Props) {
                 return (
                     <Hint
                         key={index}
-                        label={item.value}
+                        label={item.value ?? 'Any Dimension'}
                     >
                         <motion.div
                             variants={childVariants}
