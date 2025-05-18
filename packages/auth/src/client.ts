@@ -1,10 +1,12 @@
 import { createAuthClient } from "better-auth/react";
-import { organizationClient } from "better-auth/client/plugins"
+import { organizationClient, customSessionClient } from "better-auth/client/plugins"
 import { type ErrorContext } from 'better-auth/react';
+import { auth } from "./config";
 export const authClient = createAuthClient({
     baseURL: 'http://localhost:3002',
     plugins: [
-        organizationClient()
+        organizationClient(),
+        customSessionClient<typeof auth>()
     ]
 })
 export type ActiveOrganization = typeof authClient.$Infer.ActiveOrganization;
