@@ -6,6 +6,7 @@ import AppHeader from '#/components/app/app-header'
 import { auth } from '@designr/auth'
 import { headers } from 'next/headers'
 import { LINKS } from '#/constants/links'
+import { ProjectsProvider } from '#/hooks/useProjects'
 
 export default async function AppLayout({ children }: React.PropsWithChildren) {
     const organization = await auth.api.getFullOrganization({
@@ -29,12 +30,14 @@ export default async function AppLayout({ children }: React.PropsWithChildren) {
                 <Sidebar
                     dashboardUrl={getDashboardUrl()}
                 />
-                <AppContent>
-                    <AppHeader
-                        organization={organization}
-                    />
-                    {children}
-                </AppContent>
+                <ProjectsProvider>
+                    <AppContent>
+                        <AppHeader
+                            organization={organization}
+                        />
+                        {children}
+                    </AppContent>
+                </ProjectsProvider>
             </main>
         </SidebarProvider>
     )

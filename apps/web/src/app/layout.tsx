@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import '@designr/ui/globals.css';
+import { Toaster } from "#/components/toaster";
 const merienda = localFont({
   src: [
     { path: "./fonts/Merienda-Light.ttf", weight: "300", style: "normal" },
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body className={`${merienda.variable} font-merienda !pointer-events-auto !overflow-x-hidden`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   );
