@@ -72,11 +72,21 @@
   }
 }
 
+
 .no-scrollbar {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none; 
+}
+@media (min-width: 1024px) {
+  .lg.no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+  }
+  .lg.no-scrollbar::-webkit-scrollbar{
+    display: none;
+  }
 }
