@@ -1,0 +1,9 @@
+{
+    "name": "@designr/api-errors",
+    "private": "true",
+    "version": "1.0.0",
+    "description": "Designr Custom Api Errors package for a unified server response",
+    "exports": {
+        ".": "./src/index.ts"
+    }
+}
