@@ -1,5 +1,5 @@
 'use server';
-
+import { UnauthorizedError } from "@designr/api-errors";
 import { auth } from "@designr/auth";
 import { headers } from "next/headers";
 
@@ -8,7 +8,7 @@ const getCurrentUser = async () => {
         headers: await headers()
     })
     if (!session?.user)
-        throw new Error("User is not authenticated!")
+        throw new UnauthorizedError("User is not authenticated!")
     return ({
         ...session.user,
         activeOrganizationId: session.session.activeOrganizationId
