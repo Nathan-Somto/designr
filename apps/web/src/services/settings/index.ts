@@ -14,7 +14,10 @@ const getUserSettings = cache(async () => {
         .from(schema.userSettings)
         .where(eq(schema.userSettings.userId, user.id))
         .limit(1);
-    return (settings[0].settings as unknown as UserSettings) ?? null
+    return {
+        settings: (settings[0].settings as unknown as UserSettings) ?? null,
+        type: 'success' as const,
+    }
 })
 const updateUserSettings = async (payload: UserSettings) => {
     const user = await getCurrentUser();

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@designr/ui", "@designr/use-editor", '@designr/auth', '@designr/db'],
+  transpilePackages: ["@designr/ui", "@designr/use-editor", '@designr/auth', '@designr/db', '@designr/api-errors'],
   images: {
     remotePatterns: [
       {
