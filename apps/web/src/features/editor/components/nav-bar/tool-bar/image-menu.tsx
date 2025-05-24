@@ -1,4 +1,4 @@
-import { useImagePicker } from '#/hooks/useImagePicker'
+import { useFilePicker } from '#/hooks/useFilePicker'
 import { Button } from '@designr/ui/components/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@designr/ui/components/dropdown-menu'
 import Hint from '@designr/ui/components/hint'
@@ -16,14 +16,15 @@ export default function ImageMenu({ editor }: BaseEditorCompProps) {
     } = image
     const {
         InputElement,
-        onImagePickerClick,
-    } = useImagePicker({
-        onGetImage: (image) => {
+        onFilePickerClick: onImagePickerClick,
+    } = useFilePicker({
+        onGetFile: (image) => {
             console.log("the data url: ", image)
             //! call the image upload action
             //! update the asset modal state
             //! put the image in the canvas
-        }
+        },
+        acceptedTypes: ['jpg', 'jpeg', 'png', 'svg'],
     })
     const handleAddImageToCanvas = (image: string, url: 'svg' | 'url') => {
         console.log("the image to add to canvas: ", image)
