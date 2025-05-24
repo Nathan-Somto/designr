@@ -2,29 +2,29 @@
 import { Button } from '@designr/ui/components/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@designr/ui/components/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@designr/ui/components/table';
-import { AlertTriangleIcon, CopyIcon, FileIcon, GlobeIcon, LayoutTemplateIcon, Loader, LockIcon, MoreHorizontal, SearchIcon, Trash, XIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation';
+import { AlertTriangleIcon, CopyIcon, FileIcon, GlobeIcon, LayoutTemplateIcon, LockIcon, MoreHorizontal, SearchIcon, Trash, XIcon } from 'lucide-react'
+import { useParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
-import React from 'react'
-import { v4 } from 'uuid';
+import React, { use } from 'react'
 import { Checkbox } from '@designr/ui/components/checkbox';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@designr/ui/lib/utils';
 import Hint from '@designr/ui/components/hint';
 import { useConfirm } from '#/hooks/useConfirm';
 import { DimensionsMap } from './data';
-type Data = {
-    id: string
-    name: string
-    canView: 'SELF' | 'ORG' | 'PUBLIC'
-    isTemplate?: boolean
-    width: number
-    height: number
-    updatedAt: Date
-}
+import { useProjects, UserDesignsData } from '#/hooks/useProjects';
+import { PaginatedResponse } from '#/services';
+import { CatchResult, promiseCatch } from '#/utils/promise-catch';
+import { deleteProjects, duplicateAProject, fetchProjects } from '#/services/projects';
+import { toast } from 'sonner';
+import { useSettings } from '../settings/settings-provider';
+import { handleProjectRedirect } from '#/utils/handle-project-redirect';
 
 
-const data: Data[] = [
+
+/* 
+ used for mocking testing with react test library
+const mock_data: UserDesignsData[] = [
     {
         id: '123',
         name: 'Self Project',
@@ -58,9 +58,15 @@ const data: Data[] = [
         updatedAt: new Date(2025, 3, 12, 11),
         isTemplate: true
     }
-];
-let status: 'pending' | 'error' | 'loaded' = 'loaded'
-function DesignsSection() {
+]; */
+type AnimatedDesignsProps = {
+    fetchDesignsPromise: Promise<PaginatedResponse<UserDesignsData> | CatchResult>
+}
+type DesignsSectionProps = {
+    promiseResult: PaginatedResponse<UserDesignsData> | CatchResult
+}
+function DesignsSection({ promiseResult }: DesignsSectionProps) {
+    const result = promiseResult;
     const [deleteDesign, setDeleteDesign] = React.useState<{
         id: string | null,
         open: boolean
@@ -74,45 +80,150 @@ function DesignsSection() {
             open: value
         }))
     }
-    const { ConfirmDialog } = useConfirm(
-        {
-            title: "Are you sure?",
-            message: 'You are about to delete this design.',
-            open: deleteDesign?.open,
-            onOpenChange,
-            onConfirm: async () => {
-                console.log("deleted project");
-            }
-        }
-    );
-    const [selected, setSelected] = React.useState<string[]>([]);
 
+    const [selected, setSelected] = React.useState<string[]>([]);
+    const [isPending, startTransition] = React.useTransition();
     const toggleSelect = (id: string) => {
         setSelected((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
     };
-
+    const {
+        state: {
+            userDesigns: {
+                data: userDesigns,
+                hasMore: hasNextPage,
+                page,
+                filteredData,
+            },
+        },
+        setSlice,
+    } = useProjects();
+    const {
+        settings
+    } = useSettings();
+    //get the organization id from the url its a dynamic value called id
+    const { id: organizationId } = useParams();
+    const { ConfirmDialog } = useConfirm(
+        {
+            title: "Are you sure?",
+            message:
+                selected.length > 0 ?
+                    'You are about to delete ' + selected.length + ' designs.'
+                    : 'You are about to delete this design.',
+            open: deleteDesign?.open,
+            onOpenChange,
+            onConfirm: async () => {
+                if (deleteDesign.id) {
+                    await deleteProjects([deleteDesign.id]);
+                } else {
+                    // check length of the selected cannot be more than 10,
+                    if (selected.length > 10) {
+                        toast.error('You can only delete 10 designs at a time.');
+                        return;
+                    }
+                    await deleteProjects(selected);
+                    setSelected([]);
+                }
+                // update the store
+                setSlice({
+                    data: userDesigns.filter((project) => {
+                        if (selected.length > 0) {
+                            return !selected.includes(project.id);
+                        }
+                        return project.id !== deleteDesign.id;
+                    }),
+                    slice: 'userDesigns',
+                    page,
+                    hasMore: hasNextPage,
+                    mode: 'replace'
+                })
+                setDeleteDesign({ id: null, open: false });
+            }
+        }
+    );
+    const onMassDelete = () => {
+        setDeleteDesign({
+            id: null,
+            open: true
+        })
+    }
+    const onDuplicate = async (data: UserDesignsData) => {
+        startTransition(async () => {
+            const res = await promiseCatch(duplicateAProject({
+                oldProjectId: data.id
+            }))
+            if (res === undefined) {
+                toast.error('Failed to duplicate design');
+                return;
+            }
+            if (res?.type === 'error') {
+                toast.error(res.message);
+                return;
+            }
+            // update the store with the new project(the other data is the same just the change of name and id)
+            startTransition(() => {
+                setSlice({
+                    data: [{
+                        ...data,
+                        id: res.id,
+                        name: res.name
+                    }],
+                    slice: 'userDesigns',
+                    mode: 'prepend'
+                })
+            })
+        })
+    }
     const clearSelection = () => setSelected([]);
-
-
+    const onRedirect = (id: string) => {
+        if (isPending) return;
+        handleProjectRedirect({
+            organizationId: organizationId as string,
+            projectId: id,
+            openInNewTab: settings?.openDesignsInNewTab ?? false
+        })
+    }
+    React.useEffect(() => {
+        if (result?.type === 'success') {
+            setSlice({
+                data: result.data,
+                slice: 'userDesigns',
+                page: result.page,
+                hasMore: result.page < result.totalPages,
+                mode: 'replace'
+            })
+        }
+    }, [result])
     const tableHead = ['Name', 'People', 'Dimensions', 'Modified', '']
-    const router = useRouter();
-    const hasNextPage = false;
-    if (status === "pending") {
-        return (
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg">
-                    Recent designs
-                </h3>
-                <div className="flex flex-col gap-y-4 items-center justify-center h-32">
-                    <Loader className="size-6 animate-spin text-muted-foreground" />
-                </div>
-            </div>
-        )
+    const onLoadMore = async () => {
+        if (!hasNextPage) return;
+        startTransition(async () => {
+            const res = await
+                promiseCatch<PaginatedResponse<UserDesignsData>>
+                    //@ts-ignore
+                    (fetchProjects('mine', page + 1))
+            if (res === undefined) {
+                toast.error('Failed to load more designs');
+                return;
+            }
+            if (res?.type === 'error') {
+                toast.error(res.message);
+                return;
+            }
+            startTransition(() => {
+                setSlice({
+                    data: res.data,
+                    slice: 'userDesigns',
+                    page: res.page,
+                    hasMore: res.page < res.totalPages,
+                    mode: 'append'
+                })
+            })
+        })
     }
 
-    if (status === "error") {
+    if (result?.type === "error" || result === undefined) {
         return (
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">
@@ -127,7 +238,7 @@ function DesignsSection() {
             </div>
         )
     }
-
+    const data = filteredData ?? userDesigns;
     if (
         !data.length
     ) {
@@ -145,7 +256,7 @@ function DesignsSection() {
             </div>
         )
     }
-
+    const isDisabled = isPending
     return (
         <div className="space-y-4">
             <h3 className="font-semibold text-lg">
@@ -165,12 +276,14 @@ function DesignsSection() {
                             key={project.id}
                             className={cn(
                                 'transition-all  duration-200 overflow-x-auto  no-scrollbar',
-                                selected.includes(project.id) && '!bg-primary/20 text-primary border-collapse'
+                                selected.includes(project.id) && '!bg-primary/20 text-primary border-collapse',
+                                isDisabled && 'opacity-50 pointer-events-none',
                             )}
                         >
 
                             <TableCell
-                                onClick={() => router.push(`/editor/${project.id}`)}
+                                aria-disabled={isDisabled}
+                                onClick={onRedirect.bind(null, project.id)}
                                 className="font-medium flex items-center gap-x-2 cursor-pointer"
                             >
                                 <FileIcon className="size-6" />
@@ -178,7 +291,8 @@ function DesignsSection() {
                                     {project.name}
                                 </span>
                             </TableCell>
-                            <TableCell>
+                            <TableCell
+                            >
                                 <div className='bg-muted flex items-center max-w-fit gap-x-2 [&>svg]:!size-3.5 py-1 rounded-2xl text-muted-foreground text-xs px-2 '>
                                     {
                                         project.isTemplate ?
@@ -201,7 +315,8 @@ function DesignsSection() {
                                 </div>
                             </TableCell>
                             <TableCell
-                                onClick={() => router.push(`/editor/${project.id}`)}
+                                aria-disabled={isDisabled}
+                                onClick={onRedirect.bind(null, project.id)}
                                 className="text-xs cursor-pointer"
                             >
                                 {
@@ -210,14 +325,17 @@ function DesignsSection() {
 
                             </TableCell>
                             <TableCell
-                                onClick={() => router.push(`/editor/${project.id}`)}
+                                aria-disabled={isDisabled}
+                                onClick={onRedirect.bind(null, project.id)}
                                 className=" cursor-pointer"
                             >
-                                {formatDistanceToNow(project.updatedAt, {
+                                {formatDistanceToNow(project.updatedAt ?? new Date(), {
                                     addSuffix: true,
                                 })}
                             </TableCell>
-                            <TableCell className="flex items-center justify-end">
+                            <TableCell
+                                aria-disabled={isDisabled}
+                                className="flex items-center justify-end">
                                 <Checkbox
                                     className="size-6"
                                     checked={selected.includes(project.id)}
@@ -226,7 +344,7 @@ function DesignsSection() {
                                 <DropdownMenu modal={false}>
                                     <DropdownMenuTrigger asChild>
                                         <Button
-                                            disabled={false}
+                                            disabled={isDisabled}
                                             size="icon"
                                             variant="ghost"
                                         >
@@ -235,14 +353,18 @@ function DesignsSection() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-60">
                                         <DropdownMenuItem
+                                            disabled={isDisabled}
                                             className="h-10 cursor-pointer"
-
+                                            onClick={async (e) => {
+                                                e.stopPropagation();
+                                                await onDuplicate(project);
+                                            }}
                                         >
                                             <CopyIcon className="size-4 mr-2" />
                                             Duplicate
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
-                                            disabled={selected.length > 0}
+                                            disabled={selected.length > 0 || isDisabled}
                                             onClick={() => {
                                                 setDeleteDesign({
                                                     id: project.id,
@@ -264,6 +386,8 @@ function DesignsSection() {
             {hasNextPage && (
                 <div className="w-full flex items-center justify-center pt-4">
                     <Button
+                        disabled={isDisabled}
+                        onClick={onLoadMore}
                         variant="ghost"
                     >
                         Load more
@@ -289,9 +413,7 @@ function DesignsSection() {
                                 size="icon"
                                 variant="ghost"
                                 className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                                onClick={() => {
-                                    setSelected([]);
-                                }}
+                                onClick={onMassDelete}
                             >
                                 <Trash className="size-5" />
                             </Button>
@@ -310,7 +432,10 @@ function DesignsSection() {
         </div>
     );
 }
-export default function AnimatedDesignSection() {
+export default function AnimatedDesignSection({
+    fetchDesignsPromise
+}: AnimatedDesignsProps) {
+    const promiseResult = use(fetchDesignsPromise);
     return (
         <motion.section
             initial={{
@@ -326,7 +451,9 @@ export default function AnimatedDesignSection() {
             }}
             id="dashboard__home-design-section"
         >
-            <DesignsSection />
+            <DesignsSection
+                promiseResult={promiseResult}
+            />
         </motion.section>
     )
 }

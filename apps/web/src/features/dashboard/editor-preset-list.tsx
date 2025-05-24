@@ -1,28 +1,47 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Hint from "@designr/ui/components/hint";
-import { Dialog, DialogContent } from "@designr/ui/components/dialog";
-import { Input } from "@designr/ui/components/input";
-import { Button } from "@designr/ui/components/button";
+
 import { editorPresets } from "./data";
-import { useRouter } from "next/navigation";
-import { LINKS } from "#/constants/links";
 import { Variants, motion } from "motion/react";
+import { useCreateProjectDialog } from "./hooks/use-project-create-dialog";
+import { useFilePicker } from "#/hooks/useFilePicker";
+import { toast } from "sonner";
+
 
 export default function EditorPresetsList() {
     const [showDialog, setShowDialog] = useState(false);
-    const [width, setWidth] = useState("");
-    const [height, setHeight] = useState("");
-    const router = useRouter()
-    const handlePresetClick = (preset: any) => {
-        if (preset.custom) {
+    const [width, setWidth] = useState<number>(0);
+    const [height, setHeight] = useState<number>(0);
+    const [initialData, setInitialData] = useState<string | null>(null);
+    const {
+        InputElement,
+        onFilePickerClick: onJsonPickerClick,
+        error
+    } = useFilePicker({
+        onGetFile: (json) => {
+            console.log("the json data: ", json)
+            setInitialData(json);
             setShowDialog(true);
-        } else if (preset.import) {
+        },
+        acceptedTypes: ['json']
+    })
+    const handlePresetClick = (preset: typeof editorPresets[number]) => {
+        if (preset.import) {
             console.log("import selection")
+            onJsonPickerClick();
         } else {
-            console.log('preset selected')
+            // extract the Dimensions if present and set the width and height
+            if (preset.size) {
+                const [width, height] = preset.size.split('x').map(Number);
+                setWidth(width);
+                setHeight(height);
+            } else {
+                setWidth(0);
+                setHeight(0);
+            }
+            setShowDialog(true)
         }
-        router.push(LINKS.EDITOR)
     };
     const parentVariants: Variants = {
         initial: {
@@ -53,9 +72,23 @@ export default function EditorPresetsList() {
             }
         },
     }
+    const {
+        dialog
+    } = useCreateProjectDialog({
+        open: showDialog,
+        onOpenChange: setShowDialog,
+        defaultHeight: height,
+        defaultWidth: width,
+        defaultData: initialData
+    })
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        }
+    }, [error]);
     return (
         <>
-
+            <InputElement />
             <motion.div
                 variants={parentVariants}
                 initial='initial'
@@ -89,37 +122,7 @@ export default function EditorPresetsList() {
                     );
                 })}
             </motion.div>
-
-
-            <Dialog open={showDialog} onOpenChange={setShowDialog}>
-                <DialogContent className="max-w-sm">
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-foreground">Custom Size</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            <Input
-                                placeholder="Width"
-                                value={width}
-                                onChange={(e) => setWidth(e.target.value)}
-                            />
-                            <Input
-                                placeholder="Height"
-                                value={height}
-                                onChange={(e) => setHeight(e.target.value)}
-                            />
-                        </div>
-                        <Button
-                            className="w-full"
-                            disabled={!width || !height}
-                            onClick={() => {
-                                // Handle custom size logic
-                                setShowDialog(false);
-                            }}
-                        >
-                            Create Design
-                        </Button>
-                    </div>
-                </DialogContent>
-            </Dialog>
+            {dialog}
         </>
     );
 }
