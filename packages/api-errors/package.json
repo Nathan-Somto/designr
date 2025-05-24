@@ -2,8 +2,13 @@
     "name": "@designr/api-errors",
     "private": "true",
     "version": "1.0.0",
+    "type": "module",
     "description": "Designr Custom Api Errors package for a unified server response",
     "exports": {
         ".": "./src/index.ts"
-    }
+    },
+    "devDependencies": {
+        "@designr/typescript-config": "*"
+    },
+    "main": "./src/index.ts"
 }

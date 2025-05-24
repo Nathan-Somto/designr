@@ -5,9 +5,11 @@ class AppError extends Error {
         this.name = ErrorType || 'AppError';
         this.statusCode = statusCode;
     }
-    // construct error log message
+    // construct error log message with time of day
     getErrorLogMessage() {
-        return `${this.name}: ${this.message} with status code ${this.statusCode}`;
+        const date = new Date();
+        const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return `[ERROR_LOG]-[${time}]: ${this.message} with status code ${this.statusCode}`;
     }
     // prevent parent constructor from being called
 }
@@ -38,6 +40,7 @@ class InternalServerError extends AppError {
     }
 }
 export {
+    AppError,
     BadRequestError,
     UnauthorizedError,
     ForbiddenError,
