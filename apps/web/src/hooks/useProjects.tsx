@@ -1,23 +1,32 @@
 'use client';
-
 import { createContext, useContext, useMemo, useState } from 'react';
-import { getCommunityProjects } from '#/services/projects';
-type CommunityProjectsData = Awaited<ReturnType<typeof getCommunityProjects>>[number];
+type ExternalProjectsData = {
+    isStarred: boolean;
+    isPro: boolean;
+    dimensions: string;
+    id: string;
+    name: string;
+    image: string | null;
+    createdBy: {
+        name: string;
+        image: string | null;
+    };
+};
 
 type UserDesignsData = {
     id: string;
     name: string;
-    canView: 'SELF' | 'ORG' | 'PUBLIC';
-    isTemplate?: boolean;
+    canView: 'SELF' | 'ORG' | 'PUBLIC' | null;
+    isTemplate?: boolean | null;
     width: number;
     height: number;
-    updatedAt: Date;
+    updatedAt: Date | null;
 };
 // update this map to add new states
 type ProjectsDataMap = {
-    community: CommunityProjectsData;
+    community: ExternalProjectsData;
     userDesigns: UserDesignsData;
-    favourites: WithIdAndName;
+    favourites: ExternalProjectsData;
 };
 
 type WithIdAndName = { id: string; name: string };
@@ -43,7 +52,7 @@ type ProjectsContextType = {
         data?: ProjectsDataMap[K][];
         page?: number;
         hasMore?: boolean;
-        mode?: 'append' | 'replace';
+        mode?: 'append' | 'replace' | 'prepend';
     }) => void;
     filterByKeyword: <K extends keyof ProjectsDataMap>(slice: K, keyword: string) => void;
     filterByFn: <K extends keyof ProjectsDataMap>(slice: K, fn: (d: ProjectsDataMap[K]) => boolean) => void;
@@ -75,7 +84,7 @@ const ProjectsProvider = ({ children }: { children: React.ReactNode }) => {
     }) => {
         setState((prev) => {
             const prevSlice = prev[slice];
-            const newData = mode === 'replace' ? data : [...prevSlice.data, ...data];
+            const newData = mode === 'replace' ? data : mode == 'append' ? [...prevSlice.data, ...data] : [...data, ...prevSlice.data];
 
             return {
                 ...prev,
@@ -182,6 +191,7 @@ export {
     useProjects
 };
 export type {
-    CommunityProjectsData
+    ExternalProjectsData,
+    UserDesignsData
 };
 
