@@ -9,7 +9,6 @@ import { Button } from "@designr/ui/components/button";
 import {
     MoreHorizontal,
     Eye,
-    Pencil,
     FlagIcon,
 } from "lucide-react";
 import ProBadge from "./pro-badge";
@@ -19,6 +18,8 @@ import { toast } from "sonner";
 export function TemplateCard({
     template,
     onPreview,
+    type,
+    isDisabled = false
 }: {
     template: {
         name: string
@@ -28,6 +29,8 @@ export function TemplateCard({
         id: string
     };
     onPreview: () => void;
+    type: 'community' | 'favourites'
+    isDisabled?: boolean
 }) {
     const starred = template.isStarred;
     const {
@@ -35,7 +38,13 @@ export function TemplateCard({
         isPending
     } = useStarTemplate();
     return (
-        <div className="relative group overflow-hidden rounded-md border border-border transition hover:shadow-md">
+        <div
+            style={{
+                pointerEvents: isDisabled ? 'none' : 'auto',
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                opacity: isDisabled ? 0.5 : 1
+            }}
+            className="relative group overflow-hidden rounded-md border border-border transition hover:shadow-md">
             <figure
                 className="h-56 relative w-full"
             >
@@ -47,6 +56,12 @@ export function TemplateCard({
                 />
             </figure>
             <div
+                style={{
+                    pointerEvents: isDisabled ? 'none' : 'auto',
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                }}
+                aria-disabled={isDisabled}
+                role="button"
                 onClick={onPreview}
                 className="absolute cursor-pointer inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition duration-300 ease-in flex items-center justify-center">
                 <span className="text-white text-sm font-medium">Preview Template</span>
@@ -54,7 +69,7 @@ export function TemplateCard({
                     <StarButton
                         disabled={isPending}
                         isStarred={starred}
-                        onToggle={async () => await starTemplate(template.id, !starred, 'community')} />
+                        onToggle={async () => await starTemplate(template.id, !starred, type)} />
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button

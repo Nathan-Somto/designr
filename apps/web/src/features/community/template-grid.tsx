@@ -20,20 +20,25 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import ProBadge from "./pro-badge";
 import { TemplateCard } from "./template-card";
 import { cn } from "@designr/ui/lib/utils";
-import { CommunityProjectsData, useProjects } from "#/hooks/useProjects";
+import { ExternalProjectsData, useProjects } from "#/hooks/useProjects";
 import { useStarTemplate } from "#/hooks/useStarTemplate";
 import { useSettings } from "../settings/settings-provider";
 import { useRouter } from 'next/navigation'
-import { createProjectFromTemplate } from "#/services/projects";
+import { createProjectFromTemplate, fetchProjects } from "#/services/projects";
 import { LINKS } from "#/constants/links";
+import { promiseCatch } from "#/utils/promise-catch";
+import { PaginatedResponse } from "#/services";
+import { toast } from "sonner";
 const PreviewDialog = ({
     open,
     onOpenChange,
-    template
+    template,
+    type
 }: {
     open: boolean;
     onOpenChange: (v: boolean) => void;
-    template: CommunityProjectsData;
+    template: ExternalProjectsData;
+    type: 'community' | 'favourites'
 }) => {
     const {
         settings
@@ -104,7 +109,7 @@ const PreviewDialog = ({
                                 variant={template.isStarred ? 'ghost' : 'outline'}
                                 disabled={isPending || isCreatingProject}
                                 className={`${template.isStarred ? "!text-muted-foreground/70" : ""}`}
-                                onClick={async () => await starTemplate(template.id, template.isStarred, 'community')}
+                                onClick={async () => await starTemplate(template.id, template.isStarred, type)}
                             >
                                 <StarIcon className={`size-4 ${template.isStarred ? "!fill-yellow-500 !text-yellow-500" : ""}`} />
                                 {!template.isStarred ? 'Star Template' : 'Starred'}
@@ -119,34 +124,51 @@ const PreviewDialog = ({
 
 
 type Props = {
-    data: CommunityProjectsData[]
+    data: ExternalProjectsData[]
+    type?: 'community' | 'favourites'
+    error?: string,
+    totalPages: number
+    page: number
 }
-export default function TemplateGrid({ data }: Props) {
+export default function TemplateGrid({ data, type = 'community', error, totalPages, page }: Props) {
     const [previewOpen, setPreviewOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [selectedTemplate, setSelectedTemplate] = useState<CommunityProjectsData | null>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<ExternalProjectsData | null>(null);
+    const [isPending, startTransition] = useTransition();
     const {
         setSlice,
         state: {
             community: {
-                data: realData,
-                filteredData: filteredData
+                data: realCommunityData,
+                filteredData: filteredCommunityData,
+                hasMore: hasMoreCommunity
+            },
+            favourites: {
+                data: favouritesData,
+                filteredData: filteredFavouritesData,
+                hasMore: hasMoreFavourites
             }
         },
     } = useProjects();
 
     useEffect(() => {
-        setSlice({
-            slice: 'community',
-            data,
-            mode: 'replace',
-        })
+        if (data) {
+            setSlice({
+                slice: type,
+                data,
+                mode: 'replace',
+                page,
+                hasMore: page < totalPages,
+            })
+        }
         setLoading(false)
-    }, [data])
-    const handlePreview = (template: CommunityProjectsData) => {
+    }, [data, type, totalPages, page])
+    const handlePreview = (template: ExternalProjectsData) => {
         setSelectedTemplate(template);
         setPreviewOpen(true);
     };
+    const filteredData = type === 'community' ? filteredCommunityData : filteredFavouritesData;
+    const realData = type === 'community' ? realCommunityData : favouritesData;
     const templates = filteredData ?? realData;
     const isFiltered = filteredData !== undefined
     const layoutClasses = useMemo(() => {
@@ -168,6 +190,42 @@ export default function TemplateGrid({ data }: Props) {
         });
     }, []);
 
+    const hasNextPage = !loading && type === 'community' ? hasMoreCommunity : hasMoreFavourites;
+    const onLoadMore = async () => {
+        startTransition(async () => {
+            if (!hasNextPage) return;
+            startTransition(async () => {
+                const res = await
+                    promiseCatch<PaginatedResponse<ExternalProjectsData>>
+                        //@ts-ignore
+                        (fetchProjects(type, page + 1))
+                if (res === undefined) {
+                    toast.error('Failed to load more designs');
+                    return;
+                }
+                if (res?.type === 'error') {
+                    toast.error(res.message);
+                    return;
+                }
+                startTransition(() => {
+                    setSlice({
+                        data: res.data,
+                        slice: type,
+                        page: res.page,
+                        hasMore: res.page < res.totalPages,
+                        mode: 'append'
+                    })
+                })
+            })
+        })
+    }
+    if (error) {
+        return (
+            <section className="mt-6 h-14 rounded-md bg-destructive/10 border border-destructive flex items-center justify-center">
+                <p className="text-center text-destructive">{error}</p>
+            </section>
+        );
+    }
     return (
         <section
             id="community__templates-grid"
@@ -184,7 +242,11 @@ export default function TemplateGrid({ data }: Props) {
                     delay: 0.34,
                     duration: 0.234
                 }}
-                className="font-semibold text-lg">Start your Journery</motion.h3>
+                className="font-semibold text-lg">
+                {
+                    type === 'favourites' ? 'View your favourite designs' : 'Start your journey'
+                }
+            </motion.h3>
             {
                 loading ? (
                     <div className="flex flex-col gap-y-4 items-center justify-center h-32">
@@ -197,7 +259,9 @@ export default function TemplateGrid({ data }: Props) {
                             {
                                 <p className="text-center h-full grid place-items-center text-muted-foreground text-sm py-4">
                                     {
-                                        isFiltered ? 'no template matches the filter' : 'no templates available'
+                                        isFiltered ?
+                                            `no ${type === 'favourites' ? 'starred' : 'community'} templates match the filter`
+                                            : `no ${type === 'favourites' ? 'starred' : 'community'} templates available`
                                     }
                                 </p>
                             }
@@ -214,6 +278,7 @@ export default function TemplateGrid({ data }: Props) {
                                     transition={{ duration: 0.4, ease: "easeOut", delay: index * 0.05 }}
                                 >
                                     <TemplateCard
+                                        isDisabled={isPending}
                                         template={{
                                             id: template.id,
                                             image: template.image ?? '',
@@ -221,6 +286,7 @@ export default function TemplateGrid({ data }: Props) {
                                             name: template.name,
                                             isPro: template.isPro
                                         }}
+                                        type={type}
                                         onPreview={() => handlePreview(template)}
                                     />
                                 </motion.div>
@@ -232,11 +298,30 @@ export default function TemplateGrid({ data }: Props) {
                 )
             }
 
+            {loading ? null : hasNextPage && (
+                <div className="w-full flex items-center justify-center pt-4">
+                    <Button
+                        disabled={isPending}
+                        onClick={onLoadMore}
+                        variant="ghost"
+                    >
+                        {
+                            isPending ? (
+                                <Loader className="size-4 animate-spin text-muted-foreground" />
+                            ) : (
+                                <span className="text-sm font-medium">Load More</span>
+                            )
+                        }
+
+                    </Button>
+                </div>
+            )}
             {selectedTemplate && (
                 <PreviewDialog
                     open={previewOpen}
                     onOpenChange={setPreviewOpen}
                     template={selectedTemplate}
+                    type={type}
                 />
             )}
         </section>
