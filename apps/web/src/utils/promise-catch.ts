@@ -1,13 +1,10 @@
+import { ApiErrorResponse } from "#/services"
 import { AppError } from "@designr/api-errors"
 
 /** 
  * @description promise-catch gives a unified way for handling server action errors and passing it to the client and sentry
  */
-type CatchResult = {
-    message: string;
-    statusCode: number;
-    type: 'error';
-}
+type CatchResult = ApiErrorResponse
 const promiseCatch = async<T>(promise: Promise<T>): Promise<T | CatchResult | undefined> => {
     return new Promise<T>((resolve, reject) => {
         promise
