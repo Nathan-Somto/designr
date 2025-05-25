@@ -36,6 +36,20 @@
       "when": 1745253112620,
       "tag": "0004_flaky_darkhawk",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747460283931,
+      "tag": "0005_nebulous_slyde",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1748161713609,
+      "tag": "0006_chubby_tana_nile",
+      "breakpoints": true
     }
   ]
 }

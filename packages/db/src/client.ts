@@ -1,5 +1,5 @@
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
-import { drizzle as drizzlePg } from 'drizzle-orm/node-postgres';
+import { drizzle as drizzlePg, NodePgClient } from 'drizzle-orm/node-postgres';
 import { neon, NeonQueryFunction } from '@neondatabase/serverless';
 import pg from 'pg';
 //import dotenv from "dotenv";
@@ -29,14 +29,10 @@ if (process.env.NODE_ENV === 'production') {
     const connection = globalForDb.connection ?? new pg.Pool({
         connectionString: process.env.DATABASE_DEV_URL!,
     });
-
     if (!globalForDb.connection) globalForDb.connection = connection;
 
-    db = drizzlePg({
-        //schema,
-        client: connection as pg.Pool,
+    db = drizzlePg(connection as NodePgClient, {
         logger: true,
-        casing: 'snake_case',
     });
 }
 

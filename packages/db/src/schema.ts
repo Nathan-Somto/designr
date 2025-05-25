@@ -6,7 +6,8 @@ import {
     boolean,
     json,
     integer,
-    pgEnum
+    pgEnum,
+    date
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -81,7 +82,7 @@ export const members = pgTable('members', {
 export const invitation = pgTable('invitation', {
     ...baseSchemaProps,
     email: text('email'),
-    inviterId: uuid('inviter_id').references(() => members.id),
+    inviterId: uuid('inviter_id').references(() => users.id),
     role: text('role'),
     status: text('status'),
     expiresAt: timestamp('expires_at'),
@@ -146,6 +147,15 @@ export const subscriptions = pgTable("subscriptions", {
     metadata: json("metadata"),
     ...baseSchemaProps
 });
+//=== RATE LIMITS ===//
+export const rateLimits = pgTable("rate_limits", {
+    userId: uuid("user_id").notNull(),
+    service: text("service").notNull(),
+    date: date("date").notNull(),
+    count: integer("count").notNull().default(0),
+    ...baseSchemaProps
+});
+
 //== RELATIONSHIPS ===//
 // users → userSettings (1:1)
 // users → projects (1:M)
