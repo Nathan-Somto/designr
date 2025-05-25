@@ -12,7 +12,13 @@ import FillSettings from './fill-settings'
 import StrokeSettings from './stroke-settings'
 import EffectsSettings from './effects-settings'
 import { BaseEditorCompProps } from '../../types'
+import { useSettings } from '#/features/settings/settings-provider'
+import { userSettingsDefaults } from '@designr/db/user-settings'
+import { cn } from '@designr/ui/lib/utils'
+import { EditorLayoutStyles } from '../ui/editor-layout-styles'
 export default function SettingsPanel({ editor }: BaseEditorCompProps) {
+    const { settings } = useSettings();
+    const key = settings?.layout?.settingsPanel ?? userSettingsDefaults?.layout?.settingsPanel
     const thereIsASelection = (editor?.selectedObjects?.length ?? 0) > 0
     //console.log("selected object", editor?.selectedObjects);
     const uiStates = React.useMemo(() => {
@@ -46,7 +52,8 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
     return (
         <ScrollArea
             id="editor__settings-panel"
-            className='!fixed top-[120px] z-[60] right-[20px] !px-3 !py-5 w-[265px] !h-[350px] bg-white border border-gray-100 rounded-[8px] shadow-md'
+            data-position={key}
+            className={cn('!px-3 !py-5 w-[265px] !h-[350px] bg-white border border-gray-100 rounded-[8px] shadow-md', EditorLayoutStyles[key])}
         >
             {
                 !thereIsASelection ?

@@ -6,10 +6,13 @@ import EditorColorInput from '../ui/editor-color-input'
 import { GridIcon } from 'lucide-react'
 import { BaseEditorCompProps } from '../../types'
 import { EditorGradient } from '@designr/use-editor'
+import { useSettings } from '#/features/settings/settings-provider'
+import { userSettingsDefaults } from '@designr/db/user-settings'
 
 export default function WorkspaceSettings({ editor }: BaseEditorCompProps) {
     const properties = editor?.getWorkSpaceProperties();
-
+    const { settings } = useSettings();
+    const isGridEnabled = settings?.gridEnabled ?? userSettingsDefaults?.gridEnabled
     // Local state for width, height, and grid lines
     const [width, setWidth] = useState(properties?.width ?? 525);
     const [height, setHeight] = useState(properties?.height ?? 300);
@@ -90,56 +93,61 @@ export default function WorkspaceSettings({ editor }: BaseEditorCompProps) {
                     editor?.setWorkspaceColor(newColor);
                 }}
             />
+            {
+                isGridEnabled && (
+                    <>
+                        <div className='h-[0.25px] mt-2 mb-6 bg-background' />
 
-            <div className='h-[0.25px] mt-2 mb-6 bg-background' />
-
-            {/* Grid Settings */}
-            <div>
-                <h3 className='text-xs text-muted-foreground font-medium mb-3 px-2'>Grid Lines</h3>
-            </div>
-            <div className='grid grid-cols-2 gap-2 mb-2'>
-                <EditorSelect
-                    action="Grid Overlay"
-                    Icon={() => <GridIcon size={18} />}
-                    options={['On', 'Off']}
-                    value={gridIsActive ? 'On' : 'Off'}
-                    config={{ property: 'grid', value: 'Off' }}
-                    className='col-span-2 mb-0.5'
-                    onChange={(_, value) => {
-                        const isActive = value === 'On';
-                        setGridIsActive(isActive);
-                        editor?.addGridToCanvas({
-                            showGrid: isActive,
-                        });
-                    }}
-                />
-                {/* Grid Horizontal & Vertical Inputs */}
-                <EditorSelect
-                    Icon={workspace.selects[1].Icon}
-                    action={workspace.selects[1].action}
-                    config={workspace.selects[1].config}
-                    options={workspace.selects[1].options}
-                    className='col-span-2'
-                    value={gridDimensions}
-                    onChange={(_, value) => {
-                        if (typeof value !== 'string') return;
-                        const [gridHorizontal, gridVertical] = value.split('x').map(Number);
-                        setGridDimensions(value);
-                        if (gridIsActive) {
-                            editor?.addGridToCanvas({
-                                gridHorizontal,
-                                gridVertical,
-                                showGrid: true
-                            })
-                            return;
-                        }
-                        editor?.setGridDimensions({
-                            gridHorizontal,
-                            gridVertical
-                        })
-                    }}
-                />
-            </div>
+                        {/* Grid Settings */}
+                        <div>
+                            <h3 className='text-xs text-muted-foreground font-medium mb-3 px-2'>Grid Lines</h3>
+                        </div>
+                        <div className='grid grid-cols-2 gap-2 mb-2'>
+                            <EditorSelect
+                                action="Grid Overlay"
+                                Icon={() => <GridIcon size={18} />}
+                                options={['On', 'Off']}
+                                value={gridIsActive ? 'On' : 'Off'}
+                                config={{ property: 'grid', value: 'Off' }}
+                                className='col-span-2 mb-0.5'
+                                onChange={(_, value) => {
+                                    const isActive = value === 'On';
+                                    setGridIsActive(isActive);
+                                    editor?.addGridToCanvas({
+                                        showGrid: isActive,
+                                    });
+                                }}
+                            />
+                            {/* Grid Horizontal & Vertical Inputs */}
+                            <EditorSelect
+                                Icon={workspace.selects[1].Icon}
+                                action={workspace.selects[1].action}
+                                config={workspace.selects[1].config}
+                                options={workspace.selects[1].options}
+                                className='col-span-2'
+                                value={gridDimensions}
+                                onChange={(_, value) => {
+                                    if (typeof value !== 'string') return;
+                                    const [gridHorizontal, gridVertical] = value.split('x').map(Number);
+                                    setGridDimensions(value);
+                                    if (gridIsActive) {
+                                        editor?.addGridToCanvas({
+                                            gridHorizontal,
+                                            gridVertical,
+                                            showGrid: true
+                                        })
+                                        return;
+                                    }
+                                    editor?.setGridDimensions({
+                                        gridHorizontal,
+                                        gridVertical
+                                    })
+                                }}
+                            />
+                        </div>
+                    </>
+                )
+            }
         </div>
     );
 }

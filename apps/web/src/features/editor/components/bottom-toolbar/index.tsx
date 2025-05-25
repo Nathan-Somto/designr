@@ -6,11 +6,17 @@ import { zoomValues } from './data'
 import EditorSelect from '../ui/editor-select'
 import { ZoomValue } from '@designr/use-editor'
 import { BaseEditorCompProps } from '../../types'
+import { useSettings } from '#/features/settings/settings-provider'
+import { cn } from '@designr/ui/lib/utils'
+import { EditorLayoutStyles } from '../ui/editor-layout-styles'
+import { userSettingsDefaults } from '@designr/db/user-settings'
 
 export default function BottomToolbar({ editor }: BaseEditorCompProps) {
+    const { settings } = useSettings();
+    const key = settings?.layout?.zoomControls ?? userSettingsDefaults?.layout?.zoomControls
     return (
         <section
-            className='fixed px-6 bottom-[20px] text-muted-foreground right-0 z-[50] w-fit h-fit'
+            className={cn('px-6 text-muted-foreground w-fit h-fit', EditorLayoutStyles[key])}
         >
             <Menubar>
                 <MenubarMenu

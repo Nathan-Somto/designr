@@ -15,6 +15,8 @@ import { Slider } from '@designr/ui/components/slider';
 import { Switch } from '@designr/ui/components/switch';
 import { EditorInput } from '../ui/editor-input';
 import { BaseEditorCompProps } from '../../types';
+import { useSettings } from '#/features/settings/settings-provider';
+import { userSettingsDefaults } from '@designr/db/user-settings';
 
 type Action = typeof downloadOptions.options[number]['action']
 interface Props extends BaseEditorCompProps {
@@ -28,13 +30,22 @@ export default function DownloadDialog({
     onOpenChange,
     editor,
 }: Props) {
+    const { settings } = useSettings();
+    const defaultExportFormat = settings?.defaultExportFormat ?? userSettingsDefaults?.defaultExportFormat;
     const [index, setIndex] = React.useState(0);
     const [scale, setScale] = React.useState(1);
     const [quality, setQuality] = React.useState(80);
     const [prettify, setPrettify] = React.useState(false);
     const [isPending, startTransition] = React.useTransition();
     const { Icon, label, action } = downloadOptions.options[index];
-
+    React.useEffect(() => {
+        const formatMap = {
+            'png': 0,
+            'jpg': 3,
+            'svg': 2
+        }
+        setIndex(formatMap[defaultExportFormat])
+    }, [defaultExportFormat])
     const workspace = editor?.getWorkSpaceProperties();
     const width = workspace?.width || 0;
     const height = workspace?.height || 0;
