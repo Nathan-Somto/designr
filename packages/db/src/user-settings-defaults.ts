@@ -6,7 +6,7 @@ export const userSettingsSchema = z.object({
     defaultHeight: z.number().min(100).max(10000).default(500),
     defaultWidth: z.number().min(100).max(10000).default(450),
     defaultExportFormat: z.enum(["png", "jpg", "svg"]).default("png"),
-    timeZone: z.string().default("UTC"),
+    reducedMotion: z.boolean().default(false),
     openDesignsInNewTab: z.boolean().default(false),
     layout: z.object({
         layersPanel: z.enum(["left", "right"]).default("right"),
@@ -24,12 +24,12 @@ export const userSettingsDefaults = {
     gridEnabled: false,
     defaultHeight: 500,
     defaultWidth: 450,
-    timeZone: 'UTC',
     openDesignsInNewTab: false,
     layout: {
         layersPanel: 'right',
         settingsPanel: 'left',
         zoomControls: 'bottom-left',
         aiPanel: 'bottom-right'
-    }
+    },
+    reducedMotion: false
 } satisfies UserSettings
