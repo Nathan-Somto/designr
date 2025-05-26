@@ -15,7 +15,9 @@ export default function Toolbar({ editor, isSaving }: BaseEditorCompProps & { is
         <Menubar>
             <MenubarMenu>
                 {/* Action Menu e.g new file, back to dashboard, load template report an issue */}
-                <ActionMenu />
+                <ActionMenu
+                    editor={editor}
+                />
                 {/* Divider */}
                 <MenubarSeparator
                 />

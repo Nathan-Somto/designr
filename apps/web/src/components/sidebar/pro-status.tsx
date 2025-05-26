@@ -5,7 +5,41 @@ import { CrownIcon } from 'lucide-react';
 import React from 'react';
 import { useSidebar } from './sidebar-provider';
 import { cn } from '@designr/ui/lib/utils';
+import { useRouter } from 'next/navigation';
+import { LINKS } from '#/constants/links';
 
+export function ProButton() {
+    return (
+        <div className="mt-5 mb-3">
+            <Button
+                variant="outline"
+                size="sm"
+                className="w-[95%] mx-auto flex cursor-default"
+            >
+                <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
+                <span className="brightness-[.6]">You’re on Pro</span>
+            </Button>
+        </div>
+    )
+}
+export function UpgradeToProButton() {
+    const router = useRouter();
+    return (
+        <div className="mt-5 mb-3">
+            <Button
+                variant="secondary"
+                onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
+                size="sm"
+                className="w-[95%] mx-auto flex"
+            >
+                <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
+                <span className="brightness-[.6]">
+                    Upgrade to Pro
+                </span>
+            </Button>
+        </div>
+    )
+}
 export default function ProStatus({ isPro = false }: { isPro?: boolean }) {
     const { isCollapsed } = useSidebar();
     if (isCollapsed) return (
@@ -16,34 +50,10 @@ export default function ProStatus({ isPro = false }: { isPro?: boolean }) {
         </Hint>
     )
     if (isPro) {
-        return (
-            <div className="mt-5 mb-3">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-[95%] mx-auto flex cursor-default"
-                >
-                    <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
-                    <span className="brightness-[.6]">You’re on Pro</span>
-                </Button>
-            </div>
-        );
+        return <ProButton />;
     }
 
-    return (
-        <div className="mt-5 mb-3">
-            <Button
-                variant="secondary"
-                size="sm"
-                className="w-[95%] mx-auto flex"
-            >
-                <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
-                <span className="brightness-[.6]">
-                    Upgrade to Pro
-                </span>
-            </Button>
-        </div>
-    );
+    return <UpgradeToProButton />;
 }
 export function ProStatusSkeleton() {
     const { isCollapsed } = useSidebar();

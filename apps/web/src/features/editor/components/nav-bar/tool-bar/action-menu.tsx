@@ -11,11 +11,17 @@ import { userSettingsDefaults } from '@designr/db/user-settings'
 import { promiseCatch } from '#/utils/promise-catch'
 import { toast } from 'sonner'
 import { handleProjectRedirect } from '#/utils/handle-project-redirect'
+import { PaginatedResponse } from '#/services'
+import { ExternalProjectsData } from '#/hooks/useProjects'
+import TemplateDialog from '../../dialogs/template-dialog'
+import { BaseEditorCompProps } from '#/features/editor/types'
 type Action = typeof actionMenuItems[number]['action']
-export default function ActionMenu() {
+export default function ActionMenu({ editor }: BaseEditorCompProps) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition()
     const { settings } = useSettings();
+    const [templatesCache, setTemplateCache] = React.useState<PaginatedResponse<ExternalProjectsData> | null>(null)
+    const [open, setOpen] = React.useState(false);
     const handleAction = async (
         action: Action
     ) => {
@@ -55,7 +61,7 @@ export default function ActionMenu() {
                 router.push(LINKS.DASHBOARD)
                 break;
             case 'template':
-                // open a modal to load a template
+                setOpen(true);
                 break;
             case 'issue':
                 // open a new tab to report an issue (github issues)
@@ -64,47 +70,56 @@ export default function ActionMenu() {
         }
     }
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant={'selection'}
-                    className='font-medium'
-                    size='shrink'
-                    disabled={isPending}
-                >
-                    D
-                    {/* on hover the chevron should go down a bit */}
-                    <span>
-                        <ChevronDownIcon
-                            className={`
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant={'selection'}
+                        className='font-medium'
+                        size='shrink'
+                        disabled={isPending}
+                    >
+                        D
+                        {/* on hover the chevron should go down a bit */}
+                        <span>
+                            <ChevronDownIcon
+                                className={`
                             size-4 hover:translate-y-1
                             transition-transform
                             ease-out duration-200
                             `} />
-                    </span>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-                sideOffset={10}
-                align='end'
-                alignOffset={10}
-                className='ml-8 !z-[80] relative'
-            >
-                {actionMenuItems.map(({ Icon, action, label }, index) => (
-                    <React.Fragment key={action}>
-                        <Button
-                            disabled={isPending}
-                            variant={'selection'}
-                            className='w-full justify-start text-xs font-medium'
-                            onClick={async () => await handleAction(action)}
-                        >
-                            <Icon />
-                            {label}
-                        </Button>
-                        {index < actionMenuItems.length - 1 && <DropdownMenuSeparator />}
-                    </React.Fragment>
-                ))}
-            </DropdownMenuContent>
-        </DropdownMenu>
+                        </span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                    sideOffset={10}
+                    align='end'
+                    alignOffset={10}
+                    className='ml-8 !z-[80] relative'
+                >
+                    {actionMenuItems.map(({ Icon, action, label }, index) => (
+                        <React.Fragment key={action}>
+                            <Button
+                                disabled={isPending}
+                                variant={'selection'}
+                                className='w-full justify-start text-xs font-medium'
+                                onClick={async () => await handleAction(action)}
+                            >
+                                <Icon />
+                                {label}
+                            </Button>
+                            {index < actionMenuItems.length - 1 && <DropdownMenuSeparator />}
+                        </React.Fragment>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <TemplateDialog
+                editor={editor}
+                onOpenChange={setOpen}
+                openProp={open}
+                setTemplateCache={setTemplateCache}
+                templatesCache={templatesCache}
+            />
+        </>
     )
 }
