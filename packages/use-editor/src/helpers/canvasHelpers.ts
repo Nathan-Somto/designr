@@ -466,6 +466,14 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         return dataURL
     }
     //===== SETTERS ======
+    const loadFromJson = async (data: string) => {
+        await canvas.loadFromJSON(data);
+        canvas.renderAll();
+        setZoomLevel({
+            direction: '+',
+            value: 'fit'
+        })
+    }
     const setWorkspaceColor = (color: string | EditorGradient) => {
         const workspace = getWorkspace(canvas);
         if (!workspace) return;
@@ -1106,5 +1114,17 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * 
          */
         addSvgString,
+        /**
+         * @description a function that is used to load a previously saved state of the canvas that is in json form.
+         * @param {string} data - the data in json form
+         * @example
+         * const {editor} = useEditor();
+         * const data = {
+         *  "version": "1.0.3"
+         *   "objects": []
+         * }
+         * await editor?.loadFromJSON(data)
+         */
+        loadFromJson
     };
 }
