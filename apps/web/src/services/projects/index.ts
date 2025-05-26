@@ -2,7 +2,7 @@
 
 import { and, count, db, desc, eq, inArray, schema } from "@designr/db";
 import { getCurrentUser } from "../users";
-import { BadRequestError, UnauthorizedError } from "@designr/api-errors";
+import { BadRequestError, NotFoundError, UnauthorizedError } from "@designr/api-errors";
 import { z } from "zod";
 
 const toggleTemplateStar = async ({
@@ -441,9 +441,39 @@ const getProjectForEditor = async (projectId: string) => {
         )
         .limit(1);
     if (project.length === 0) {
-        throw new BadRequestError('Project not found');
+        throw new NotFoundError('Project not found');
     }
     return project[0];
+}
+const getTemplateForEditor = async (templateId: string) => {
+    const user = await getCurrentUser();
+    const project = await db
+        .select(
+            {
+                id: schema.projects.id,
+                data: schema.projects.data,
+                height: schema.projects.height,
+                width: schema.projects.width,
+                isPro: schema.projects.isProTemplate
+            }
+        )
+        .from(schema.projects)
+        .where(
+            and(
+                eq(schema.projects.id, templateId),
+                eq(schema.projects.isTemplate, true)
+            )
+        ).limit(1)
+    if (project.length === 0) {
+        throw new NotFoundError('Project not found');
+    }
+    if (!user.isPro && project[0].isPro) {
+        throw new BadRequestError('Upgrade your subscription inorder to access this template')
+    }
+    return {
+        type: 'success' as const,
+        template: project[0]
+    }
 }
 const saveUserMedia = async (media: {
     mediaType: 'IMG' | 'VIDEO',
@@ -486,5 +516,6 @@ export {
     makeProjectATemplate,
     saveUserMedia,
     getProjectForEditor,
-    createANewProject
+    createANewProject,
+    getTemplateForEditor
 }
