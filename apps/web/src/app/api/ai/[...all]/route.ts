@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const url = new URL(req.url)
     const action = url.pathname.split('/').pop()
     //! check if the user is pro and has not exhausted their  AI feature usage for the month
-
+    //console.log("AI Action: ", action);
     const config = AI_ACTIONS[action as keyof typeof AI_ACTIONS]
     if (!config) {
         return NextResponse.json({ error: 'Unknown AI action' }, { status: 404 })
@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({
             type: 'success',
-            response: result
+            result,
+            contentType: result.contentType
         })
     } catch (err) {
 

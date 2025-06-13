@@ -16,7 +16,7 @@ export const AI_ACTIONS = {
             prompt: z.string().min(1),
             version: z.string().optional(),
         }),
-        model: '@hf/meta/llama-3.1-8b-instruct-fast',
+        model: '@cf/meta/llama-3.1-8b-instruct-fast',
         responseType: 'json' as const,
     },
 }
