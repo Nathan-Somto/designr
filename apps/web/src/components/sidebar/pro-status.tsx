@@ -22,23 +22,65 @@ export function ProButton() {
         </div>
     )
 }
-export function UpgradeToProButton() {
+
+
+export function UpgradeToProButton(props: {
+    type?: 'default'
+} | {
+    type?: 'overlay';
+    show?: boolean;
+}) {
     const router = useRouter();
+
+    if (props.type === 'default' || props.type === undefined) {
+        return (
+            <div className="mt-5 mb-3">
+                <Button
+                    variant="secondary"
+                    onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
+                    size="sm"
+                    className="w-[95%] mx-auto flex"
+                >
+                    <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
+                    <span className="brightness-[.6]">Upgrade to Pro</span>
+                </Button>
+            </div>
+        );
+    }
+
+    if (props.type === 'overlay' && !props?.show) return null;
+
     return (
-        <div className="mt-5 mb-3">
-            <Button
-                variant="secondary"
-                onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
-                size="sm"
-                className="w-[95%] mx-auto flex"
-            >
-                <CrownIcon className="mr-1 size-4 fill-yellow-500 text-yellow-500" />
-                <span className="brightness-[.6]">
-                    Upgrade to Pro
-                </span>
-            </Button>
+        <div
+            className={cn(
+                'absolute inset-0 z-50 flex items-center justify-center rounded-xl backdrop-blur-md bg-white/10 border border-white/20',
+                'cursor-pointer'
+            )}
+            onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
+        >
+            <div className="flex items-center space-x-2 text-sm text-white font-semibold">
+                <CrownIcon className="size-4 fill-yellow-400 text-yellow-400" />
+                <span>Upgrade to Pro</span>
+            </div>
         </div>
-    )
+    );
+}
+
+export function ProOnlyMessageWall() {
+    return (
+        <div className="absolute size-full inset-0 bg-white/10 backdrop-blur-md z-50 flex items-center justify-center">
+            <div className='flex flex-col justify-center text-center items-center p-4 gap-y-2'>
+                <h2 className='text-3xl  font-semibold mb-2'>
+                    <CrownIcon className="size-8 inline-flex mr-1.5 fill-yellow-500 text-yellow-500 mb-4" />
+                    <span>Pro Feature</span>
+                </h2>
+                <p className='text-sm text-muted-foreground  mx-auto text-balance w-[95%] leading-5'>
+                    This feature is only available for Pro users. Please upgrade your account to access it.
+                </p>
+                <UpgradeToProButton />
+            </div>
+        </div>
+    );
 }
 export default function ProStatus({ isPro = false }: { isPro?: boolean }) {
     const { isCollapsed } = useSidebar();
