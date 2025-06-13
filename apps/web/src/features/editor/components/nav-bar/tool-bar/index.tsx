@@ -7,16 +7,18 @@ import ShapeMenu from './shape-menu'
 import TextMenu from './text-menu'
 import Hint from '@designr/ui/components/hint'
 import ImageMenu from './image-menu'
-import { BaseEditorCompProps } from '#/features/editor/types'
-export default function Toolbar({ editor, isSaving }: BaseEditorCompProps & { isSaving?: boolean }) {
+import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
+export default function Toolbar({ isSaving }: { isSaving?: boolean }) {
     const isPending = isSaving;
     const isError = false;
+    const {
+        editor
+    } = useEditorStore();
     return (
         <Menubar>
             <MenubarMenu>
                 {/* Action Menu e.g new file, back to dashboard, load template report an issue */}
                 <ActionMenu
-                    editor={editor}
                 />
                 {/* Divider */}
                 <MenubarSeparator
@@ -43,15 +45,12 @@ export default function Toolbar({ editor, isSaving }: BaseEditorCompProps & { is
                 </Hint>
                 {/* Shape Menu */}
                 <ShapeMenu
-                    editor={editor}
                 />
                 {/* Text Menu */}
                 <TextMenu
-                    editor={editor}
                 />
                 {/* Image Menu */}
                 <ImageMenu
-                    editor={editor}
                 />
                 {/* Undo */}
                 <Hint label='undo'>

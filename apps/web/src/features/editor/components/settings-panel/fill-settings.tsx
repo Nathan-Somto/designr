@@ -4,8 +4,9 @@ import { EditorInput } from '../ui/editor-input'
 import EditorColorInput from '../ui/editor-color-input'
 import { EditorGradient } from '@designr/use-editor'
 import TransparencyButton from './transparency-button'
-import { BaseEditorCompProps } from '../../types'
-export default function FillSettings({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function FillSettings() {
+    const { editor } = useEditorStore();
     const [color, setColor] = React.useState<string | EditorGradient>(editor?.selectedObjects?.[0]?.fill ?? '#000')
     const [localOpacity, setLocalOpacity] = React.useState<number>((editor?.selectedObjects?.[0]?.opacity ?? 1) * 100)
     return (

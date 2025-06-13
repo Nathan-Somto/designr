@@ -11,12 +11,13 @@ import EditorShowPanel from '../ui/editor-show-panel'
 import FillSettings from './fill-settings'
 import StrokeSettings from './stroke-settings'
 import EffectsSettings from './effects-settings'
-import { BaseEditorCompProps } from '../../types'
 import { useSettings } from '#/features/settings/settings-provider'
 import { userSettingsDefaults } from '@designr/db/user-settings'
 import { cn } from '@designr/ui/lib/utils'
 import { EditorLayoutStyles } from '../ui/editor-layout-styles'
-export default function SettingsPanel({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function SettingsPanel() {
+    const { editor } = useEditorStore();
     const { settings } = useSettings();
     const key = settings?.layout?.settingsPanel ?? userSettingsDefaults?.layout?.settingsPanel
     const thereIsASelection = (editor?.selectedObjects?.length ?? 0) > 0
@@ -57,12 +58,12 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
         >
             {
                 !thereIsASelection ?
-                    <WorkspaceSettings editor={editor} /> :
+                    <WorkspaceSettings /> :
                     <>
                         {uiStates.shouldShowAlignment && (
                             <>
                                 {/* Alignment Settings */}
-                                <AlignmentSettings editor={editor} />
+                                <AlignmentSettings />
                                 {/* Divider */}
                                 <Divider className='my-3' />
                             </>
@@ -70,7 +71,7 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Object Name(show as dropdown if it is a group) */}
                         {/* Element Settings */}
                         <ElementSettings
-                            editor={editor}
+
                             thereIsACircle={uiStates?.thereIsACircle}
                             thereIsARect={uiStates?.thereIsARect}
                             elements={getGroupElementCounts()}
@@ -79,13 +80,13 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
                         {/* Transform Settings */}
-                        <TransformSettings editor={editor} />
+                        <TransformSettings />
                         {/* Divider */}
                         <Divider className='mt-2.5 mb-5' />
                         {/* Text Settings (shows only when it is type text) */}
                         {uiStates?.thereIsAtext && (
                             <>
-                                <TextSettings editor={editor} />
+                                <TextSettings />
                                 <Divider className='mt-2.5 mb-5' />
                             </>
                         )}
@@ -93,7 +94,7 @@ export default function SettingsPanel({ editor }: BaseEditorCompProps) {
                         {uiStates?.thereIsAnImage && (
                             <>
                                 <ImageSettings
-                                    editor={editor}
+
                                 />
                                 <Divider className='mt-2.5 mb-5' />
                             </>

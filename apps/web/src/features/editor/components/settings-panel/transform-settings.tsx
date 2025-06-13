@@ -7,9 +7,11 @@ import {
 } from './data'
 import Hint from '@designr/ui/components/hint'
 import { HelpCircleIcon } from 'lucide-react'
-import { BaseEditorCompProps, EditorInputValue } from '../../types'
+import { EditorInputValue } from '../../types'
 import { SelectedObject } from '@designr/use-editor'
-export default function TransformSettings({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function TransformSettings() {
+    const { editor } = useEditorStore();
     const [transformState, setTransformState] = React.useState<
         Record<"scaleX" | "scaleY" | "skewX" | "skewY", SelectedObject["scaleX" | "scaleY" | "skewX" | "skewY"]>
     >({

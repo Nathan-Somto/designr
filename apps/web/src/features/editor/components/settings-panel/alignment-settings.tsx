@@ -2,8 +2,9 @@ import React from 'react'
 import { alignment } from './data'
 import { Alignment } from '@designr/use-editor'
 import EditorButtonSelect from '../ui/editor-button-select'
-import { BaseEditorCompProps } from '../../types'
-export default function AlignmentSettings({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function AlignmentSettings() {
+    const { editor } = useEditorStore();
     const [selectedValue, setSelectedValue] = React.useState<Alignment>(editor?.selectedObjects?.[0]?.align ?? 'none')
     return (
         <div className='grid w-full grid-cols-6 gap-2 rounded-none'>

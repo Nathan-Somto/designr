@@ -1,9 +1,10 @@
 import React from 'react'
 import EditorSelect from '../ui/editor-select'
 import { filter } from './data'
-import { BaseEditorCompProps } from '../../types'
 import { FabricFilterType } from '@designr/use-editor'
-export default function ImageSettings({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function ImageSettings() {
+    const { editor } = useEditorStore();
     const [filterState, setFilterState] = React.useState(editor?.selectedObjects?.[0]?.filter ?? filter.config.value)
     return (
         <section id="image-settings">

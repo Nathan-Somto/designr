@@ -4,12 +4,13 @@ import { EditorInput } from '../ui/editor-input'
 import EditorSelect from '../ui/editor-select'
 import EditorColorInput from '../ui/editor-color-input'
 import { GridIcon } from 'lucide-react'
-import { BaseEditorCompProps } from '../../types'
 import { EditorGradient } from '@designr/use-editor'
 import { useSettings } from '#/features/settings/settings-provider'
 import { userSettingsDefaults } from '@designr/db/user-settings'
+import { useEditorStore } from '../../hooks/useEditorStore'
 
-export default function WorkspaceSettings({ editor }: BaseEditorCompProps) {
+export default function WorkspaceSettings() {
+    const { editor } = useEditorStore();
     const properties = editor?.getWorkSpaceProperties();
     const { settings } = useSettings();
     const isGridEnabled = settings?.gridEnabled ?? userSettingsDefaults?.gridEnabled

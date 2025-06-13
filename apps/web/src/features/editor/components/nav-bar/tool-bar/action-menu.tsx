@@ -14,9 +14,10 @@ import { handleProjectRedirect } from '#/utils/handle-project-redirect'
 import { PaginatedResponse } from '#/services'
 import { ExternalProjectsData } from '#/hooks/useProjects'
 import TemplateDialog from '../../dialogs/template-dialog'
-import { BaseEditorCompProps } from '#/features/editor/types'
+import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
 type Action = typeof actionMenuItems[number]['action']
-export default function ActionMenu({ editor }: BaseEditorCompProps) {
+export default function ActionMenu() {
+    const { editor } = useEditorStore();
     const router = useRouter();
     const [isPending, startTransition] = useTransition()
     const { settings } = useSettings();

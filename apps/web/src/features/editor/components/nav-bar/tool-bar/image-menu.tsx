@@ -5,9 +5,10 @@ import Hint from '@designr/ui/components/hint'
 import { image } from '../data'
 import React from 'react'
 import { AssetsDialog } from '../../dialogs/assets-dialog'
-import { BaseEditorCompProps } from '#/features/editor/types'
+import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
 type Action = typeof image.options[number]['action']
-export default function ImageMenu({ editor }: BaseEditorCompProps) {
+export default function ImageMenu() {
+    const { editor } = useEditorStore();
     const [defaultTab, setDefaultTab] = React.useState<'uploaded' | 'unsplash' | 'icons'>('uploaded')
     const [open, setOpen] = React.useState(false)
     const {

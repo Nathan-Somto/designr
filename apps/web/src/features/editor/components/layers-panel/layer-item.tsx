@@ -2,21 +2,22 @@ import React, { useState } from 'react'
 import { ChevronRight, ChevronDown, Eye, EyeOff, Lock, Unlock } from 'lucide-react'
 import { Button } from '@designr/ui/components/button'
 import { cn } from '@designr/ui/lib/utils'
-import { BaseEditorCompProps, DragState } from '../../types'
+import { DragState } from '../../types'
 import { Layers } from '@designr/use-editor'
 import { Divider } from '@designr/ui/components/divider'
 import { motion } from 'motion/react'
-interface LayerItemProps extends BaseEditorCompProps {
+import { useEditorStore } from '../../hooks/useEditorStore'
+interface LayerItemProps {
     layer: Layers
     parentLayerId?: string
     depth?: number
     refContainer: React.RefObject<HTMLDivElement>
     dragState: DragState
-    // eslint-disable-next-line no-unused-vars
     setDragState: (dragState: DragState) => void
 }
 
-export function LayerItem({ layer, editor, depth = 0, refContainer, parentLayerId, dragState, setDragState }: LayerItemProps) {
+export function LayerItem({ layer, depth = 0, refContainer, parentLayerId, dragState, setDragState }: LayerItemProps) {
+    const { editor } = useEditorStore();
     const [open, setOpen] = useState(false)
     const [isVisibile, setIsVisible] = React.useState(layer.isVisibile);
     const [isLocked, setIsLocked] = React.useState(layer.isLocked)
@@ -158,7 +159,6 @@ export function LayerItem({ layer, editor, depth = 0, refContainer, parentLayerI
                         <LayerItem
                             key={child.id}
                             layer={child}
-                            editor={editor}
                             parentLayerId={layer.id}
                             refContainer={refContainer}
                             depth={depth + 1}

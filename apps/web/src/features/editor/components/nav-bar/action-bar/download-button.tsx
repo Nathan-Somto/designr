@@ -1,9 +1,8 @@
 import { Button } from '@designr/ui/components/button'
 import { downloadOptions } from '../data'
 import React from 'react'
-import { BaseEditorCompProps } from '#/features/editor/types'
 import DownloadDialog from '../../dialogs/download-dialog'
-export default function DownloadButton({ editor }: BaseEditorCompProps) {
+export default function DownloadButton() {
     const [open, setOpen] = React.useState(false)
     const {
         label,
@@ -22,7 +21,6 @@ export default function DownloadButton({ editor }: BaseEditorCompProps) {
             <DownloadDialog
                 openProp={open}
                 onOpenChange={setOpen}
-                editor={editor}
             />
         </>
 

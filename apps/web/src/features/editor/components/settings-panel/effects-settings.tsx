@@ -3,10 +3,13 @@ import { EditorInput } from '../ui/editor-input'
 import EditorColorInput from '../ui/editor-color-input'
 import { effects } from './data'
 import { v4 } from 'uuid'
-import { BaseEditorCompProps } from '../../types'
 import { SelectedObject } from '@designr/use-editor'
+import { useEditorStore } from '../../hooks/useEditorStore'
 type EffectsType = "shadow.color" | "shadow.blur" | "shadow.offsetX" | "shadow.offsetY";
-export default function EffectsSettings({ editor }: BaseEditorCompProps) {
+export default function EffectsSettings() {
+    const {
+        editor
+    } = useEditorStore();
     const [effectsState, setEffectsState] = React.useState<Record<
         EffectsType,
         SelectedObject[EffectsType]

@@ -4,23 +4,19 @@ import PreviewButton from './preview-button'
 import ShareButton from './share-button'
 import DownloadButton from './download-button'
 import KeyboardShortcuts from './keyboard-shortcuts'
-import { BaseEditorCompProps } from '#/features/editor/types'
 
-export default function ActionBar({ editor }: BaseEditorCompProps) {
+export default function ActionBar() {
     return (
         <Menubar className='space-x-2'>
             <MenubarMenu>
                 {/* Share Button */}
                 <ShareButton
-                    editor={editor}
                 />
                 {/* Export Menu*/}
                 <DownloadButton
-                    editor={editor}
                 />
                 {/* Preview Button */}
                 <PreviewButton
-                    editor={editor}
                 />
                 {/* Key board Short cuts */}
                 <KeyboardShortcuts />

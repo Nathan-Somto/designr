@@ -3,11 +3,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { shapes } from '../data'
 import React from 'react'
 import Hint from '@designr/ui/components/hint'
-import { BaseEditorCompProps } from '#/features/editor/types'
+import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
 type Action = typeof shapes[number]['action']
-export default function ShapeMenu({
-    editor
-}: BaseEditorCompProps) {
+export default function ShapeMenu() {
+    const { editor } = useEditorStore();
     const [currentIndex, setCurrentIndex] = React.useState(0)
     const {
         Icon,

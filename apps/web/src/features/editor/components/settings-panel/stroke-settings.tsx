@@ -4,10 +4,10 @@ import EditorColorInput from '../ui/editor-color-input'
 import { EditorInput } from '../ui/editor-input'
 import EditorSelect from '../ui/editor-select'
 import TransparencyButton from './transparency-button'
-import { BaseEditorCompProps, EditorInputValue } from '../../types'
-export default function StrokeSettings({
-    editor
-}: BaseEditorCompProps) {
+import { EditorInputValue } from '../../types'
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function StrokeSettings() {
+    const { editor } = useEditorStore();
     const [strokeState, setStrokeState] = React.useState({
         strokeColor: editor?.selectedObjects?.[0]?.strokeColor ?? '#000',
         strokeWidth: editor?.selectedObjects?.[0]?.strokeWidth ?? 1,

@@ -5,15 +5,20 @@ import React from 'react'
 import { zoomValues } from './data'
 import EditorSelect from '../ui/editor-select'
 import { ZoomValue } from '@designr/use-editor'
-import { BaseEditorCompProps } from '../../types'
 import { useSettings } from '#/features/settings/settings-provider'
 import { cn } from '@designr/ui/lib/utils'
 import { EditorLayoutStyles } from '../ui/editor-layout-styles'
 import { userSettingsDefaults } from '@designr/db/user-settings'
+import { useEditorStore } from '../../hooks/useEditorStore'
 
-export default function BottomToolbar({ editor }: BaseEditorCompProps) {
+export default function zoomControls() {
     const { settings } = useSettings();
-    const key = settings?.layout?.zoomControls ?? userSettingsDefaults?.layout?.zoomControls
+    const key = settings
+        ?.layout?.
+        zoomControls ?? userSettingsDefaults?.
+            layout?.
+            zoomControls
+    const { editor } = useEditorStore();
     return (
         <section
             className={cn('px-6 text-muted-foreground w-fit h-fit', EditorLayoutStyles[key])}

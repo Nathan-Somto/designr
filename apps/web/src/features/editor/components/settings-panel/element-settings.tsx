@@ -7,9 +7,10 @@ import {
 import {
     element as elementData
 } from './data'
-import { BaseEditorCompProps, EditorInputValue } from '../../types'
+import { EditorInputValue } from '../../types'
 import { SelectedObject } from '@designr/use-editor'
-interface Props extends BaseEditorCompProps {
+import { useEditorStore } from '../../hooks/useEditorStore'
+interface Props {
     isGroup?: boolean
     elements: string | string[]
     thereIsACircle?: boolean
@@ -18,12 +19,12 @@ interface Props extends BaseEditorCompProps {
 }
 type ElementType = "width" | "height" | "x" | "y" | "angle" | "diameter" | "cornerSize";
 export default function ElementSettings({
-    editor,
     isGroup,
     elements,
     thereIsACircle,
     thereIsARect
 }: Props) {
+    const { editor } = useEditorStore();
     const [elementState, setElementState] = React.useState<Record<
         ElementType,
         SelectedObject[ElementType]>>({

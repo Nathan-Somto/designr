@@ -1,5 +1,5 @@
 import React from 'react'
-import { BaseEditorCompProps, DragState } from '../../types'
+import { DragState } from '../../types'
 import { ScrollArea } from '@designr/ui/components/scroll-area'
 import { Divider } from '@designr/ui/components/divider'
 import { LayerItem } from './layer-item'
@@ -8,9 +8,11 @@ import { useSettings } from '#/features/settings/settings-provider'
 import { userSettingsDefaults } from '@designr/db/user-settings'
 import { cn } from '@designr/ui/lib/utils'
 import { EditorLayoutStyles } from '../ui/editor-layout-styles'
+import { useEditorStore } from '../../hooks/useEditorStore'
 
 
-export default function LayersPanel({ editor }: BaseEditorCompProps) {
+export default function LayersPanel() {
+    const { editor } = useEditorStore();
     //console.log('the layers: ', editor?.layers)
     const { settings } = useSettings();
     const key = settings?.layout?.layersPanel ?? userSettingsDefaults?.layout?.layersPanel
@@ -35,7 +37,6 @@ export default function LayersPanel({ editor }: BaseEditorCompProps) {
                         key={layer.id}
                         refContainer={refContainer}
                         layer={layer}
-                        editor={editor}
                         dragState={
                             dragState
                         }

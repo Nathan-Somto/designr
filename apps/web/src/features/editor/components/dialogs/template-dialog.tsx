@@ -13,24 +13,23 @@ import { Dialog, DialogContent } from '@designr/ui/components/dialog';
 import { ScrollArea } from '@designr/ui/components/scroll-area';
 import { Tabs, TabsContent } from '@designr/ui/components/tabs';
 import { cn } from '@designr/ui/lib/utils';
-import { Editor } from '@designr/use-editor';
 import { ChevronLeftIcon, Loader, UserIcon } from 'lucide-react';
 import React from 'react'
+import { useEditorStore } from '../../hooks/useEditorStore';
 interface Props {
     openProp: boolean;
     onOpenChange: (open: boolean) => void;
     defaultTab?: "templates";
-    editor: Editor
     templatesCache: PaginatedResponse<ExternalProjectsData> | null,
     setTemplateCache: (data: PaginatedResponse<ExternalProjectsData>) => void;
 }
 export default function TemplateDialog({
     onOpenChange,
     openProp,
-    editor,
     templatesCache,
     setTemplateCache
 }: Props) {
+    const { editor } = useEditorStore();
     const { data, isPending: isFetchingSession, error: sessionError } = authClient.useSession();
     const [selectedTemplate, setSelectedTemplate] = React.useState<ExternalProjectsData | null>(null);
     const [activeTab, setActiveTab] = React.useState('templates');

@@ -15,9 +15,10 @@ import EditorButtonSelect from '../ui/editor-button-select'
 import EditorSelect from '../ui/editor-select'
 import Hint from '@designr/ui/components/hint'
 import { HelpCircleIcon } from 'lucide-react'
-import { BaseEditorCompProps } from '../../types'
 import { Alignment, SelectedObject } from '@designr/use-editor'
-export default function TextSettings({ editor }: BaseEditorCompProps) {
+import { useEditorStore } from '../../hooks/useEditorStore'
+export default function TextSettings() {
+    const { editor } = useEditorStore();
     const [textState, setTextState] = React.useState<Record<
         'fontFamily' |
         'fontWeight' |

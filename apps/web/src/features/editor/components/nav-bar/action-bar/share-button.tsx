@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { Access, BaseEditorCompProps } from "#/features/editor/types";
+import { Access } from "#/features/editor/types";
 import { Button } from "@designr/ui/components/button";
 import {
     Dialog,
@@ -19,10 +19,10 @@ import { LinkIcon, XIcon } from "lucide-react";
 import React from "react";
 import { shareOptions } from "../data";
 import { Switch } from "@designr/ui/components/switch";
+import { useEditorStore } from "#/features/editor/hooks/useEditorStore";
 
-export default function ShareButton({
-    editor
-}: BaseEditorCompProps) {
+export default function ShareButton() {
+    const { editor } = useEditorStore();
     const [viewAccess, setViewAccess] = React.useState<Access>("public");
     const [editAccess, setEditAccess] = React.useState<Access>("self");
     const [isTemplate, setIsTemplate] = React.useState(false);

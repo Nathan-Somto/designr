@@ -14,12 +14,12 @@ import { cn } from '@designr/ui/lib/utils';
 import { Slider } from '@designr/ui/components/slider';
 import { Switch } from '@designr/ui/components/switch';
 import { EditorInput } from '../ui/editor-input';
-import { BaseEditorCompProps } from '../../types';
 import { useSettings } from '#/features/settings/settings-provider';
 import { userSettingsDefaults } from '@designr/db/user-settings';
+import { useEditorStore } from '../../hooks/useEditorStore';
 
 type Action = typeof downloadOptions.options[number]['action']
-interface Props extends BaseEditorCompProps {
+interface Props {
     openProp: boolean;
     // eslint-disable-next-line no-unused-vars
     onOpenChange: (open: boolean) => void;
@@ -28,8 +28,8 @@ interface Props extends BaseEditorCompProps {
 export default function DownloadDialog({
     openProp,
     onOpenChange,
-    editor,
 }: Props) {
+    const { editor } = useEditorStore();
     const { settings } = useSettings();
     const defaultExportFormat = settings?.defaultExportFormat ?? userSettingsDefaults?.defaultExportFormat;
     const [index, setIndex] = React.useState(0);
@@ -120,7 +120,7 @@ export default function DownloadDialog({
                         <DropdownMenuContent
                             sideOffset={10}
                             align='center'
-                            className='z-[170] py-3 min-w-[300px] w-[80vw] mx-auto max-w-md !space-y-3'
+                            className='z-[90000000000000] py-3 min-w-[300px] w-[80vw] mx-auto max-w-md !space-y-3'
                         >
                             {downloadOptions.options.map(({ Icon, action, label, description }, i) => (
                                 <DropdownMenuItem asChild key={action} onSelect={() => setIndex(i)}>

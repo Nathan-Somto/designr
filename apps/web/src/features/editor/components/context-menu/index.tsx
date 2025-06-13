@@ -1,11 +1,11 @@
 import React from 'react'
-import { BaseEditorCompProps } from '../../types';
 import { Badge } from '@designr/ui/components/badge'
 import { Card, CardContent } from '@designr/ui/components/card'
 import { shortcutGroups } from './data';
 import { Divider } from '@designr/ui/components/divider';
 import { ScrollArea } from '@designr/ui/components/scroll-area';
-interface Props extends BaseEditorCompProps {
+import { useEditorStore } from '../../hooks/useEditorStore';
+interface Props {
     menuRef: React.MutableRefObject<HTMLDivElement | null>
     contextMenuPostion: {
         x: number;
@@ -16,8 +16,8 @@ type Label = typeof shortcutGroups[number]['items'][number]['label']
 export default function ContextMenu({
     contextMenuPostion,
     menuRef,
-    editor
 }: Props) {
+    const { editor } = useEditorStore();
     const disableButton = React.useCallback((label: Label) => {
         switch (label) {
             case 'Group':

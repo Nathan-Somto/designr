@@ -4,9 +4,12 @@ import { text } from '../data'
 import React from 'react'
 import { TextConfig } from '@designr/use-editor'
 import Hint from '@designr/ui/components/hint'
-import { BaseEditorCompProps } from '#/features/editor/types'
+import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
 
-export default function TextMenu({ editor }: BaseEditorCompProps) {
+export default function TextMenu() {
+    const {
+        editor
+    } = useEditorStore();
     const {
         Icon,
         action
