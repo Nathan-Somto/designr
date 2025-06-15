@@ -6,11 +6,23 @@ import { image } from '../data'
 import React from 'react'
 import { AssetsDialog } from '../../dialogs/assets-dialog'
 import { useEditorStore } from '#/features/editor/hooks/useEditorStore'
+import { useCloudinaryUpload } from '#/features/cloudinary/hooks/useCloudinaryUpload'
+import { EventBus } from '#/utils/event-bus'
+import { USER_MEDIA_EVENT } from '#/constants/events'
+import { saveUserMedia } from '#/services/projects'
+import { promiseCatch } from '#/utils/promise-catch'
+import { BadRequestError } from '@designr/api-errors'
+import { UserMedia } from '#/hooks/useUserMedia'
 type Action = typeof image.options[number]['action']
 export default function ImageMenu() {
     const { editor } = useEditorStore();
     const [defaultTab, setDefaultTab] = React.useState<'uploaded' | 'unsplash' | 'icons'>('uploaded')
     const [open, setOpen] = React.useState(false)
+    const [openCount, setOpenCount] = React.useState<0 | 1>(0);
+    const {
+        DialogUI,
+        upload: handleCloudinaryUpload
+    } = useCloudinaryUpload();
     const {
         Icon,
         action
@@ -19,11 +31,34 @@ export default function ImageMenu() {
         InputElement,
         onFilePickerClick: onImagePickerClick,
     } = useFilePicker({
-        onGetFile: (image) => {
-            console.log("the data url: ", image)
+        onGetFile: async (image) => {
+            //console.log("the data url: ", image)
             //! call the image upload action
-            //! update the asset modal state
-            //! put the image in the canvas
+            await handleCloudinaryUpload(image, async (url) => promiseCatch((async () => {
+                const res = await saveUserMedia([
+                    {
+                        mediaType: 'IMG',
+                        url
+                    }
+                ])
+                //get the id from the save
+                const data = res?.data?.[0]
+                if (!data) {
+                    throw new BadRequestError("No data returned from saveUserMedia")
+                }
+                //! update the asset modal state
+                EventBus.emit<{
+                    userMedia: UserMedia
+                }>(USER_MEDIA_EVENT, {
+                    userMedia: {
+                        mediaType: 'IMG',
+                        url: data?.url ?? '',
+                        id: data.id
+                    }
+                })
+                //! put the image in the canvas
+                await editor?.addImage(data?.url ?? '');
+            })()))
         },
         acceptedTypes: ['jpg', 'jpeg', 'png', 'svg'],
     })
@@ -37,6 +72,10 @@ export default function ImageMenu() {
         editor?.addImage(image)
     }
     const handleImageAction = (action: Action) => {
+        const shouldIncrementOpenCount = openCount === 0 && action !== 'Upload';
+        if (shouldIncrementOpenCount) {
+            setOpenCount(1);
+        }
         switch (action) {
             case 'Upload':
                 onImagePickerClick();
@@ -107,10 +146,13 @@ export default function ImageMenu() {
                 defaultTab={defaultTab}
                 openProp={open}
                 onOpenChange={setOpen}
+                openCount={openCount}
                 onSelect={(image, url) => {
                     if (image) handleAddImageToCanvas(image, url)
                     setOpen(false)
                 }}
+            />
+            <DialogUI
             />
         </>
     )

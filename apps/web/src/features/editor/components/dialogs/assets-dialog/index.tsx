@@ -8,18 +8,33 @@ import SelectedImageTab from "./selected-image-tab";
 import { TransformImageTab } from "./transform-image-tab";
 import { ScrollArea } from "@designr/ui/components/scroll-area";
 import { IconsTab } from "./icons-tab";
+import { useUserMedia } from "#/hooks/useUserMedia";
+import { LoadMore } from "#/components/load-more";
 interface Props {
     openProp: boolean;
     onOpenChange: (open: boolean) => void;
     defaultTab: "uploaded" | "unsplash" | "icons";
     onSelect: (image: string | null, type: 'url' | 'svg') => void;
+    openCount: 0 | 1;
 }
 export function AssetsDialog({
     defaultTab,
     onOpenChange,
     onSelect,
-    openProp
+    openProp,
+    openCount
 }: Props) {
+    const {
+        userMedia: uploadedImages,
+        isFetching,
+        error,
+        appendUserMedia,
+        removeUserMedia,
+        page,
+        totalPages
+    } = useUserMedia({
+        shouldFetch: openCount === 1
+    });
     const [open, setOpen] = React.useState(false);
     const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
     const [activeTab, setActiveTab] = React.useState('uploaded');
@@ -44,10 +59,23 @@ export function AssetsDialog({
                     <ScrollArea className="px-6 py-3 h-[90vh]">
                         <TabsContent value="uploaded">
                             <UploadedImagesTab
+                                data={uploadedImages}
                                 onSelect={(image) => {
                                     setSelectedImage(image);
                                     setActiveTab('selected');
-                                }} />
+                                }}
+                                loading={isFetching}
+                                error={error}
+                                onDelete={removeUserMedia}
+                            />
+                            <LoadMore
+                                onLoadMore={appendUserMedia}
+                                hasNext={
+                                    page < totalPages
+                                }
+                                isDisabled={isFetching || totalPages === 0}
+                                loading={isFetching}
+                            />
                         </TabsContent>
                         <TabsContent value="unsplash">
                             <UnsplashImagesTab onSelect={(image) => {

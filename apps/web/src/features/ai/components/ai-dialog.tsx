@@ -19,6 +19,9 @@ import { useEditorStore } from '#/features/editor/hooks/useEditorStore';
 import { authClient } from '@designr/auth/client';
 import { Loader } from 'lucide-react';
 import { ProOnlyMessageWall } from '#/components/sidebar/pro-status';
+import { EventBus } from '#/utils/event-bus';
+import { UserMedia } from '#/hooks/useUserMedia';
+import { USER_MEDIA_EVENT } from '#/constants/events';
 type ActiveTab = AiActions;
 type Props = {
     onUse: (payload: Payload) => Promise<void>;
@@ -173,12 +176,22 @@ export default function AiDialog({
                             timestamp: new Date(),
                         },
                     ]);
-                    await saveUserMedia([
+                    const res = await saveUserMedia([
                         {
                             mediaType: 'IMG',
                             url: secureImageUrl
                         }
-                    ])
+                    ]);
+                    // Emit the event with the user media data from the ai.
+                    EventBus.emit<{
+                        userMedia: UserMedia
+                    }>(USER_MEDIA_EVENT, {
+                        userMedia: {
+                            id: res.data[0].id,
+                            mediaType: 'IMG',
+                            url: secureImageUrl
+                        }
+                    })
                 }
             } catch (err: any) {
                 console.log(err);
