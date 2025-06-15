@@ -157,11 +157,9 @@ export function useCanvasInit({
         fabric.FabricImage.createControls = function () {
             return controls;
         }
-
+        console.log("dimensions:", dimensions);
         // Define the rectangle workspace
         const workspaceRect = new fabric.Rect({
-            width: dimensions?.width || INITIAL_DIMENSIONS.width,
-            height: dimensions?.height || INITIAL_DIMENSIONS.height,
             fill: workspaceColor || WORKSPACE_COLOR,
             selectable: false,
             rx: 10,
@@ -177,6 +175,8 @@ export function useCanvasInit({
             gridHorizontal: 12,
             gridVertical: 12
         });
+        workspaceRect.width = dimensions?.width ?? INITIAL_DIMENSIONS.width;
+        workspaceRect.height = dimensions?.height ?? INITIAL_DIMENSIONS.height
         canvasInstance.clipPath = workspaceRect;
         canvasInstance.centerObject(workspaceRect);
         canvasInstance.add(workspaceRect);

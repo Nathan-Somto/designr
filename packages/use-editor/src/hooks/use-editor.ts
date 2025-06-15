@@ -35,6 +35,7 @@ export default function useEditor(props: UseEditorProps | void = {
     onSaveCallback: () => { },
     filename: 'canvas',
     updateContextMenuPosition: () => { },
+    onInit: () => { },
 }) {
     if (typeof props !== 'object') {
         throw new Error('props must be an object')
@@ -45,7 +46,8 @@ export default function useEditor(props: UseEditorProps | void = {
         onSaveCallback,
         backgroundColor,
         workspaceColor,
-        filename = 'canvas'
+        filename = 'canvas',
+        onInit = () => { },
     } = props
     // the editor instance
     const dimensions = React.useRef(initialDimensions)
@@ -56,6 +58,7 @@ export default function useEditor(props: UseEditorProps | void = {
     const [currentAction, setCurrentAction] = React.useState<CanvasAction>("Select")
     const [zoom, setZoom] = React.useState<Readonly<number | null>>(null)
     const menuRef = React.useRef<HTMLDivElement | null>(null)
+    const initialized = React.useRef(false)
     const {
         canRedo,
         canUndo,
@@ -75,7 +78,7 @@ export default function useEditor(props: UseEditorProps | void = {
         setCanvas,
         workspaceColor,
         setZoom,
-        initHistory
+        initHistory,
     })
     const {
         copy,
@@ -93,7 +96,7 @@ export default function useEditor(props: UseEditorProps | void = {
             line
         })
     }, [canvas, currentAction])
-    const editor = React.useMemo(() => {
+    const helpers = React.useMemo(() => {
         if (!canvas) return null
         return canvasHelpers({
             canvas,
@@ -117,7 +120,7 @@ export default function useEditor(props: UseEditorProps | void = {
         toggleLayerVisibility
     } = useLayers({
         canvas,
-        getType: editor?.getType ?? (() => null)
+        getType: helpers?.getType ?? (() => null)
     })
     const {
         selectedObjects,
@@ -126,13 +129,13 @@ export default function useEditor(props: UseEditorProps | void = {
         updateSelectedObjectProperty
     } = useSelection({
         canvas,
-        alignObject: editor?.alignObject,
-        applyLinearGradient: editor?.applyLinearGradient,
-        formatLinearGradient: editor?.formatLinearGradient,
-        getAlignment: editor?.getAlignment,
-        updateImageFilter: editor?.updateImageFilter,
-        setBorderStyle: editor?.setBorderStyle,
-        getBorderStyleFromDashArray: editor?.getBorderStyleFromDashArray
+        alignObject: helpers?.alignObject,
+        applyLinearGradient: helpers?.applyLinearGradient,
+        formatLinearGradient: helpers?.formatLinearGradient,
+        getAlignment: helpers?.getAlignment,
+        updateImageFilter: helpers?.updateImageFilter,
+        setBorderStyle: helpers?.setBorderStyle,
+        getBorderStyleFromDashArray: helpers?.getBorderStyleFromDashArray
     });
     useCanvasEvents({
         canvas,
@@ -155,30 +158,29 @@ export default function useEditor(props: UseEditorProps | void = {
         state: state.current,
         initCanvasHistory: initHistory,
         autoZoomToFit: () => {
-            editor?.setZoomLevel({
+            helpers?.setZoomLevel({
                 value: 'fit'
             })
         }
     })
     useKeyboardShortcuts({
         canvas,
-        bringToFront: editor?.bringToFront,
-        clearActiveObjects: editor?.clearActiveObjects,
-        duplicateActiveObject: editor?.duplicateActiveObjects,
-        sendToBack: editor?.sendToBack,
-        groupActiveObjects: editor?.groupActiveObjects,
-        selectAllObjects: editor?.selectAllObjects,
-        ungroupActiveObject: editor?.ungroupActiveObjects,
+        bringToFront: helpers?.bringToFront,
+        clearActiveObjects: helpers?.clearActiveObjects,
+        duplicateActiveObject: helpers?.duplicateActiveObjects,
+        sendToBack: helpers?.sendToBack,
+        groupActiveObjects: helpers?.groupActiveObjects,
+        selectAllObjects: helpers?.selectAllObjects,
+        ungroupActiveObject: helpers?.ungroupActiveObjects,
         redo,
         undo,
         copy,
         paste,
-        zoomChange: editor?.zoomChange
+        zoomChange: helpers?.zoomChange
     })
-    return {
-        canvasRef,
-        editor: editor ? {
-            ...editor,
+    const editorInstance = React.useMemo(() => {
+        const editor = helpers ? {
+            ...helpers,
             selectedObjects,
             selectedLayer,
             layers,
@@ -198,7 +200,18 @@ export default function useEditor(props: UseEditorProps | void = {
             paste,
             copy,
             ...editorLineHelpers
-        } : null,
+        } : null
+        return editor
+    }, [canvas, helpers, layers, selectedObjects, selectedLayer, updateSelectedObjectProperty, selectLayerInCanvas, moveLayer, toggleLayerLock, toggleLayerVisibility, redo, undo, canRedo, canUndo, zoom, currentAction, editorLineHelpers, getRefState, paste, copy]);
+    React.useEffect(() => {
+        if (editorInstance !== null) {
+            initialized.current = true
+            onInit(editorInstance)
+        }
+    }, [editorInstance])
+    return {
+        canvasRef,
+        editor: editorInstance,
         menuRef
     }
 }
