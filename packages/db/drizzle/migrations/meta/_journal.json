@@ -50,6 +50,13 @@
       "when": 1748161713609,
       "tag": "0006_chubby_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1751584141818,
+      "tag": "0007_amazing_wonder_man",
+      "breakpoints": true
     }
   ]
 }

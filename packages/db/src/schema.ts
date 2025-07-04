@@ -22,6 +22,7 @@ export const users = pgTable("users", {
     email: text("email").notNull(),
     emailVerified: boolean('email_verified'),
     imageUrl: text('image_url'),
+    hasOnboarded: boolean().default(false),
     ...baseSchemaProps
 });
 //== SESSION ===//
