@@ -53,7 +53,20 @@ export const auth = betterAuth({
         },
         deleteUser: {
             enabled: true
-        }
+        },
+        additionalFields: {
+            hasOnboarded: {
+                type: 'boolean',
+                defaultValue: false,
+                required: true,
+                fieldName: 'hasOnboarded',
+                returned: true,
+                input: true,
+
+            }
+        },
+
+
     },
     database: drizzleAdapter(db, {
         provider: 'pg',
@@ -65,16 +78,23 @@ export const auth = betterAuth({
         customSession(async ({ user, session }) => {
             const res = await db
                 .select({
-                    plan: schema.subscriptions.plan
+                    plan: schema.subscriptions.plan,
                 })
                 .from(schema.subscriptions)
                 .where(eq(schema.subscriptions.userId, user.id))
                 .limit(1)
+            const userRes = await db.select({
+                hasOnboarded: schema.users.hasOnboarded,
+            }).from(schema.users).where(eq(schema.users.id, user.id)).limit(1).catch((err) => {
+                console.error("Error fetching user onboarding status:", err)
+                return []
+            })
             const isPro = res?.[0]?.plan === 'PRO'
             return {
                 user: {
                     ...user,
-                    isPro
+                    isPro,
+                    hasOnboarded: userRes?.[0]?.hasOnboarded ?? false
                 },
                 session
             };
@@ -109,7 +129,7 @@ export const auth = betterAuth({
                         userId: details.id
                     })
                 }
-            }
+            },
         }
     }
 })
