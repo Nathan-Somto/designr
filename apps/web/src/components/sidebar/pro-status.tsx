@@ -29,6 +29,7 @@ export function UpgradeToProButton(props: {
 } | {
     type?: 'overlay';
     show?: boolean;
+    isChecking?: boolean;
 }) {
     const router = useRouter();
 
@@ -47,18 +48,24 @@ export function UpgradeToProButton(props: {
             </div>
         );
     }
-
+    if (props.type === 'overlay' && props.isChecking) {
+        return (
+            <div className="absolute inset-0 z-50 flex items-center justify-center rounded-xl backdrop-blur-md bg-white/10 border border-white/20">
+                <Skeleton className="h-8 w-20 mx-auto" />
+            </div>
+        );
+    }
     if (props.type === 'overlay' && !props?.show) return null;
 
     return (
         <div
             className={cn(
-                'absolute inset-0 z-50 flex items-center justify-center rounded-xl backdrop-blur-md bg-white/10 border border-white/20',
+                'absolute inset-0 z-50 flex size-full flex-1 items-center justify-center rounded-lg backdrop-blur-md bg-white/20 border border-white/50',
                 'cursor-pointer'
             )}
             onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
         >
-            <div className="flex items-center space-x-2 text-sm text-white font-semibold">
+            <div className="flex items-center space-x-2 text-sm text-black/70 font-semibold">
                 <CrownIcon className="size-4 fill-yellow-400 text-yellow-400" />
                 <span>Upgrade to Pro</span>
             </div>
