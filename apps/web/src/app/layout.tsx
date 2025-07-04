@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import '@designr/ui/globals.css';
 import { Toaster } from "#/components/toaster";
-const merienda = localFont({
+const DMSans = localFont({
   src: [
-    { path: "./fonts/Merienda-Light.ttf", weight: "300", style: "normal" },
-    { path: "./fonts/Merienda-Regular.ttf", weight: "400", style: "normal" },
-    { path: "./fonts/Merienda-Medium.ttf", weight: "500", style: "normal" },
-    { path: "./fonts/Merienda-SemiBold.ttf", weight: "600", style: "normal" },
-    { path: "./fonts/Merienda-Bold.ttf", weight: "700", style: "normal" },
+    { path: "./fonts/DMSans-Light.ttf", weight: "300", style: "normal" },
+    { path: "./fonts/DMSans-Regular.ttf", weight: "400", style: "normal" },
+    { path: "./fonts/DMSans-Medium.ttf", weight: "500", style: "normal" },
+    { path: "./fonts/DMSans-SemiBold.ttf", weight: "600", style: "normal" },
+    { path: "./fonts/DMSans-Bold.ttf", weight: "700", style: "normal" },
   ],
-  variable: "--font-merienda",
+  variable: "--font-DMsans",
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({
         type='image/svg+xml'
         sizes="any"
       />
-      <body className={`${merienda.variable} font-merienda !pointer-events-auto !overflow-x-hidden`}
+      <body className={`${DMSans.variable} font-DMsans !pointer-events-auto !overflow-x-hidden`}
       >
         {children}
         <Toaster />

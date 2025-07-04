@@ -7,9 +7,9 @@ export default {
     "../../packages/ui/src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend:{
+    extend: {
       fontFamily: {
-        merienda: "var(--font-merienda), cursive",
+        DMsans: "var(--font-DMsans), sans-serif",
       }
     }
   }
