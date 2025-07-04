@@ -35,6 +35,7 @@ export function AssetsDialog({
     } = useUserMedia({
         shouldFetch: openCount === 1
     });
+    console.log("uploaded images: ", uploadedImages)
     const [open, setOpen] = React.useState(false);
     const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
     const [activeTab, setActiveTab] = React.useState('uploaded');
@@ -108,7 +109,8 @@ export function AssetsDialog({
                             <TransformImageTab
                                 imageUrl={selectedImage as string}
                                 onBack={() => setActiveTab('selected')}
-                                onSave={() => {
+                                onSave={(image) => {
+                                    onSelect(image, 'url');
                                     setOpen(false);
                                 }}
                             />

@@ -2,7 +2,7 @@
 'use client'
 
 import { ChevronLeftIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import {
     Button,
 } from '@designr/ui/components/button'
@@ -10,6 +10,11 @@ import { Input } from '@designr/ui/components/input'
 import { Textarea } from '@designr/ui/components/textarea'
 import CompareSlider from './compare-slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@designr/ui/components/select'
+import { CloudinaryHelpers } from '#/features/cloudinary/helpers'
+import { saveUserMedia } from '#/services/projects'
+import { EventBus } from '#/utils/event-bus'
+import { UserMedia } from '#/hooks/useUserMedia'
+import { USER_MEDIA_EVENT } from '#/constants/events'
 
 type TransformType =
     | 'background_remove'
@@ -38,11 +43,51 @@ export function TransformImageTab({ imageUrl, onBack, onSave }: Props) {
     const [objectName, setObjectName] = useState('')
     const [color, setColor] = useState('')
     const [resultImage, setResultImage] = useState<string | null>(null)
-
-    const handleTransform = () => {
-        setTimeout(() => {
-            setResultImage('https://via.placeholder.com/512x512?text=Transformed')
-        }, 1000)
+    const [isPending, startTransition] = useTransition()
+    const handleTransform = async () => {
+        startTransition(async () => {
+            if (!type) return;
+            let transformedImage: string | null = null;
+            switch (type) {
+                case 'background_remove':
+                    transformedImage = CloudinaryHelpers.background_remove(imageUrl);
+                    break;
+                case 'generative_fill':
+                    transformedImage = CloudinaryHelpers.generative_fill(imageUrl, prompt);
+                    break;
+                case 'generative_recolor':
+                    transformedImage = CloudinaryHelpers.generative_recolor(imageUrl, objectName, color);
+                    break;
+                case 'generative_remove':
+                    transformedImage = CloudinaryHelpers.generative_remove(imageUrl, prompt);
+                    break;
+                case 'generative_restore':
+                    transformedImage = CloudinaryHelpers.generative_restore(imageUrl);
+                    break;
+                default:
+                    console.error('Unknown transformation type:', type);
+                    return;
+            }
+            setResultImage(transformedImage);
+            if (transformedImage) {
+                const res = await saveUserMedia([
+                    {
+                        mediaType: 'IMG',
+                        url: transformedImage
+                    }
+                ]);
+                // trigger the event
+                EventBus.emit<{
+                    userMedia: UserMedia
+                }>(USER_MEDIA_EVENT, {
+                    userMedia: {
+                        id: res.data[0].id,
+                        mediaType: 'IMG',
+                        url: transformedImage
+                    }
+                })
+            }
+        })
     }
 
     return (
@@ -130,19 +175,22 @@ export function TransformImageTab({ imageUrl, onBack, onSave }: Props) {
                 <Button
                     variant="outline"
                     className="flex-1"
-                    disabled={!type}
+                    disabled={!type || isPending}
                     onClick={handleTransform}
+
                 >
-                    Transform
+                    {
+                        isPending ? 'Transforming...' : 'Transform'
+                    }
                 </Button>
                 <Button
                     className="flex-1"
-                    disabled={!resultImage}
+                    disabled={!resultImage || isPending}
                     onClick={() => {
                         if (resultImage) onSave(resultImage)
                     }}
                 >
-                    Save
+                    Select
                 </Button>
             </div>
         </section>

@@ -4,7 +4,7 @@ import { and, count, db, desc, eq, inArray, schema } from "@designr/db";
 import { getCurrentUser } from "../users";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "@designr/api-errors";
 import { z } from "zod";
-
+const PAGE_LIMIT = 10;
 const toggleTemplateStar = async ({
     projectId,
     shouldStar
@@ -85,7 +85,7 @@ const fetchProjects = async (
 ) => {
     const user = await getCurrentUser();
 
-    const limit = 20;
+    const limit = PAGE_LIMIT;
     const offset = (page - 1) * limit;
 
     if (type === 'mine') {
@@ -502,8 +502,36 @@ const saveUserMedia = async (media: {
         })
         ;
     return {
-        message: 'Media saved successfully',
-        media: data
+        type: 'success' as const,
+        data
+    }
+}
+const getUserMedia = async (page = 1) => {
+    const user = await getCurrentUser();
+    const limit = PAGE_LIMIT;
+    const offset = (page - 1) * limit;
+
+    const data = await db
+        .select({
+            id: schema.userMedia.id,
+            mediaType: schema.userMedia.mediaType,
+            url: schema.userMedia.url,
+        })
+        .from(schema.userMedia)
+        .where(eq(schema.userMedia.userId, user.id))
+        .limit(limit)
+        .offset(offset);
+
+    const total = await db
+        .select({ count: count() })
+        .from(schema.userMedia)
+        .where(eq(schema.userMedia.userId, user.id));
+
+    return {
+        type: 'success' as const,
+        data,
+        page,
+        totalPages: Math.ceil(Number(total[0]?.count ?? 0) / limit),
     }
 }
 export {
@@ -517,5 +545,6 @@ export {
     saveUserMedia,
     getProjectForEditor,
     createANewProject,
-    getTemplateForEditor
+    getTemplateForEditor,
+    getUserMedia
 }

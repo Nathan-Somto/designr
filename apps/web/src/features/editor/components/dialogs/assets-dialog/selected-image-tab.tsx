@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import { ProButton, UpgradeToProButton } from '#/components/sidebar/pro-status'
+import { authClient } from '@designr/auth/client'
 import { Button } from '@designr/ui/components/button'
 import { ChevronLeftIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -10,6 +12,7 @@ interface Props {
     onBack: () => void
 }
 export default function SelectedImageTab({ onSelect, onTransform, selectedImage, onBack }: Props) {
+    const { data, isPending: isCheckingUserSession } = authClient.useSession();
     return (
         <section
             id="editor__selected-image-tab"
@@ -48,12 +51,19 @@ export default function SelectedImageTab({ onSelect, onTransform, selectedImage,
                         onSelect(selectedImage)
                     }}
                 >Use as is</Button>
-                <Button variant="outline"
-                    className='flex-1'
-                    onClick={() => {
-                        onTransform()
-                    }}
-                >Transform</Button>
+                <div className='relative flex-1'>
+                    <UpgradeToProButton
+                        type="overlay"
+                        show={!data?.user?.isPro}
+                        isChecking={isCheckingUserSession}
+                    />
+                    <Button variant="outline"
+                        className='flex-1'
+                        onClick={() => {
+                            onTransform()
+                        }}
+                    >Transform</Button>
+                </div>
             </div>
         </section>
     )
