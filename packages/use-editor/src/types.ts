@@ -1,4 +1,5 @@
 import fabric, { FabricObject, FabricObjectProps, ObjectEvents, SerializedObjectProps } from 'fabric'
+import { Editor } from '.'
 type UseEditorProps = {
     filename?: Readonly<string>
     initialDimensions?: {
@@ -16,6 +17,8 @@ type UseEditorProps = {
     backgroundColor?: string
     workspaceColor?: string
     updateContextMenuPosition?: (position: { x: number, y: number } | null) => void
+    onInit?: (editor: NonNullable<Editor>) => void;
+    initWhen?: boolean
 }
 type CanvasAction = 'SoftRect' | 'Select' | 'Text' | 'Image' | 'Rectangle' | 'Circle' | 'Triangle' | 'Diamond' | 'Drawing' | 'Star' | 'Line' | 'Undo' | 'Redo' | 'Clear' | "Translating" | "Rotating" | "Selection"
 type UseLoadCanvasStateProps = {

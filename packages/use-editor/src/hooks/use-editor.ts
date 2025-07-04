@@ -36,6 +36,7 @@ export default function useEditor(props: UseEditorProps | void = {
     filename: 'canvas',
     updateContextMenuPosition: () => { },
     onInit: () => { },
+    initWhen: false,
 }) {
     if (typeof props !== 'object') {
         throw new Error('props must be an object')
@@ -48,6 +49,7 @@ export default function useEditor(props: UseEditorProps | void = {
         workspaceColor,
         filename = 'canvas',
         onInit = () => { },
+        initWhen = false,
     } = props
     // the editor instance
     const dimensions = React.useRef(initialDimensions)
@@ -79,6 +81,7 @@ export default function useEditor(props: UseEditorProps | void = {
         workspaceColor,
         setZoom,
         initHistory,
+        initWhen
     })
     const {
         copy,

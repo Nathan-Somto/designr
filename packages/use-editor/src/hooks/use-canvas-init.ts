@@ -10,8 +10,9 @@ export function useCanvasInit({
     workspaceColor,
     setCanvas,
     setZoom,
-    initHistory
-}: Pick<UseEditorProps, 'initialDimensions' | 'backgroundColor' | 'workspaceColor'> & {
+    initHistory,
+    initWhen = true
+}: Pick<UseEditorProps, 'initialDimensions' | 'backgroundColor' | 'workspaceColor' | 'initWhen'> & {
     canvasRef: React.RefObject<HTMLCanvasElement>;
     setCanvas: (canvas: fabric.Canvas) => void;
     canvas: fabric.Canvas | null;
@@ -208,6 +209,7 @@ export function useCanvasInit({
             if (!svgBlobURL) return;
             URL.revokeObjectURL(svgBlobURL);
         }
+        if (!initWhen) return;
         window.addEventListener('beforeunload', listener)
         const destroy = initialize();
         return () => {
@@ -215,6 +217,7 @@ export function useCanvasInit({
             window.removeEventListener('beforeunload', listener)
         }
     }, [
-        initialize
+        initialize,
+        initWhen
     ])
 }
