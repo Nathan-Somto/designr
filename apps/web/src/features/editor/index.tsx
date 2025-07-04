@@ -11,14 +11,18 @@ import OnlineStatus from '#/components/online-status';
 import useIsOnline from '#/hooks/useIsOnline';
 import AiPanel from './components/ai-panel';
 import { EditorProvider, useEditorStore } from './hooks/useEditorStore';
+import { useEditorOnboarding } from './hooks/useEditorOnboarding';
+import { Loader } from 'lucide-react';
 type Props = {
   initialState: {
     width: number,
     height: number,
     state: string
   } | null
+  releaseLoading?: () => void;
+  isLoading?: boolean;
 }
-function Editor({ initialState }: Props) {
+function Editor({ initialState, releaseLoading, isLoading }: Props) {
   const [isPending, startTransition] = React.useTransition()
   const [contextMenuPostion, setContextMenuPostion] = React.useState<
     {
@@ -45,8 +49,12 @@ function Editor({ initialState }: Props) {
     }
   } = useEditorStore();
   const {
+    JoyrideComponent
+  } = useEditorOnboarding({
+    releaseLoading
+  });
+  const {
     canvasRef,
-    editor,
     menuRef
   } = useEditor({
     onSaveCallback: handleSave,
@@ -57,14 +65,21 @@ function Editor({ initialState }: Props) {
       width: initialState?.width,
       height: initialState?.height
     } : undefined,
-    //@ts-ignore
-    intialState: initialState?.state ?? undefined,
+    intialState: initialState?.state,
+    initWhen: initialState !== null,
     onInit: (editor) => {
       setEditor(editor);
     }
   })
   const isOnline = useIsOnline()
-
+  if (initialState === null && isLoading) return <section
+    id="editor__loading"
+    className="flex flex-col gap-y-4 items-center justify-center h-screen w-screen">
+    <div className="flex items-center gap-x-2">
+      <Loader className="size-8 animate-spin text-muted-foreground" aria-label="Loading.." />
+      <p className="text-lg text-muted-foreground font-semibold">Loading your design</p>
+    </div>
+  </section>
   return (
     <>
       <OnlineStatus isOnline={isOnline} />
@@ -95,6 +110,7 @@ function Editor({ initialState }: Props) {
           contextMenuPostion={contextMenuPostion}
         />
       </div>
+      <JoyrideComponent />
     </>
   )
 }
