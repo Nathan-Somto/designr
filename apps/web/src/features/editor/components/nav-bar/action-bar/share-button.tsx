@@ -52,7 +52,9 @@ export default function ShareButton() {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant={"outline"} className="!h-8" aria-label="Share">
+                <Button
+                    id="editor__navbar-share-button"
+                    variant={"outline"} className="!h-8" aria-label="Share">
                     <LinkIcon className="!size-3.5" />
                     <span>Share</span>
                 </Button>

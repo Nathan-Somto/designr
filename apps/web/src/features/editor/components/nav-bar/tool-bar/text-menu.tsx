@@ -33,6 +33,7 @@ export default function TextMenu() {
                         variant={'selection'}
                         className='font-medium'
                         size='shrink'
+                        id="editor__navbar__text-menu-button"
                     >
                         <Icon />
                     </Button>

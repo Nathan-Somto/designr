@@ -60,6 +60,7 @@ export default function ShapeMenu() {
                         className='font-medium'
                         size={'shrink'}
                         data-active={editor?.currentAction === action}
+                        id="editor__navbar__shape-menu"
                     >
                         <Icon />
                     </Button>

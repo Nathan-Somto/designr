@@ -10,7 +10,11 @@ export default function KeyboardShortcuts() {
         <Dialog>
             <Hint label="keyboard shortcuts">
                 <DialogTrigger asChild>
-                    <Button variant={'selection'} size={'shrink'}>
+                    <Button
+                        variant={'selection'}
+                        size={'shrink'}
+                        id="editor__navbar-keyboard-shortcuts-button"
+                    >
                         <KeyboardIcon />
                     </Button>
                 </DialogTrigger>

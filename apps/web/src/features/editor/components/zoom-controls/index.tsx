@@ -21,6 +21,7 @@ export default function zoomControls() {
     const { editor } = useEditorStore();
     return (
         <section
+            id="editor__zoom-controls"
             className={cn('px-6 text-muted-foreground w-fit h-fit', EditorLayoutStyles[key])}
         >
             <Menubar>

@@ -1,7 +1,9 @@
 'use server';
-import { UnauthorizedError } from "@designr/api-errors";
+import { BadRequestError, UnauthorizedError } from "@designr/api-errors";
 import { auth } from "@designr/auth";
+import { db, eq, schema } from "@designr/db";
 import { headers } from "next/headers";
+import { ApiSuccessResponse } from "..";
 
 const getCurrentUser = async () => {
     const session = await auth.api.getSession({
@@ -14,6 +16,23 @@ const getCurrentUser = async () => {
         activeOrganizationId: session.session.activeOrganizationId
     });
 }
+const onboardUser: () => Promise<ApiSuccessResponse<{
+    hasOnboarded: boolean;
+}>> = async () => {
+    const user = await getCurrentUser();
+    if (user.hasOnboarded) throw new BadRequestError("User has already onboarded!");
+    await db.update(schema.users).set({
+        hasOnboarded: true
+    }).where(eq(
+        schema.users.id,
+        user.id
+    ));
+    return {
+        hasOnboarded: true,
+        type: 'success'
+    }
+}
 export {
-    getCurrentUser
+    getCurrentUser,
+    onboardUser
 }

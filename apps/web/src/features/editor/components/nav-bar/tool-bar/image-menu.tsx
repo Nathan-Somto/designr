@@ -105,6 +105,7 @@ export default function ImageMenu() {
                 <Hint label={action}>
                     <DropdownMenuTrigger asChild>
                         <Button
+                            id="editor__navbar__asset-button"
                             variant={'selection'}
                             className='font-medium'
                             size='shrink'
