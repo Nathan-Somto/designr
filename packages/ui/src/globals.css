@@ -1,9 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 .color-convert {
   color: #895af6
 }
+
 @layer base {
   :root {
     --background: 0 0% 90%;
@@ -34,6 +36,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -63,10 +66,12 @@
     --chart-5: 340 75% 55%;
   }
 }
+
 @layer {
   * {
     @apply border-border border border-solid;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -74,19 +79,99 @@
 
 
 .no-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
+
 @media (min-width: 1024px) {
   .lg.no-scrollbar {
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
+    /* Firefox */
     -ms-overflow-style: none;
   }
-  .lg.no-scrollbar::-webkit-scrollbar{
+
+  .lg.no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.4;
+    box-shadow: 0 0 0 0 rgba(165, 143, 255, 0.6);
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.6;
+    box-shadow: 0 0 12px 4px rgba(165, 143, 255, 0.6);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+textarea {
+  field-sizing: content;
+}
+
+@keyframes bounce-x {
+
+  0%,
+  100% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+
+  50% {
+    transform: translateX(-25%);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes bounce-left {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(-0.75rem);
+  }
+}
+
+@keyframes bounce-right {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(0.75rem);
+  }
+}
+
+/* Animation utility classes */
+.animate-bounce-x {
+  animation: bounce-x 1s infinite;
+}
+
+.animate-bounce-left {
+  animation: bounce-left 1s infinite;
+}
+
+.animate-bounce-right {
+  animation: bounce-right 1s infinite;
 }
