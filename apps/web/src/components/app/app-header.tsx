@@ -7,7 +7,7 @@ import { Button } from '@designr/ui/components/button';
 import Hint from '@designr/ui/components/hint';
 import { SearchBar } from '@designr/ui/components/search-bar';
 import { BellIcon, CreditCardIcon } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react';
 import { NotificationPopover } from './notifications-popover';
 import { useProjects } from '#/hooks/useProjects';
@@ -37,7 +37,7 @@ let debounceTimeout: ReturnType<typeof setTimeout>;
 export default function AppHeader({ organization }: Props) {
   const pathname = usePathname();
   const { filterByKeyword } = useProjects();
-
+  const router = useRouter();
   const match = pathname.match(/\/(dashboard|community|favourites)/);
   //console.log("the match: ", match)
   const matchedKey = match?.[0] as keyof typeof searchMap | undefined;
@@ -62,16 +62,22 @@ export default function AppHeader({ organization }: Props) {
           inputClassName='h-[42px]'
         />
       )}
-      {pathname === LINKS.SETTINGS && (
+      {(pathname === LINKS.SETTINGS || pathname === LINKS.SUBSCRIPTIONS) && (
         <h2 className='text-2xl font-semibold flex-1 my-auto self-center'>
-          Settings
+          {pathname === LINKS.SETTINGS ? 'Settings' : 'Subscriptions'}
         </h2>
       )}
       <div className='gap-x-0.5 flex items-center'>
-        <Hint label='Billing' side='bottom'>
-          <Button size='shrink' className='px-0.5 hidden h-fit sm:flex' variant='ghost'>
+        <Hint label='Subscription' side='bottom'>
+          <Button
+            size='shrink'
+            className='px-0.5 hidden h-fit sm:flex'
+            variant='ghost'
+            data-active={pathname === LINKS.SUBSCRIPTIONS}
+            onClick={() => router.push(LINKS.SUBSCRIPTIONS)}
+          >
             <CreditCardIcon />
-            <span className='sr-only'>Billing</span>
+            <span className='sr-only'>Subscription</span>
           </Button>
         </Hint>
         <NotificationPopover>

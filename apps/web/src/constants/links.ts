@@ -7,5 +7,6 @@ export const LINKS = Object.freeze({
     COMMUNITY: '/community',
     FAVOURITES: '/favourites',
     HOME: '/',
-    SUBSCRIPTIONS: '/subscriptions'
+    SUBSCRIPTIONS: '/subscriptions',
+    PRICING: '/pricing',
 })
