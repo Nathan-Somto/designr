@@ -1,5 +1,5 @@
 import { betterAuth, BetterAuthOptions } from 'better-auth';
-import { db, eq, schema } from '@designr/db'
+import { and, db, eq, schema, sql } from '@designr/db'
 import { organization, customSession } from "better-auth/plugins"
 import { drizzleAdapter } from './drizzle-adapter';
 import { userSettingsDefaults } from '@designr/db/user-settings';
@@ -7,9 +7,34 @@ const pluginOptions = {
 
     plugins: [
         organization({
-            allowUserToCreateOrganization(user) {
+            allowUserToCreateOrganization: async (user) => {
                 // if the user is on a free account and created 5 organizations prevent them
-                return true
+                let shouldAllow = true;
+                console.log("given user on allow user to create organization: ", user);
+                if (!(user as { isPro?: boolean })?.isPro) {
+                    const res = await db.select({
+                        count: schema.featureUsage.count
+                    }).from(schema.featureUsage).where(
+                        and(
+                            eq(schema.featureUsage.userId, user.id),
+                            eq(schema.featureUsage.feature, 'ORGANIZATIONS')
+                        )
+                    );
+                    shouldAllow = (res?.[0]?.count ?? 0) <= 5;
+                }
+                return shouldAllow;
+            },
+            organizationCreation: {
+                afterCreate: async (data) => {
+                    await db.update(schema.featureUsage).set({
+                        count: sql`${schema.featureUsage.count} + ${1}`
+                    }).where(
+                        and(
+                            eq(schema.featureUsage.userId, data.user.id),
+                            eq(schema.featureUsage.feature, 'ORGANIZATIONS')
+                        )
+                    )
+                }
             },
             schema: {
                 organization: {
@@ -74,11 +99,11 @@ export const auth = betterAuth({
         schema
     }),
     plugins: [
-        ...(pluginOptions.plugins ?? []),
         customSession(async ({ user, session }) => {
             const res = await db
                 .select({
                     plan: schema.subscriptions.plan,
+                    subscriptionId: schema.subscriptions.flwSubscriptionId
                 })
                 .from(schema.subscriptions)
                 .where(eq(schema.subscriptions.userId, user.id))
@@ -94,11 +119,13 @@ export const auth = betterAuth({
                 user: {
                     ...user,
                     isPro,
-                    hasOnboarded: userRes?.[0]?.hasOnboarded ?? false
+                    hasOnboarded: userRes?.[0]?.hasOnboarded ?? false,
+                    subscriptionId: res?.[0]?.subscriptionId
                 },
                 session
             };
         }, pluginOptions),
+        ...(pluginOptions.plugins ?? []),
     ],
     databaseHooks: {
         user: {
