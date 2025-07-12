@@ -20,22 +20,74 @@ import React from "react";
 import { shareOptions } from "../data";
 import { Switch } from "@designr/ui/components/switch";
 import { useEditorStore } from "#/features/editor/hooks/useEditorStore";
+import { toast } from "sonner";
+import { promiseCatch } from "#/utils/promise-catch";
+import { saveProject, makeProjectATemplate } from "#/services/projects";
+import { useParams } from "next/navigation";
+import { uploadImageToCloudinary } from "#/services/cloudinary";
 
 export default function ShareButton() {
     const { editor } = useEditorStore();
     const [viewAccess, setViewAccess] = React.useState<Access>("public");
-    const [editAccess, setEditAccess] = React.useState<Access>("self");
+    const [editAccess, setEditAccess] = React.useState<Exclude<Access, 'public'>>("self");
     const [isTemplate, setIsTemplate] = React.useState(false);
     const [showIdentity, setShowIdentity] = React.useState(true);
+    const [isPending, startTransition] = React.useTransition();
     const currentPageUrl = typeof window !== "undefined" ? window.location.href : "";
-
+    const {
+        projectId,
+    } = useParams();
     const handleCopy = () => {
         navigator.clipboard.writeText(currentPageUrl);
         //! Show toaster
+        toast.success("Link copied to clipboard!", {
+            duration: 4500
+        })
     };
 
-    const updateProjectAccess = () => {
-        //! Call API with the new access levels
+    const updateProjectAccess = async () => {
+        if (!projectId && typeof projectId !== 'string' && Array.isArray(projectId)) {
+            toast.error("Project ID is not available.");
+            return;
+        }
+        startTransition(async () => {
+            let res;
+            // check if template is true and call make template if so no need to call save project
+            if (isTemplate) {
+                // upload to cloudinary
+                if (!editor) {
+                    toast.error("Editor is not initialized.");
+                    return;
+                };
+                const formData = new FormData();
+                // append the data 
+                let imageBuffer = `${canvasPreviewUrl}`;
+                formData.set('file', imageBuffer);
+                const secureImageUrl = await uploadImageToCloudinary(formData);
+                if (typeof secureImageUrl != 'string') {
+                    toast.error("Failed to upload image");
+                    return;
+                }
+                res = await promiseCatch(makeProjectATemplate({
+                    projectId: projectId as string,
+                    showUserIdentity: showIdentity,
+                    thumbnailUrl: secureImageUrl,
+                }));
+                // by making it a template, the permissions are automatically set to public
+                setViewAccess("public");
+            } else {
+                res = await promiseCatch(saveProject({
+                    projectId: projectId as string,
+                    canView: viewAccess.toUpperCase() as Uppercase<Access>,
+                    canEdit: editAccess.toUpperCase() as Uppercase<Exclude<Access, 'public'>>,
+                }))
+            }
+            if (res !== undefined && res?.type === 'success') {
+                toast.success("Project access updated successfully!")
+                return;
+            }
+            toast.error("Failed to update project access.");
+        })
     };
 
     const getSelectedOption = (access: Access) => {
@@ -110,7 +162,9 @@ export default function ShareButton() {
 
                             <div className="mt-5">
                                 <h3 className="text-sm font-medium mb-2">Who can edit?</h3>
-                                <Select value={editAccess} onValueChange={(value) => setEditAccess(value as Access)}>
+                                <Select value={editAccess} onValueChange={(value) => setEditAccess(value as
+                                    Exclude<Access, 'public'>
+                                )}>
                                     <SelectTrigger className="focus-visible:ring-transparent">
                                         <div className="flex text-muted-foreground text-xs items-center gap-2">
                                             {getSelectedOption(editAccess)?.Icon()}
@@ -160,7 +214,12 @@ export default function ShareButton() {
                     <div
                         className="flex justify-end w-full mt-4"
                     >
-                        <Button onClick={updateProjectAccess} className="min-w-[190px]">Save</Button>
+                        <Button
+                            disabled={isPending}
+                            onClick={updateProjectAccess}
+                            className="min-w-[190px]">
+                            {isPending ? "Saving..." : "Save"}
+                        </Button>
                     </div>
                 </div>
             </DialogContent>
