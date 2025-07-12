@@ -13,16 +13,19 @@ import AiPanel from './components/ai-panel';
 import { EditorProvider, useEditorStore } from './hooks/useEditorStore';
 import { useEditorOnboarding } from './hooks/useEditorOnboarding';
 import { Loader } from 'lucide-react';
+import { useEditorPreview } from './hooks/useEditorPreview';
 type Props = {
   initialState: {
     width: number,
     height: number,
-    state: string
-  } | null
+    state: string,
+    filename: string
+  } | null;
+  mode: 'edit' | 'view';
   releaseLoading?: () => void;
   isLoading?: boolean;
 }
-function Editor({ initialState, releaseLoading, isLoading }: Props) {
+function Editor({ initialState, releaseLoading, isLoading, mode }: Props) {
   const [isPending, startTransition] = React.useTransition()
   const [contextMenuPostion, setContextMenuPostion] = React.useState<
     {
@@ -46,7 +49,8 @@ function Editor({ initialState, releaseLoading, isLoading }: Props) {
   const {
     dispatch: {
       setEditor,
-    }
+    },
+    editor
   } = useEditorStore();
   const {
     JoyrideComponent
@@ -69,7 +73,15 @@ function Editor({ initialState, releaseLoading, isLoading }: Props) {
     initWhen: initialState !== null,
     onInit: (editor) => {
       setEditor(editor);
-    }
+    },
+    filename: initialState?.filename || 'Untitled'
+  })
+  const {
+    EditorPreviewModal
+  } = useEditorPreview({
+    editor,
+    hideExitPreview: mode === 'view',
+    showPreview: mode === 'view'
   })
   const isOnline = useIsOnline()
   if (initialState === null && isLoading) return <section
@@ -82,12 +94,16 @@ function Editor({ initialState, releaseLoading, isLoading }: Props) {
   </section>
   return (
     <>
+      <EditorPreviewModal />
       <OnlineStatus isOnline={isOnline} />
       <MobileWarning />
-      <div id="editor" className='h-screen w-screen overflow-hidden'>
+      <div
+        id="editor"
+        className='h-screen w-screen overflow-hidden'>
         <Navbar
           isSaving={isPending}
-        //key={'nav-bar'}
+          filename={initialState?.filename || 'Untitled Project'}
+          key={'nav-bar'}
         />
         <div className='h-screen w-screen   flex flex-col items-center justify-center'>
           <canvas

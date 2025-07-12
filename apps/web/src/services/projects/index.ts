@@ -371,7 +371,8 @@ const saveProject = async (data: {
         );
     return {
         message: 'Project updated successfully',
-        projectId: data.projectId
+        projectId: data.projectId,
+        type: "success" as const
     }
 }
 
@@ -410,41 +411,69 @@ const makeProjectATemplate = async (
             isTemplate: true,
             thumbnailUrl,
             showUserIdentity,
-            isProTemplate: user.isPro
+            isProTemplate: user.isPro,
+            canView: 'PUBLIC'
         });
     return {
         message: "Project has been made a template",
-        projectId
+        projectId,
+        type: 'success' as const
     }
 
 }
 const getProjectForEditor = async (projectId: string) => {
     const user = await getCurrentUser();
-    const project = await db
-        .select(
-            {
-                id: schema.projects.id,
-                name: schema.projects.name,
-                data: schema.projects.data,
-                height: schema.projects.height,
-                width: schema.projects.width,
 
-            }
-        )
+    const project = await db
+        .select({
+            id: schema.projects.id,
+            name: schema.projects.name,
+            data: schema.projects.data,
+            height: schema.projects.height,
+            width: schema.projects.width,
+            canView: schema.projects.canView,
+            canEdit: schema.projects.canEdit,
+            userId: schema.projects.userId,
+            organizationId: schema.projects.organizationId,
+        })
         .from(schema.projects)
-        .where(
-            and(
-                eq(schema.projects.id, projectId),
-                eq(schema.projects.userId, user.id),
-                eq(schema.projects.organizationId, user.activeOrganizationId ?? '')
-            )
-        )
+        .where(eq(schema.projects.id, projectId))
         .limit(1);
-    if (project.length === 0) {
-        throw new NotFoundError('Project not found');
+
+    if (!project[0]) {
+        throw new NotFoundError("Project not found");
     }
-    return project[0];
-}
+
+    const p = project[0];
+
+    const isOwner = p.userId === user.id;
+    const inOrg = p.organizationId === user.activeOrganizationId;
+
+    const canView =
+        p.canView === 'PUBLIC' ||
+        (p.canView === 'ORG' && inOrg) ||
+        (p.canView === 'SELF' && isOwner);
+
+    const canEdit =
+        (p.canEdit === 'ORG' && inOrg) ||
+        (p.canEdit === 'SELF' && isOwner);
+
+    if (!canView) {
+        throw new NotFoundError("You don't have permission to view this project");
+    }
+
+    return {
+        data: {
+            ...p,
+            canEdit,
+            canView,
+            isOwner,
+            inOrg,
+        },
+        type: 'success' as const
+    };
+};
+
 const getTemplateForEditor = async (templateId: string) => {
     const user = await getCurrentUser();
     const project = await db
