@@ -400,7 +400,30 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
         if (!dataURL) return;
         createLink(dataURL, `${getFilename(customFilename)}-${Date.now()}.png`);
     };
+    const loadJsonAndExportAsPNG = async (json: string, canvasElement: HTMLCanvasElement) => {
+        return new Promise<string>(async (resolve, reject) => {
+            const local_canvas = new fabric.Canvas(canvasElement, {
+                width: 1000,
+                height: 1000,
+            });
+            await local_canvas.loadFromJSON(json);
+            local_canvas.requestRenderAll();
+            const dataURL = local_canvas.toDataURL({
+                format: 'png',
+                multiplier: 1,
+                quality: 0.8
+            });
+            if (dataURL === '') {
+                reject(new Error('Failed to generate PNG'));
+            } else {
+                console.log("the data url", dataURL);
+                local_canvas.dispose();
+                resolve(dataURL);
+            }
+        })
 
+
+    }
     const exportAsJPG = async (options: ExportOptions = {}) => {
         const {
             filename: customFilename,
@@ -1125,6 +1148,19 @@ export default function canvasHelpers({ canvas, filename, setZoom, updateAction 
          * }
          * await editor?.loadFromJSON(data)
          */
-        loadFromJson
+        loadFromJson,
+        /**
+         * @description a function that is used to load a json object and export it as a png
+         * @param {object} json - the json object to load
+         * @param {HTMLCanvasElement} canvasElement - the canvas element to render the json on
+         * @example
+         * const {editor} = useEditor();
+         * const data = {
+         *  "version": "1.0.3"
+         *   "objects": []
+         * }
+         * await editor?.loadJsonAndExportAsPNG(data, canvasElement)
+         */
+        loadJsonAndExportAsPNG,
     };
 }
