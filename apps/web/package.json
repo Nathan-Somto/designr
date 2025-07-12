@@ -17,6 +17,8 @@
     "better-auth": "^1.2.8",
     "colord": "^2.9.3",
     "date-fns": "^4.1.0",
+    "flw-sdk": "^1.6.0",
+    "lottie-react": "^2.4.1",
     "lucide-react": "^0.485.0",
     "motion": "^12.6.5",
     "next": "^15.3.2",
