@@ -57,6 +57,13 @@
       "when": 1751584141818,
       "tag": "0007_amazing_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1751986740873,
+      "tag": "0008_sticky_sasquatch",
+      "breakpoints": true
     }
   ]
 }

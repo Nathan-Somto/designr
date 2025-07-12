@@ -1,0 +1,1 @@
+ALTER TABLE "subscriptions" ADD COLUMN "flw_subscription_id" integer;

@@ -144,6 +144,7 @@ export const subscriptions = pgTable("subscriptions", {
     userId: uuid("user_id").references(() => users.id),
     plan: PlanEnum('plan').notNull(),
     active: boolean("active").default(false),
+    flwSubscriptionId: integer("flw_subscription_id"),
     expiresAt: timestamp("expires_at"),
     metadata: json("metadata"),
     ...baseSchemaProps
