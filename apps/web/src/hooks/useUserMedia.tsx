@@ -7,7 +7,7 @@ type UserMedia = {
 }
 import React from 'react';
 import { getUserMedia } from '#/services/projects';
-import { useApi } from './useApi';
+import { usePaginatedApi } from './usePaginatedApi';
 import { EventBus } from '#/utils/event-bus';
 import { USER_MEDIA_EVENT } from '#/constants/events';
 /**
@@ -26,7 +26,7 @@ function useUserMedia({ shouldFetch = true }: { shouldFetch?: boolean } = {}) {
         fetchMore,
         add,
         remove
-    } = useApi({
+    } = usePaginatedApi({
         fetchFn: getUserMedia,
         shouldFetch
     });
